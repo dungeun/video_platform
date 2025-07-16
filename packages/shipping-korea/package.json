@@ -1,0 +1,61 @@
+{
+  "name": "@repo/shipping-korea",
+  "version": "1.0.0",
+  "description": "Korean domestic delivery services integration module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src --ext .ts,.tsx",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "shipping",
+    "korea",
+    "delivery",
+    "tracking",
+    "logistics",
+    "cj",
+    "hanjin",
+    "lotte",
+    "post-office",
+    "logen"
+  ],
+  "dependencies": {
+    "@repo/core": "workspace:*",
+    "@repo/api-client": "workspace:*",
+    "@repo/cache": "workspace:*",
+    "@repo/types": "workspace:*",
+    "@repo/utils": "workspace:*",
+    "axios": "^1.6.2",
+    "zod": "^3.22.4",
+    "date-fns": "^3.0.0",
+    "p-queue": "^7.4.1",
+    "p-retry": "^5.1.2",
+    "node-cache": "^5.1.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "eslint": "^8.54.0",
+    "@typescript-eslint/eslint-plugin": "^6.12.0",
+    "@typescript-eslint/parser": "^6.12.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  }
+}

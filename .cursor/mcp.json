@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "taskmaster-ai": {
+      "command": "npx",
+      "args": [
+        "task-master-ai"
+      ],
+      "env": {
+        "CLAUDECODE": "1",
+        "CLAUDE_CODE_ENTRYPOINT": "cli",
+        "TASKMASTER_DEFAULT_PROVIDER": "claude-code"
+      }
+    }
+  }
+}

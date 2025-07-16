@@ -1,0 +1,15 @@
+
+> @repo/notification@1.0.0 build /Users/admin/new_project/revu-platform/packages/notification
+> tsup src/index.ts --format cjs,esm --clean
+
+CLI Building entry: src/index.ts
+CLI Using tsconfig: tsconfig.json
+CLI tsup v8.5.0
+CLI Target: es2022
+CLI Cleaning output folder
+CJS Build start
+ESM Build start
+ESM dist/index.mjs 108.59 KB
+ESM ⚡️ Build success in 233ms
+CJS dist/index.js 118.04 KB
+CJS ⚡️ Build success in 233ms

@@ -1,0 +1,53 @@
+{
+  "name": "@repo/community-admin",
+  "version": "1.0.0",
+  "description": "Community administration and content moderation module for KCommerce",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "community",
+    "admin",
+    "moderation",
+    "content-management",
+    "analytics",
+    "kcommerce"
+  ],
+  "dependencies": {
+    "@repo/types": "workspace:*",
+    "@repo/utils": "workspace:*",
+    "@repo/core": "workspace:*",
+    "@repo/storage": "workspace:*",
+    "@repo/notification": "workspace:*",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "lucide-react": "^0.263.1",
+    "date-fns": "^2.30.0",
+    "clsx": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.21",
+    "@types/react-dom": "^18.2.7",
+    "@types/node": "^20.5.0",
+    "typescript": "^5.1.6",
+    "vitest": "^0.34.3",
+    "@vitejs/plugin-react": "^4.0.4"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  }
+}

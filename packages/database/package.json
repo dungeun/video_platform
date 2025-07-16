@@ -1,0 +1,60 @@
+{
+  "name": "@repo/database",
+  "version": "1.0.0",
+  "description": "Enterprise Database Module with Multiple Providers and Query Builder",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run"
+  },
+  "keywords": [
+    "database",
+    "sql",
+    "postgresql",
+    "mysql",
+    "sqlite",
+    "query-builder",
+    "migrations",
+    "orm"
+  ],
+  "author": "Enterprise AI Team",
+  "license": "MIT",
+  "dependencies": {
+    "@repo/core": "workspace:*",
+    "@repo/types": "workspace:*",
+    "@repo/utils": "workspace:*",
+    "@repo/config": "workspace:*",
+    "pg": "^8.13.1",
+    "mysql2": "^3.11.6",
+    "sqlite3": "^5.1.7",
+    "knex": "^3.1.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.12",
+    "@types/sqlite3": "^3.1.11",
+    "tsup": "^8.5.0",
+    "typescript": "^5.8.3",
+    "vitest": "^2.1.8"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  }
+}

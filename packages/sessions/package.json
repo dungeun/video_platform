@@ -1,0 +1,54 @@
+{
+  "name": "@repo/sessions",
+  "version": "1.0.0",
+  "description": "Ultra-fine-grained session management module for React applications",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "session",
+    "session-management",
+    "session-storage",
+    "session-validation",
+    "session-lifecycle",
+    "react",
+    "typescript"
+  ],
+  "dependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "@repo/core": "workspace:*",
+    "@repo/storage": "workspace:*",
+    "@repo/utils": "workspace:*",
+    "@repo/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/jest-dom": "^6.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/company/modules.git",
+    "directory": "modules/sessions"
+  },
+  "author": "Company",
+  "license": "MIT"
+}

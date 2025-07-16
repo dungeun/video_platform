@@ -1,0 +1,53 @@
+{
+  "name": "@repo/notification",
+  "version": "1.0.0",
+  "description": "Multi-channel notification module with Korean SMS support",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --clean",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src --ext .ts,.tsx",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aws-sdk/client-ses": "^3.0.0",
+    "@sendgrid/mail": "^8.1.0",
+    "axios": "^1.6.0",
+    "bull": "^4.12.0",
+    "handlebars": "^4.7.8",
+    "i18next": "^23.7.0",
+    "react-i18next": "^14.0.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/bull": "^4.10.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "keywords": [
+    "notification",
+    "email",
+    "sms",
+    "korean-sms",
+    "aligo",
+    "solutionbox",
+    "ses",
+    "sendgrid",
+    "multi-language"
+  ],
+  "author": "",
+  "license": "MIT"
+}

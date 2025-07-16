@@ -1,0 +1,21 @@
+{
+  "name": "@repo/ui",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./auth": "./auth/index.tsx",
+    "./buttons": "./ui-buttons/index.tsx",
+    "./cards": "./ui-cards/index.tsx",
+    "./forms": "./ui-forms/index.tsx",
+    "./modals": "./ui-modals/index.tsx",
+    "./tables": "./ui-tables/index.tsx"
+  },
+  "scripts": {
+    "lint": "eslint . --max-warnings 0"
+  },
+  "devDependencies": {
+    
+    "typescript": "^5.3.3",
+    "eslint": "^8.57.0"
+  }
+}

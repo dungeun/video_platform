@@ -1,0 +1,56 @@
+{
+  "name": "@repo/auth-core",
+  "version": "1.0.0",
+  "description": "Enterprise Authentication Core Module - Zero Error Architecture",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "auth",
+    "authentication",
+    "authorization",
+    "enterprise",
+    "module",
+    "typescript",
+    "zero-error"
+  ],
+  "author": "Enterprise AI Team",
+  "license": "MIT",
+  "dependencies": {
+    "@repo/core": "workspace:*",
+    "@repo/types": "workspace:*",
+    "@repo/utils": "workspace:*",
+    "@repo/permissions": "workspace:*",
+    "react": "^18.2.0",
+    "zustand": "^4.5.0",
+    "js-cookie": "^3.0.5"
+  },
+  "devDependencies": {
+    "@types/js-cookie": "^3.0.6",
+    "@types/react": "^18.2.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "name": "linkpick-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LinkPick Platform - 100% Modular Architecture Integration",
+  
+  "scripts": {
+    "dev": "turbo run dev",
+    "_build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "_clean": "turbo run clean",
+    "type-check": "turbo run type-check",
+    "setup": "pnpm install && cd apps/api && npx prisma generate",
+    "db:up": "docker-compose up -d postgres redis",
+    "db:down": "docker-compose down",
+    "db:migrate": "cd apps/api && npx prisma migrate dev",
+    "db:seed": "cd apps/api && npx prisma db seed",
+    "start:api": "cd apps/api && pnpm dev",
+    "start:web": "cd apps/web && pnpm dev",
+    "start:all": "concurrently \"pnpm start:api\" \"pnpm start:web\""
+  },
+  "devDependencies": {
+    "turbo": "^1.12.0",
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3",
+    "concurrently": "^8.2.2"
+  },
+  "packageManager": "pnpm@8.15.1",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

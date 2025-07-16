@@ -1,0 +1,49 @@
+{
+  "name": "@repo/return-exchange",
+  "version": "1.0.0",
+  "description": "Return and Exchange Management Module for E-commerce",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest",
+    "lint": "eslint src --ext .ts,.tsx",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@repo/core": "workspace:*",
+    "@repo/types": "workspace:*",
+    "@repo/utils": "workspace:*",
+    "@repo/auth": "workspace:*",
+    "@repo/order-processing": "workspace:*",
+    "@repo/payment-toss": "workspace:*",
+    "@repo/shipping-korea": "workspace:*",
+    "@repo/notification": "workspace:*",
+    "@repo/api-client": "workspace:*",
+    "date-fns": "^3.0.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@testing-library/react": "^14.0.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0",
+    "@vitest/ui": "^1.0.0",
+    "jsdom": "^23.0.0"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "keywords": [
+    "return",
+    "exchange",
+    "refund",
+    "e-commerce",
+    "customer-service"
+  ],
+  "author": "Enterprise AI Team",
+  "license": "MIT"
+}
