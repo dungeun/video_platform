@@ -1,8 +1,8 @@
 /**
- * @company/storage - LocalStorage 프로바이더
+ * @repo/storage - LocalStorage 프로바이더
  * 브라우저 LocalStorage 기반 스토리지
  */
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 import { StorageType } from '../types';
 import { StorageSerializer } from '../utils/StorageSerializer';
 export class LocalStorageProvider {

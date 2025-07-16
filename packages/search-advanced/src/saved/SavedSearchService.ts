@@ -1,13 +1,13 @@
-import { ModuleBase, Logger, ErrorHandler } from '@company/core';
-import { StorageManager } from '@company/storage';
-import { ApiClient } from '@company/api-client';
+import { ModuleBase, Logger, ErrorHandler } from '@repo/core';
+import { StorageManager } from '@repo/storage';
+import { ApiClient } from '@repo/api-client';
 import {
   SavedSearch,
   SearchParams,
   NotificationSettings,
   SearchResult
 } from '../types';
-import { v4 as uuidv4 } from '@company/utils';
+import { v4 as uuidv4 } from '@repo/utils';
 
 export class SavedSearchService extends ModuleBase {
   private logger: Logger;

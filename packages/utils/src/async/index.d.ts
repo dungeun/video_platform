@@ -1,7 +1,7 @@
 /**
- * @company/utils - 비동기 처리 유틸리티
+ * @repo/utils - 비동기 처리 유틸리티
  */
-import { Result as CoreResult } from '@company/core';
+import { Result as CoreResult } from '@repo/core';
 export type Result<T> = CoreResult<T, string>;
 /**
  * 지정된 시간만큼 지연

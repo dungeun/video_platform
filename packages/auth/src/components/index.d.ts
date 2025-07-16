@@ -1,5 +1,5 @@
 /**
- * @company/auth - Components Export
+ * @repo/auth - Components Export
  */
 export { LoginForm } from './LoginForm';
 export { LogoutButton } from './LogoutButton';

@@ -1,5 +1,5 @@
 /**
- * @company/auth-core - useAuth 훅
+ * @repo/auth-core - useAuth 훅
  * 인증 상태 관리 및 인증 관련 작업을 위한 React 훅
  */
 

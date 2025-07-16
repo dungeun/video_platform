@@ -1,5 +1,5 @@
 /**
- * @company/campaign-management - Utility Exports
+ * @repo/campaign-management - Utility Exports
  */
 
 export * from './validation';

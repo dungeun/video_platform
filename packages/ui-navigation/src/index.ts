@@ -1,5 +1,5 @@
 /**
- * @company/ui-navigation - UI Navigation Module
+ * @repo/ui-navigation - UI Navigation Module
  * 
  * 초세분화된 네비게이션 전용 모듈
  * - 네비게이션 컴포넌트만 담당
@@ -117,7 +117,7 @@ export {
 
 // ===== 모듈 정보 =====
 export const UI_NAVIGATION_MODULE_INFO = {
-  name: '@company/ui-navigation',
+  name: '@repo/ui-navigation',
   version: '1.0.0',
   description: 'Ultra-Fine-Grained UI Navigation Components Module',
   author: 'Enterprise AI Team',

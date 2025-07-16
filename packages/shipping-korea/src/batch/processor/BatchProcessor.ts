@@ -2,7 +2,7 @@
  * Batch processor for handling multiple tracking requests
  */
 
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 import PQueue from 'p-queue';
 import { BatchTrackingRequest, BatchTrackingResponse } from '../../types';
 

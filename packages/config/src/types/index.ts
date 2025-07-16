@@ -1,5 +1,5 @@
 /**
- * @company/config - Configuration Management Types
+ * @repo/config - Configuration Management Types
  * 
  * 환경 설정 관리를 위한 타입 정의
  * - 다양한 환경 지원 (dev, staging, prod)

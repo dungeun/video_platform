@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 /**
- * @company/ui-buttons - Base Button Component
+ * @repo/ui-buttons - Base Button Component
  * 기본 버튼 컴포넌트 (버튼 기능만 담당)
  */
 import { forwardRef } from 'react';

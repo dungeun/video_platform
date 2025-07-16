@@ -1,8 +1,8 @@
 /**
- * @company/campaign-management - Type Definitions
+ * @repo/campaign-management - Type Definitions
  */
 
-import { ID, Money, EntityMetadata } from '@company/types';
+import { ID, Money, EntityMetadata } from '@repo/types';
 
 // ===== Campaign Types =====
 export interface Campaign extends EntityMetadata {
@@ -368,4 +368,4 @@ export type {
   ID,
   Money,
   EntityMetadata
-} from '@company/types';
+} from '@repo/types';

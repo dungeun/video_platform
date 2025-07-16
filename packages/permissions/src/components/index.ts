@@ -1,5 +1,5 @@
 /**
- * @company/permissions - 컴포넌트 모듈 내보내기
+ * @repo/permissions - 컴포넌트 모듈 내보내기
  */
 
 export { ProtectedComponent, type ProtectedComponentProps } from './ProtectedComponent';

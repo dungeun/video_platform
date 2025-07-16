@@ -1,5 +1,5 @@
 /**
- * @company/ui-navigation Hooks
+ * @repo/ui-navigation Hooks
  *
  * 네비게이션 관련 훅들
  */

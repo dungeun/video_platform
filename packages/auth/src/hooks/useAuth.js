@@ -1,5 +1,5 @@
 /**
- * @company/auth - useAuth Hook
+ * @repo/auth - useAuth Hook
  * Pure authentication hook for login/logout functionality
  */
 import { useCallback, useEffect, useState } from 'react';

@@ -1,5 +1,5 @@
 /**
- * @company/ui-modals - Components Export
+ * @repo/ui-modals - Components Export
  */
 
 export { Modal } from './Modal';

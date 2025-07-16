@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 /**
- * @company/auth - Login Form Component
+ * @repo/auth - Login Form Component
  * Pure login form for authentication
  */
 import { useState } from 'react';

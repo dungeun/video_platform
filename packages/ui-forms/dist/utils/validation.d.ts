@@ -1,5 +1,5 @@
 /**
- * @company/ui-forms - Validation Utilities
+ * @repo/ui-forms - Validation Utilities
  *
  * 폼 검증을 위한 유틸리티 함수들
  */

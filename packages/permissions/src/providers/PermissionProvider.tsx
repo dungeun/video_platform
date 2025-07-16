@@ -1,5 +1,5 @@
 /**
- * @company/permissions - 권한 프로바이더
+ * @repo/permissions - 권한 프로바이더
  * React context provider for permission management
  */
 

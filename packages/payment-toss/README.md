@@ -1,11 +1,11 @@
-# @company/payment-toss
+# @repo/payment-toss
 
 토스페이먼츠 결제 모듈 - 국내 결제 통합 솔루션
 
 ## 설치
 
 ```bash
-npm install @company/payment-toss
+npm install @repo/payment-toss
 ```
 
 ## 기능
@@ -44,7 +44,7 @@ npm install @company/payment-toss
 ### 1. 설정
 
 ```typescript
-import { TossPaymentProvider } from '@company/payment-toss'
+import { TossPaymentProvider } from '@repo/payment-toss'
 
 const config = {
   clientKey: process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY,
@@ -67,7 +67,7 @@ function App() {
 ### 2. 결제 위젯 사용
 
 ```tsx
-import { PaymentWidget } from '@company/payment-toss'
+import { PaymentWidget } from '@repo/payment-toss'
 
 function CheckoutPage() {
   return (
@@ -90,7 +90,7 @@ function CheckoutPage() {
 ### 3. Hook을 이용한 결제 처리
 
 ```typescript
-import { useTossPayment } from '@company/payment-toss'
+import { useTossPayment } from '@repo/payment-toss'
 
 function PaymentManager() {
   const { requestPayment, confirmPayment, cancelPayment, isLoading } = useTossPayment(service)
@@ -116,7 +116,7 @@ function PaymentManager() {
 ### 서버사이드 결제 처리
 
 ```typescript
-import { TossPaymentService } from '@company/payment-toss'
+import { TossPaymentService } from '@repo/payment-toss'
 
 const paymentService = new TossPaymentService({
   clientKey: process.env.TOSS_CLIENT_KEY,
@@ -140,7 +140,7 @@ const cancelledPayment = await paymentService.cancelPayment({
 ### 웹훅 처리
 
 ```typescript
-import { WebhookHandler } from '@company/payment-toss'
+import { WebhookHandler } from '@repo/payment-toss'
 
 const webhookHandler = new WebhookHandler(paymentService, {
   onPaymentCompleted: async (payment) => {
@@ -192,7 +192,7 @@ const subscription = await paymentService.requestBillingPayment({
 ## 유틸리티 함수
 
 ```typescript
-import { PaymentUtils } from '@company/payment-toss'
+import { PaymentUtils } from '@repo/payment-toss'
 
 // 주문 ID 생성
 const orderId = PaymentUtils.generateOrderId('ORDER')
@@ -272,7 +272,7 @@ type PaymentStatus =
 ## 에러 처리
 
 ```typescript
-import { TOSS_ERROR_CODES } from '@company/payment-toss'
+import { TOSS_ERROR_CODES } from '@repo/payment-toss'
 
 try {
   const result = await paymentService.confirmPayment(confirmRequest)

@@ -1,10 +1,10 @@
 /**
- * @module @company/inventory-tracking/services/WarehouseService
+ * @module @repo/inventory-tracking/services/WarehouseService
  * @description Warehouse management service
  */
 
-import { ModuleBase } from '@company/core';
-import { CacheManager } from '@company/cache';
+import { ModuleBase } from '@repo/core';
+import { CacheManager } from '@repo/cache';
 import type { Warehouse } from '../types';
 import type { IWarehouseRepository } from '../repositories/interfaces';
 

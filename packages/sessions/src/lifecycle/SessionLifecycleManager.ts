@@ -5,7 +5,7 @@ import type {
   SessionStorageProvider 
 } from '../types';
 import { SessionError } from '../types';
-import { generateId } from '@company/utils';
+import { generateId } from '@repo/utils';
 
 export class SessionLifecycleManager {
   private events: Partial<SessionLifecycleEvents> = {};

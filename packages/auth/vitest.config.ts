@@ -22,10 +22,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@company/core': path.resolve(__dirname, '../core/src'),
-      '@company/types': path.resolve(__dirname, '../types/src'),
-      '@company/utils': path.resolve(__dirname, '../utils/src'),
-      '@company/api-client': path.resolve(__dirname, '../api-client/src')
+      '@repo/core': path.resolve(__dirname, '../core/src'),
+      '@repo/types': path.resolve(__dirname, '../types/src'),
+      '@repo/utils': path.resolve(__dirname, '../utils/src'),
+      '@repo/api-client': path.resolve(__dirname, '../api-client/src')
     }
   }
 });

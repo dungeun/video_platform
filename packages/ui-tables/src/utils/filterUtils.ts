@@ -1,5 +1,5 @@
 /**
- * @company/ui-tables - Filter Utilities
+ * @repo/ui-tables - Filter Utilities
  * 
  * 테이블 필터링 관련 유틸리티
  */

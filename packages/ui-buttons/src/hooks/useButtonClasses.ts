@@ -1,5 +1,5 @@
 /**
- * @company/ui-buttons - Button Classes Hook
+ * @repo/ui-buttons - Button Classes Hook
  * 버튼 스타일 클래스를 생성하는 훅
  */
 

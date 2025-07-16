@@ -1,4 +1,4 @@
-import { Result } from '@company/core';
+import { Result } from '@repo/core';
 import { StorageProvider, StorageQuery, StorageMetadata, NamespaceStats } from '../types';
 export interface IndexedDBConfig {
     dbName: string;

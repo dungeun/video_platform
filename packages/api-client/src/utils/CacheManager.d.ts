@@ -1,5 +1,5 @@
 /**
- * @company/api-client - 캐시 관리자
+ * @repo/api-client - 캐시 관리자
  * HTTP 응답 캐싱 관리
  */
 import { CacheConfig, CacheEntry, CacheStorage, HttpRequestConfig, HttpResponse } from '../types';

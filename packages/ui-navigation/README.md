@@ -1,4 +1,4 @@
-# @company/ui-navigation
+# @repo/ui-navigation
 
 > Ultra-Fine-Grained UI Navigation Components Module
 
@@ -18,9 +18,9 @@
 ## 📦 설치
 
 ```bash
-npm install @company/ui-navigation
+npm install @repo/ui-navigation
 # 또는
-yarn add @company/ui-navigation
+yarn add @repo/ui-navigation
 ```
 
 ## 🚀 주요 기능
@@ -49,7 +49,7 @@ import {
   Breadcrumbs,
   SearchBar,
   UserMenu 
-} from '@company/ui-navigation';
+} from '@repo/ui-navigation';
 
 // 네비게이션 아이템 정의
 const navigationItems = [
@@ -211,7 +211,7 @@ function MyUserMenu() {
 ## 🎨 테마 커스터마이징
 
 ```typescript
-import { useNavigationTheme } from '@company/ui-navigation';
+import { useNavigationTheme } from '@repo/ui-navigation';
 
 function MyApp() {
   const {
@@ -252,7 +252,7 @@ function MyApp() {
 ### 키보드 네비게이션
 
 ```typescript
-import { useKeyboardNavigation } from '@company/ui-navigation';
+import { useKeyboardNavigation } from '@repo/ui-navigation';
 
 function KeyboardNavigableMenu() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -291,7 +291,7 @@ import {
   createNavigationAria,
   createMenuItemAria,
   manageFocus
-} from '@company/ui-navigation';
+} from '@repo/ui-navigation';
 
 function AccessibleNavigation() {
   const navigationAria = createNavigationAria({

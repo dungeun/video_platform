@@ -1245,7 +1245,7 @@ function shallowEqual(obj1, obj2) {
   return true;
 }
 var CORE_MODULE_INFO = {
-  name: "@company/core",
+  name: "@repo/core",
   version: "1.0.0",
   description: "Enterprise AI Module System - Core Foundation",
   author: "Enterprise AI Team",

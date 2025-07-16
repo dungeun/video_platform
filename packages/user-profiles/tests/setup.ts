@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 
-// Mock @company/core
-vi.mock('@company/core', () => ({
+// Mock @repo/core
+vi.mock('@repo/core', () => ({
   ModuleBase: class MockModuleBase {
     protected logger = {
       info: vi.fn(),
@@ -16,8 +16,8 @@ vi.mock('@company/core', () => ({
   }
 }));
 
-// Mock @company/database
-vi.mock('@company/database', () => ({
+// Mock @repo/database
+vi.mock('@repo/database', () => ({
   DatabaseManager: class MockDatabaseManager {
     query = vi.fn();
     connect = vi.fn();

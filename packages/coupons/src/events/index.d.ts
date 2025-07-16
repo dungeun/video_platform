@@ -1,4 +1,4 @@
-import { EventEmitter } from '@company/core';
+import { EventEmitter } from '@repo/core';
 import { CouponEvent } from '../types';
 export declare class CouponEventBus extends EventEmitter {
     private static instance;

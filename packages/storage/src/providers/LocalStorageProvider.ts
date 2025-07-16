@@ -1,9 +1,9 @@
 /**
- * @company/storage - LocalStorage 프로바이더
+ * @repo/storage - LocalStorage 프로바이더
  * 브라우저 LocalStorage 기반 스토리지
  */
 
-import { Logger, Result } from '@company/core';
+import { Logger, Result } from '@repo/core';
 import { 
   StorageProvider, 
   StorageType, 

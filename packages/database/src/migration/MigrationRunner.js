@@ -1,10 +1,10 @@
 /**
- * @company/database - Migration Runner
+ * @repo/database - Migration Runner
  *
  * 데이터베이스 마이그레이션을 실행하고 관리하는 클래스
  * Zero Error Architecture 기반으로 설계됨
  */
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 import { QueryBuilder } from '../query/QueryBuilder';
 import { MigrationError } from '../types';
 export class MigrationRunner {

@@ -1,5 +1,5 @@
 /**
- * @company/config - Configuration Management Module
+ * @repo/config - Configuration Management Module
  * 
  * 다양한 환경별 설정을 관리하는 설정 모듈
  * - 환경변수, 파일, 원격 소스 지원
@@ -233,7 +233,7 @@ export async function exampleUsage() {
 // ===== 모듈 정보 =====
 
 export const CONFIG_MODULE_INFO = {
-  name: '@company/config',
+  name: '@repo/config',
   version: '1.0.0',
   description: 'Enterprise Configuration Management Module',
   author: 'Enterprise AI Team',

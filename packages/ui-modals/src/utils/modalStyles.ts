@@ -1,5 +1,5 @@
 /**
- * @company/ui-modals - Modal Styles Utility
+ * @repo/ui-modals - Modal Styles Utility
  * 
  * 모달 스타일 관련 유틸리티
  */

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useAuth } from '@company/auth-core';
+import { useAuth } from '@repo/auth-core';
 import { WishlistItemService } from '../services';
 import {
   AddItemRequest,

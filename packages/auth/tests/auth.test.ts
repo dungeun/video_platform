@@ -1,5 +1,5 @@
 /**
- * @company/auth - Authentication Tests
+ * @repo/auth - Authentication Tests
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -9,7 +9,7 @@ import { SessionManager } from '../src/auth/SessionManager';
 import { AuthConfig, LoginCredentials, AuthTokens, AuthUser } from '../src/types';
 
 // Mock dependencies
-vi.mock('@company/core', () => ({
+vi.mock('@repo/core', () => ({
   ModuleBase: class {
     constructor(config: any) {}
     async safeExecute(fn: Function, errorMessage: string) {
@@ -40,7 +40,7 @@ vi.mock('@company/core', () => ({
   }
 }));
 
-vi.mock('@company/api-client', () => ({
+vi.mock('@repo/api-client', () => ({
   HttpClient: class {
     constructor(config: any) {}
     async get(url: string) {

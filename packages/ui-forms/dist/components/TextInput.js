@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 /**
- * @company/ui-forms - TextInput Component
+ * @repo/ui-forms - TextInput Component
  *
  * 텍스트 입력을 위한 기본 입력 컴포넌트
  */

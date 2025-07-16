@@ -1,5 +1,5 @@
 /**
- * @company/ui-forms - Checkbox Component
+ * @repo/ui-forms - Checkbox Component
  *
  * 체크박스 입력을 위한 컴포넌트
  */

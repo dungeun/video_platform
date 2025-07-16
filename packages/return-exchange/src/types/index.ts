@@ -1,6 +1,6 @@
-import type { Order, OrderItem } from '@company/order-processing'
-import type { User } from '@company/auth'
-import type { Product } from '@company/types'
+import type { Order, OrderItem } from '@repo/order-processing'
+import type { User } from '@repo/auth'
+import type { Product } from '@repo/types'
 
 // 반품/교환 타입
 export type RequestType = 'return' | 'exchange'

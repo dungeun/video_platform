@@ -1,9 +1,9 @@
 /**
- * @company/campaign-management - Campaign Service
+ * @repo/campaign-management - Campaign Service
  */
 
-import { EventBus } from '@company/core';
-import { ApiClient } from '@company/utils';
+import { EventBus } from '@repo/core';
+import { ApiClient } from '@repo/utils';
 import { 
   Campaign, 
   CreateCampaignRequest, 

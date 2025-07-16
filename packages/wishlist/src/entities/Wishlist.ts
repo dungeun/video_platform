@@ -1,4 +1,4 @@
-import { BaseEntity } from '@company/types';
+import { BaseEntity } from '@repo/types';
 
 export interface Wishlist extends BaseEntity {
   userId: string;

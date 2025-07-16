@@ -1,5 +1,5 @@
 /**
- * @module @company/inventory-tracking/events
+ * @module @repo/inventory-tracking/events
  * @description Event definitions for inventory tracking
  */
 

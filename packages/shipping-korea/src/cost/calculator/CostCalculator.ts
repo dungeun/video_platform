@@ -2,7 +2,7 @@
  * Shipping cost calculator for all carriers
  */
 
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 import { 
   ShippingCostRequest,
   ShippingCostResponse,

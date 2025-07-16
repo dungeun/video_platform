@@ -1,5 +1,5 @@
 /**
- * @company/ui-tables - TablePagination Component
+ * @repo/ui-tables - TablePagination Component
  * 
  * 테이블 페이지네이션 컴포넌트
  */

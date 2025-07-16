@@ -1,5 +1,5 @@
 /**
- * @company/types - Enterprise AI Module System Types
+ * @repo/types - Enterprise AI Module System Types
  *
  * 모든 엔터프라이즈 모듈에서 사용하는 공통 타입 정의
  *
@@ -108,7 +108,7 @@ export declare function removeNullish<T extends Record<string, any>>(obj: T): Pa
  */
 export declare function removeEmpty<T extends Record<string, any>>(obj: T): Partial<T>;
 export declare const TYPES_MODULE_INFO: {
-    readonly name: "@company/types";
+    readonly name: "@repo/types";
     readonly version: "1.0.0";
     readonly description: "Enterprise AI Module System - Common Types";
     readonly author: "Enterprise AI Team";

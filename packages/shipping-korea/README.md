@@ -1,4 +1,4 @@
-# @company/shipping-korea
+# @repo/shipping-korea
 
 Korean domestic delivery services integration module
 
@@ -20,7 +20,7 @@ Korean domestic delivery services integration module
 ## Installation
 
 ```bash
-npm install @company/shipping-korea
+npm install @repo/shipping-korea
 ```
 
 ## Quick Start
@@ -28,7 +28,7 @@ npm install @company/shipping-korea
 ### Basic Tracking
 
 ```typescript
-import { TrackingService, CARRIERS } from '@company/shipping-korea';
+import { TrackingService, CARRIERS } from '@repo/shipping-korea';
 
 // Initialize service
 const trackingService = new TrackingService({
@@ -60,7 +60,7 @@ if (result.success) {
 ### Cost Calculation
 
 ```typescript
-import { CostCalculator } from '@company/shipping-korea';
+import { CostCalculator } from '@repo/shipping-korea';
 
 const calculator = new CostCalculator({
   carriers: {
@@ -111,7 +111,7 @@ const comparison = await calculator.compareCosts({
 ### React Hooks
 
 ```typescript
-import { useTracking } from '@company/shipping-korea';
+import { useTracking } from '@repo/shipping-korea';
 
 function TrackingComponent() {
   const { data, loading, error, track } = useTracking(trackingService, {

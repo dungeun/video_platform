@@ -1,5 +1,5 @@
 /**
- * @company/auth - Test Setup
+ * @repo/auth - Test Setup
  */
 
 import { beforeEach, vi } from 'vitest';

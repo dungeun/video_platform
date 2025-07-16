@@ -1,5 +1,5 @@
 /**
- * @company/ui-tables - Hooks
+ * @repo/ui-tables - Hooks
  * 
  * 테이블 관련 커스텀 훅
  */

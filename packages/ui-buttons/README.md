@@ -1,4 +1,4 @@
-# @company/ui-buttons
+# @repo/ui-buttons
 
 초세분화된 버튼 전용 UI 모듈
 
@@ -14,7 +14,7 @@
 ## 📦 설치
 
 ```bash
-npm install @company/ui-buttons
+npm install @repo/ui-buttons
 ```
 
 ## 🚀 사용법
@@ -22,7 +22,7 @@ npm install @company/ui-buttons
 ### 기본 버튼
 
 ```tsx
-import { Button } from '@company/ui-buttons';
+import { Button } from '@repo/ui-buttons';
 
 function App() {
   return (
@@ -50,7 +50,7 @@ function App() {
 ### 버튼 그룹
 
 ```tsx
-import { Button, ButtonGroup } from '@company/ui-buttons';
+import { Button, ButtonGroup } from '@repo/ui-buttons';
 
 function ToolbarExample() {
   return (
@@ -66,7 +66,7 @@ function ToolbarExample() {
 ### 아이콘 버튼
 
 ```tsx
-import { IconButton } from '@company/ui-buttons';
+import { IconButton } from '@repo/ui-buttons';
 
 function IconExample() {
   return (
@@ -83,7 +83,7 @@ function IconExample() {
 ### 플로팅 액션 버튼
 
 ```tsx
-import { FAB } from '@company/ui-buttons';
+import { FAB } from '@repo/ui-buttons';
 
 function FABExample() {
   return (
@@ -147,7 +147,7 @@ function FABExample() {
 ### 1. 독립성
 ```tsx
 // 버튼만 필요할 때 버튼만 가져오기
-import { Button } from '@company/ui-buttons';
+import { Button } from '@repo/ui-buttons';
 // 폼이나 테이블 같은 다른 UI는 안 가져옴
 ```
 
@@ -158,17 +158,17 @@ import { Button } from '@company/ui-buttons';
 
 ### 3. 팀 협업
 - A팀이 버튼 기능 개발 시 이 모듈만 작업
-- B팀이 폼 기능 개발 시 @company/ui-forms 모듈 작업
+- B팀이 폼 기능 개발 시 @repo/ui-forms 모듈 작업
 - 서로 충돌 없음
 
 ### 4. 선택적 사용
 ```tsx
 // CMS에서는 버튼과 폼만 사용
-import '@company/ui-buttons';
-import '@company/ui-forms';
+import '@repo/ui-buttons';
+import '@repo/ui-forms';
 
 // 간단한 페이지에서는 버튼만 사용
-import '@company/ui-buttons';
+import '@repo/ui-buttons';
 ```
 
 ## 📋 타입 정의
@@ -180,7 +180,7 @@ import type {
   BaseButtonProps, 
   ButtonVariant, 
   ButtonSize 
-} from '@company/ui-buttons';
+} from '@repo/ui-buttons';
 ```
 
 ## 🧪 테스트

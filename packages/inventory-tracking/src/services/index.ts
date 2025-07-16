@@ -1,5 +1,5 @@
 /**
- * @module @company/inventory-tracking/services
+ * @module @repo/inventory-tracking/services
  * @description Export all service classes
  */
 

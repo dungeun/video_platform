@@ -1,5 +1,5 @@
 /**
- * @company/types - Enterprise AI Module System Types
+ * @repo/types - Enterprise AI Module System Types
  *
  * 모든 엔터프라이즈 모듈에서 사용하는 공통 타입 정의
  *
@@ -240,7 +240,7 @@ export function removeEmpty(obj) {
 }
 // ===== 모듈 정보 =====
 export const TYPES_MODULE_INFO = {
-    name: '@company/types',
+    name: '@repo/types',
     version: '1.0.0',
     description: 'Enterprise AI Module System - Common Types',
     author: 'Enterprise AI Team',

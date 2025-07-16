@@ -3,7 +3,7 @@
  */
 
 import { BackupCode, BackupCodeSet } from '../types';
-// import { generateSecureRandom } from '@company/utils/crypto';
+// import { generateSecureRandom } from '@repo/utils/crypto';
 
 export interface BackupCodeConfig {
   count: number;

@@ -43,7 +43,7 @@
 ## 설치
 
 ```bash
-npm install @company/customer-reviews
+npm install @repo/customer-reviews
 ```
 
 ## 의존성
@@ -53,9 +53,9 @@ npm install @company/customer-reviews
   "dependencies": {
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "@company/core": "workspace:*",
-    "@company/types": "workspace:*",
-    "@company/utils": "workspace:*"
+    "@repo/core": "workspace:*",
+    "@repo/types": "workspace:*",
+    "@repo/utils": "workspace:*"
   }
 }
 ```
@@ -71,7 +71,7 @@ import {
   ReviewForm,
   RatingStars,
   useReviews
-} from '@company/customer-reviews';
+} from '@repo/customer-reviews';
 
 // 리뷰 서비스 초기화
 const reviewService = new ReviewService(
@@ -114,7 +114,7 @@ function WriteReview({ productId }: { productId: string }) {
 ### 커스텀 훅 사용
 
 ```tsx
-import { useReviews, useReviewAnalytics } from '@company/customer-reviews';
+import { useReviews, useReviewAnalytics } from '@repo/customer-reviews';
 
 function ProductPage({ productId }: { productId: string }) {
   const {
@@ -153,7 +153,7 @@ function ProductPage({ productId }: { productId: string }) {
 ### 필터링 및 정렬
 
 ```tsx
-import { ReviewFilter, ReviewSortBy } from '@company/customer-reviews';
+import { ReviewFilter, ReviewSortBy } from '@repo/customer-reviews';
 
 const filter: ReviewFilter = {
   rating: 5,                    // 5점 리뷰만
@@ -173,7 +173,7 @@ const filter: ReviewFilter = {
 ### 리뷰 분석
 
 ```tsx
-import { AnalyticsService } from '@company/customer-reviews';
+import { AnalyticsService } from '@repo/customer-reviews';
 
 const analyticsService = new AnalyticsService(
   reviewRepository,

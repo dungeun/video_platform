@@ -1,5 +1,5 @@
 /**
- * @company/auth - Pure Authentication Service
+ * @repo/auth - Pure Authentication Service
  * Ultra-Fine-Grained Module - Login/Logout Only
  */
 class ModuleBase {
@@ -43,7 +43,7 @@ import { SessionManager } from './SessionManager';
 export class AuthService extends ModuleBase {
     constructor(config) {
         super({
-            name: '@company/auth',
+            name: '@repo/auth',
             version: '1.0.0',
             description: 'Pure Authentication Service - Login/Logout Only'
         });
@@ -129,7 +129,7 @@ export class AuthService extends ModuleBase {
                 };
             }
             // 5. 이벤트 발행
-            EventBus.emitModuleEvent('@company/auth', 'auth:login', {
+            EventBus.emitModuleEvent('@repo/auth', 'auth:login', {
                 user: loginData.user,
                 session: session.data
             });
@@ -167,7 +167,7 @@ export class AuthService extends ModuleBase {
             this.tokenManager.clearTokens();
             this.sessionManager.clearSession();
             // 3. 이벤트 발행
-            EventBus.emitModuleEvent('@company/auth', 'auth:logout', {
+            EventBus.emitModuleEvent('@repo/auth', 'auth:logout', {
                 user: currentUser
             });
             this.logger.info('로그아웃 완료');
@@ -203,7 +203,7 @@ export class AuthService extends ModuleBase {
             // 세션 토큰 업데이트
             this.sessionManager.updateTokens(response.data.tokens);
             // 이벤트 발행
-            EventBus.emitModuleEvent('@company/auth', 'auth:token-refreshed', {
+            EventBus.emitModuleEvent('@repo/auth', 'auth:token-refreshed', {
                 tokens: response.data.tokens
             });
             this.logger.debug('토큰 갱신 완료');

@@ -1,5 +1,5 @@
 /**
- * @company/core 테스트
+ * @repo/core 테스트
  * Zero Error Architecture 검증
  */
 
@@ -63,7 +63,7 @@ class FailingModule extends ModuleBase {
 
 // ===== 테스트 스위트 =====
 
-describe('@company/core', () => {
+describe('@repo/core', () => {
   
   describe('ModuleBase', () => {
     let testModule: TestModule;

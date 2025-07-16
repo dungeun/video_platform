@@ -1,5 +1,5 @@
 /**
- * @company/ui-modals - Modal Helpers
+ * @repo/ui-modals - Modal Helpers
  * 
  * 모달 관련 헬퍼 함수
  */

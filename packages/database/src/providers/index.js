@@ -1,5 +1,5 @@
 /**
- * @company/database - Database Providers
+ * @repo/database - Database Providers
  *
  * 모든 데이터베이스 프로바이더를 통합 관리
  */

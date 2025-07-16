@@ -1,5 +1,5 @@
 /**
- * @company/api-client - 에러 인터셉터
+ * @repo/api-client - 에러 인터셉터
  * HTTP 에러 처리 및 변환
  */
 import { ResponseInterceptor, HttpError, ApiError } from '../types';

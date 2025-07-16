@@ -1,10 +1,10 @@
 /**
- * @company/database - Database Manager
+ * @repo/database - Database Manager
  *
  * 데이터베이스 연결과 작업을 통합 관리하는 메인 클래스
  * Zero Error Architecture 기반으로 설계됨
  */
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 import { EventEmitter } from 'events';
 import { ConnectionManager } from './connection/ConnectionManager';
 import { QueryBuilder } from './query/QueryBuilder';

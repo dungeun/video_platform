@@ -1,4 +1,4 @@
-import { EventEmitter } from '@company/core';
+import { EventEmitter } from '@repo/core';
 import { WishlistEvent } from '../types';
 
 export class WishlistEventEmitter extends EventEmitter {

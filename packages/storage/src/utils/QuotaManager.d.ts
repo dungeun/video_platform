@@ -1,4 +1,4 @@
-import { Result } from '@company/core';
+import { Result } from '@repo/core';
 export interface QuotaInfo {
     usage: number;
     quota: number;

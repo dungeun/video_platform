@@ -1,5 +1,5 @@
 /**
- * @company/ui-modals - Motion Wrapper Component
+ * @repo/ui-modals - Motion Wrapper Component
  * 
  * Wrapper for framer-motion components to handle type issues
  */

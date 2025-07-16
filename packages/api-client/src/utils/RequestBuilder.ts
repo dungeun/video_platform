@@ -1,12 +1,12 @@
 /**
- * @company/api-client - 요청 빌더
+ * @repo/api-client - 요청 빌더
  * HTTP 요청 설정 구성
  */
 
 import { AxiosRequestConfig } from 'axios';
 import qs from 'qs';
 import { HttpRequestConfig, ApiClientConfig } from '../types';
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 
 export class RequestBuilder {
   private logger: Logger;

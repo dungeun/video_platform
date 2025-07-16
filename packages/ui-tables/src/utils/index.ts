@@ -1,5 +1,5 @@
 /**
- * @company/ui-tables - Utilities
+ * @repo/ui-tables - Utilities
  * 
  * 테이블 관련 유틸리티 함수
  */

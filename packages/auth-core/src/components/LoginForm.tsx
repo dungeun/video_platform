@@ -1,5 +1,5 @@
 /**
- * @company/auth-core - 로그인 폼 컴포넌트
+ * @repo/auth-core - 로그인 폼 컴포넌트
  * 재사용 가능한 로그인 폼
  */
 

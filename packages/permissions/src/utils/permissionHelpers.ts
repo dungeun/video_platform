@@ -1,5 +1,5 @@
 /**
- * @company/permissions - 권한 유틸리티 함수
+ * @repo/permissions - 권한 유틸리티 함수
  * Helper functions for permission management
  */
 

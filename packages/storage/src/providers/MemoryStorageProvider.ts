@@ -1,9 +1,9 @@
 /**
- * @company/storage - Memory 스토리지 프로바이더
+ * @repo/storage - Memory 스토리지 프로바이더
  * 메모리 기반 임시 스토리지
  */
 
-import { Logger, Result } from '@company/core';
+import { Logger, Result } from '@repo/core';
 import { 
   StorageProvider, 
   StorageType, 

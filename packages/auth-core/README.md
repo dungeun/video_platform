@@ -1,10 +1,10 @@
-# @company/auth-core
+# @repo/auth-core
 
 엔터프라이즈급 인증/인가 모듈 - Zero Error Architecture 기반
 
 ## 📋 개요
 
-`@company/auth-core`는 현대적인 웹 애플리케이션을 위한 완전한 인증/인가 솔루션입니다. React 애플리케이션에서 사용자 인증, 권한 관리, 세션 관리를 쉽고 안전하게 처리할 수 있습니다.
+`@repo/auth-core`는 현대적인 웹 애플리케이션을 위한 완전한 인증/인가 솔루션입니다. React 애플리케이션에서 사용자 인증, 권한 관리, 세션 관리를 쉽고 안전하게 처리할 수 있습니다.
 
 ## ✨ 주요 기능
 
@@ -32,15 +32,15 @@
 ## 📦 설치
 
 ```bash
-npm install @company/auth-core
+npm install @repo/auth-core
 # 또는
-pnpm add @company/auth-core
+pnpm add @repo/auth-core
 ```
 
 ### 의존성
 
 ```bash
-npm install @company/core @company/types @company/utils react zustand js-cookie
+npm install @repo/core @repo/types @repo/utils react zustand js-cookie
 ```
 
 ## 🚀 빠른 시작
@@ -48,7 +48,7 @@ npm install @company/core @company/types @company/utils react zustand js-cookie
 ### 1. AuthProvider 설정
 
 ```tsx
-import { AuthProvider, createAuthConfig } from '@company/auth-core';
+import { AuthProvider, createAuthConfig } from '@repo/auth-core';
 
 const authConfig = createAuthConfig({
   apiUrl: 'http://localhost:3000/api',
@@ -74,7 +74,7 @@ function App() {
 ### 2. 로그인 폼 사용
 
 ```tsx
-import { LoginForm } from '@company/auth-core';
+import { LoginForm } from '@repo/auth-core';
 
 function LoginPage() {
   return (
@@ -97,7 +97,7 @@ function LoginPage() {
 ### 3. 인증 상태 사용
 
 ```tsx
-import { useAuth } from '@company/auth-core';
+import { useAuth } from '@repo/auth-core';
 
 function Dashboard() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -118,7 +118,7 @@ function Dashboard() {
 ### 4. 보호된 라우트
 
 ```tsx
-import { ProtectedRoute } from '@company/auth-core';
+import { ProtectedRoute } from '@repo/auth-core';
 
 function AdminPage() {
   return (
@@ -135,7 +135,7 @@ function AdminPage() {
 ### 5. 권한 확인
 
 ```tsx
-import { usePermission } from '@company/auth-core';
+import { usePermission } from '@repo/auth-core';
 
 function UserActions() {
   const { hasPermission, checkPermission } = usePermission();
@@ -305,7 +305,7 @@ pnpm test:coverage
 ### 커스텀 AuthService
 
 ```typescript
-import { AuthService, createAuthConfig } from '@company/auth-core';
+import { AuthService, createAuthConfig } from '@repo/auth-core';
 
 class CustomAuthService extends AuthService {
   async customLogin(customData: any) {
@@ -322,7 +322,7 @@ const authService = new CustomAuthService(
 ### 이벤트 리스너
 
 ```typescript
-import { EventBus } from '@company/core';
+import { EventBus } from '@repo/core';
 
 // 로그인 이벤트 구독
 EventBus.on('auth:login', (event) => {
@@ -338,7 +338,7 @@ EventBus.on('auth:logout', (event) => {
 ### 소셜 로그인
 
 ```typescript
-import { SocialProvider } from '@company/auth-core';
+import { SocialProvider } from '@repo/auth-core';
 
 // 소셜 로그인 URL 생성
 const { authService } = useAuthContext();

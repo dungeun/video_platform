@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useAuth } from '@company/auth-core';
+import { useAuth } from '@repo/auth-core';
 import { WishlistShareService } from '../services';
 import { ShareWishlistRequest, ShareResponse } from '../types';
 import { WishlistShare } from '../entities';

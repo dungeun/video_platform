@@ -1,5 +1,5 @@
 /**
- * @company/ui-buttons - Floating Action Button Component
+ * @repo/ui-buttons - Floating Action Button Component
  * 플로팅 액션 버튼 컴포넌트
  */
 

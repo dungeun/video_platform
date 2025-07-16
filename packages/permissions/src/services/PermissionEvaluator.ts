@@ -1,9 +1,9 @@
 /**
- * @company/permissions - 권한 평가 서비스
+ * @repo/permissions - 권한 평가 서비스
  * Advanced permission evaluation with complex condition support
  */
 
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 import {
   Permission,
   PermissionCondition,

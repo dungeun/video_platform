@@ -1,5 +1,5 @@
 /**
- * @module @company/address-korea/utils
+ * @module @repo/address-korea/utils
  * @description Utility functions for Korean address handling
  */
 

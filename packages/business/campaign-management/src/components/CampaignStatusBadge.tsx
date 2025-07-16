@@ -1,5 +1,5 @@
 /**
- * @company/campaign-management - Campaign Status Badge Component
+ * @repo/campaign-management - Campaign Status Badge Component
  */
 
 import React from 'react';

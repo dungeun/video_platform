@@ -1,7 +1,7 @@
 /**
- * @company/utils - 검증 유틸리티
+ * @repo/utils - 검증 유틸리티
  */
-import { Result as CoreResult } from '@company/core';
+import { Result as CoreResult } from '@repo/core';
 export type Result<T> = CoreResult<T, string>;
 /**
  * 문자열 검증

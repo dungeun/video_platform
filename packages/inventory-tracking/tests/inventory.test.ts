@@ -1,5 +1,5 @@
 /**
- * @module @company/inventory-tracking/tests
+ * @module @repo/inventory-tracking/tests
  * @description Basic tests for inventory tracking module
  */
 

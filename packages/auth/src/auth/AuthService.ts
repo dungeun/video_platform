@@ -1,10 +1,10 @@
 /**
- * @company/auth - Pure Authentication Service
+ * @repo/auth - Pure Authentication Service
  * Ultra-Fine-Grained Module - Login/Logout Only
  */
 
-// import { ModuleBase, Result, EventBus } from '@company/core';
-// import { HttpClient } from '@company/api-client';
+// import { ModuleBase, Result, EventBus } from '@repo/core';
+// import { HttpClient } from '@repo/api-client';
 
 // Temporary mock implementations for building
 export interface Result<T, E = string> {
@@ -82,7 +82,7 @@ export class AuthService extends ModuleBase {
 
   constructor(config: AuthConfig) {
     super({
-      name: '@company/auth',
+      name: '@repo/auth',
       version: '1.0.0',
       description: 'Pure Authentication Service - Login/Logout Only'
     });
@@ -272,7 +272,7 @@ export class AuthService extends ModuleBase {
       this.sessionManager.updateTokens(response.data.tokens);
 
       // 이벤트 발행
-      EventBus.emitModuleEvent('@company/auth', 'auth:token-refreshed', {
+      EventBus.emitModuleEvent('@repo/auth', 'auth:token-refreshed', {
         tokens: response.data.tokens
       });
       

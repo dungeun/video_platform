@@ -18,12 +18,12 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@company/core': path.resolve(__dirname, '../core/src'),
-      '@company/types': path.resolve(__dirname, '../types/src'),
-      '@company/utils': path.resolve(__dirname, '../utils/src'),
-      '@company/cache': path.resolve(__dirname, '../cache/src'),
-      '@company/database': path.resolve(__dirname, '../database/src'),
-      '@company/api-client': path.resolve(__dirname, '../api-client/src')
+      '@repo/core': path.resolve(__dirname, '../core/src'),
+      '@repo/types': path.resolve(__dirname, '../types/src'),
+      '@repo/utils': path.resolve(__dirname, '../utils/src'),
+      '@repo/cache': path.resolve(__dirname, '../cache/src'),
+      '@repo/database': path.resolve(__dirname, '../database/src'),
+      '@repo/api-client': path.resolve(__dirname, '../api-client/src')
     }
   }
 });

@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 
 // Mock dependencies
-vi.mock('@company/core', () => ({
+vi.mock('@repo/core', () => ({
   Logger: vi.fn().mockImplementation(() => ({
     debug: vi.fn(),
     info: vi.fn(),
@@ -11,19 +11,19 @@ vi.mock('@company/core', () => ({
   ModuleBase: vi.fn()
 }));
 
-vi.mock('@company/database', () => ({
+vi.mock('@repo/database', () => ({
   DatabaseManager: vi.fn()
 }));
 
-vi.mock('@company/utils', () => ({
+vi.mock('@repo/utils', () => ({
   // Add any utils mocks if needed
 }));
 
-vi.mock('@company/storage', () => ({
+vi.mock('@repo/storage', () => ({
   // Add any storage mocks if needed
 }));
 
-vi.mock('@company/auth-core', () => ({
+vi.mock('@repo/auth-core', () => ({
   // Add any auth-core mocks if needed
 }));
 

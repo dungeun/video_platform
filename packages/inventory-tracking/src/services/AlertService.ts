@@ -1,10 +1,10 @@
 /**
- * @module @company/inventory-tracking/services/AlertService
+ * @module @repo/inventory-tracking/services/AlertService
  * @description Inventory alert management service
  */
 
-import { ModuleBase } from '@company/core';
-import { EventEmitter } from '@company/core';
+import { ModuleBase } from '@repo/core';
+import { EventEmitter } from '@repo/core';
 import type { 
   StockAlert, 
   ProductInventory,

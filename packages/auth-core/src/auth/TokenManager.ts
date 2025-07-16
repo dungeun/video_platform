@@ -1,11 +1,11 @@
 /**
- * @company/auth-core - 토큰 관리자
+ * @repo/auth-core - 토큰 관리자
  * JWT 토큰 저장, 갱신, 검증 관리
  */
 
 import Cookies from 'js-cookie';
 import { AuthConfig, AuthTokens } from '../types';
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 
 export class TokenManager {
   private config: AuthConfig;

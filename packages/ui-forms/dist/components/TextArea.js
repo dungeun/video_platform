@@ -1,6 +1,6 @@
 import { jsx as _jsx } from "react/jsx-runtime";
 /**
- * @company/ui-forms - TextArea Component
+ * @repo/ui-forms - TextArea Component
  *
  * 여러 줄 텍스트 입력을 위한 컴포넌트
  */

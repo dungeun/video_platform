@@ -1,5 +1,5 @@
 /**
- * @company/ui-tables - Sort Utilities
+ * @repo/ui-tables - Sort Utilities
  * 
  * 테이블 정렬 관련 유틸리티
  */

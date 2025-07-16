@@ -1,5 +1,5 @@
 /**
- * @company/ui-tables - useTableSort Hook
+ * @repo/ui-tables - useTableSort Hook
  * 
  * 테이블 정렬 관리 훅
  */

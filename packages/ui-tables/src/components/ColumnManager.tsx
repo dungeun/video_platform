@@ -1,5 +1,5 @@
 /**
- * @company/ui-tables - ColumnManager Component
+ * @repo/ui-tables - ColumnManager Component
  * 
  * 테이블 컬럼 관리 컴포넌트
  */

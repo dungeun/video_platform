@@ -1,10 +1,10 @@
-# @company/permissions
+# @repo/permissions
 
 Ultra-fine-grained permission checking and access control module
 
 ## 개요
 
-`@company/permissions`는 auth-core에서 분리된 순수한 권한 관리 모듈입니다. 고성능 캐싱, 조건부 권한 평가, React 통합을 제공합니다.
+`@repo/permissions`는 auth-core에서 분리된 순수한 권한 관리 모듈입니다. 고성능 캐싱, 조건부 권한 평가, React 통합을 제공합니다.
 
 ## 주요 기능
 
@@ -35,11 +35,11 @@ Ultra-fine-grained permission checking and access control module
 ## 설치
 
 ```bash
-npm install @company/permissions
+npm install @repo/permissions
 # 또는
-yarn add @company/permissions
+yarn add @repo/permissions
 # 또는
-pnpm add @company/permissions
+pnpm add @repo/permissions
 ```
 
 ## 기본 사용법
@@ -47,7 +47,7 @@ pnpm add @company/permissions
 ### 1. Provider 설정
 
 ```tsx
-import { PermissionProvider } from '@company/permissions';
+import { PermissionProvider } from '@repo/permissions';
 
 function App() {
   return (
@@ -68,7 +68,7 @@ function App() {
 ### 2. 권한 확인 훅
 
 ```tsx
-import { usePermission } from '@company/permissions';
+import { usePermission } from '@repo/permissions';
 
 function UserProfile() {
   const { hasPermission, hasRole, checkPermission } = usePermission();
@@ -90,7 +90,7 @@ function UserProfile() {
 ### 3. 보호된 컴포넌트
 
 ```tsx
-import { ProtectedComponent } from '@company/permissions';
+import { ProtectedComponent } from '@repo/permissions';
 
 function SecretContent() {
   return (
@@ -107,7 +107,7 @@ function SecretContent() {
 ### 4. 권한 게이트
 
 ```tsx
-import { PermissionGate, withPermissions } from '@company/permissions';
+import { PermissionGate, withPermissions } from '@repo/permissions';
 
 // 컴포넌트 래핑
 function AdminButton() {
@@ -134,7 +134,7 @@ function Dashboard() {
 ### 조건부 권한
 
 ```tsx
-import { usePermission, PermissionContext } from '@company/permissions';
+import { usePermission, PermissionContext } from '@repo/permissions';
 
 function DocumentEditor({ document }) {
   const { evaluatePermission } = usePermission();
@@ -163,7 +163,7 @@ function DocumentEditor({ document }) {
 ### 캐시 관리
 
 ```tsx
-import { usePermissionCache } from '@company/permissions';
+import { usePermissionCache } from '@repo/permissions';
 
 function CacheManager() {
   const { clearCache, getCacheStats, warmupCache } = usePermissionCache();
@@ -193,7 +193,7 @@ function CacheManager() {
 ### 개발 도구
 
 ```tsx
-import { PermissionDebugger } from '@company/permissions';
+import { PermissionDebugger } from '@repo/permissions';
 
 function App() {
   return (
@@ -333,7 +333,7 @@ import {
   DefaultCacheStrategy,
   AggressiveCacheStrategy,
   ConservativeCacheStrategy 
-} from '@company/permissions';
+} from '@repo/permissions';
 
 // 기본 전략 (권한별 다른 TTL)
 const defaultStrategy = new DefaultCacheStrategy();
@@ -389,7 +389,7 @@ import type {
   PermissionContext,
   PermissionEvaluationResult,
   UsePermissionReturn
-} from '@company/permissions';
+} from '@repo/permissions';
 ```
 
 ## 라이센스

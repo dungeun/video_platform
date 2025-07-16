@@ -1,10 +1,10 @@
 /**
- * @module @company/inventory-tracking/entities/StockMovement
+ * @module @repo/inventory-tracking/entities/StockMovement
  * @description Stock movement entity implementation
  */
 
 import { z } from 'zod';
-import { generateId } from '@company/utils';
+import { generateId } from '@repo/utils';
 import type { StockMovement } from '../types';
 import { StockMovementType } from '../types';
 

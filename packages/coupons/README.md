@@ -1,4 +1,4 @@
-# @company/coupons
+# @repo/coupons
 
 Comprehensive coupon management module with discount calculation, validation, promotion campaigns, usage tracking, and expiry management.
 
@@ -14,7 +14,7 @@ Comprehensive coupon management module with discount calculation, validation, pr
 ## Installation
 
 ```bash
-pnpm add @company/coupons
+pnpm add @repo/coupons
 ```
 
 ## Usage
@@ -22,7 +22,7 @@ pnpm add @company/coupons
 ### Basic Coupon Creation
 
 ```typescript
-import { CouponService, CouponValidator } from '@company/coupons';
+import { CouponService, CouponValidator } from '@repo/coupons';
 
 const service = new CouponService(repository, validator);
 
@@ -43,7 +43,7 @@ const coupon = await service.create({
 ### Validating and Applying Coupons
 
 ```typescript
-import { CouponValidationService, DiscountCalculationService } from '@company/coupons';
+import { CouponValidationService, DiscountCalculationService } from '@repo/coupons';
 
 const validationService = new CouponValidationService(usageRepo, discountService);
 
@@ -69,7 +69,7 @@ if (validation.isValid) {
 ### React Components
 
 ```tsx
-import { CouponInput, DiscountSummary, useCoupon } from '@company/coupons';
+import { CouponInput, DiscountSummary, useCoupon } from '@repo/coupons';
 
 function CheckoutForm() {
   const { applyCoupon, calculation, error } = useCoupon();
@@ -103,7 +103,7 @@ function CheckoutForm() {
 ### Campaign Management
 
 ```typescript
-import { PromotionCampaignService } from '@company/coupons';
+import { PromotionCampaignService } from '@repo/coupons';
 
 // Create a campaign
 const campaign = await campaignService.create({
@@ -127,7 +127,7 @@ console.log(`ROI: ${performance.roi}%`);
 ### Usage Tracking
 
 ```typescript
-import { UsageTrackingService } from '@company/coupons';
+import { UsageTrackingService } from '@repo/coupons';
 
 // Track coupon usage
 await usageService.trackUsage({
@@ -147,7 +147,7 @@ console.log(`Unique users: ${stats.uniqueUsers}`);
 ### Expiry Management
 
 ```typescript
-import { ExpiryManagementService } from '@company/coupons';
+import { ExpiryManagementService } from '@repo/coupons';
 
 const expiryService = new ExpiryManagementService(repository);
 

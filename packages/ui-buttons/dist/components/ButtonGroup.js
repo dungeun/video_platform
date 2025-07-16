@@ -1,6 +1,6 @@
 import { jsx as _jsx } from "react/jsx-runtime";
 /**
- * @company/ui-buttons - Button Group Component
+ * @repo/ui-buttons - Button Group Component
  * 버튼 그룹 컴포넌트 (버튼들을 그룹화)
  */
 import { Children, cloneElement, isValidElement } from 'react';

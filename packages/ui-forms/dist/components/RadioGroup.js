@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 /**
- * @company/ui-forms - RadioGroup Component
+ * @repo/ui-forms - RadioGroup Component
  *
  * 라디오 버튼 그룹을 위한 컴포넌트
  */

@@ -1,5 +1,5 @@
 /**
- * @company/utils - Enterprise AI Module System Utilities
+ * @repo/utils - Enterprise AI Module System Utilities
  *
  * 모든 엔터프라이즈 AI 모듈에서 사용하는 공통 유틸리티 함수들
  *
@@ -17,7 +17,7 @@ export * as format from './format';
 export * as http from './http';
 export * as file from './file';
 export declare const UTILS_MODULE_INFO: {
-    readonly name: "@company/utils";
+    readonly name: "@repo/utils";
     readonly version: "1.0.0";
     readonly description: "Enterprise AI Module System - Utility Functions";
     readonly author: "Enterprise AI Team";

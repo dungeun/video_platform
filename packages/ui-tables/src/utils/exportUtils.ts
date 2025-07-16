@@ -1,5 +1,5 @@
 /**
- * @company/ui-tables - Export Utilities
+ * @repo/ui-tables - Export Utilities
  * 
  * 테이블 데이터 내보내기 유틸리티
  */

@@ -1,4 +1,4 @@
-import { EventEmitter } from '@company/core';
+import { EventEmitter } from '@repo/core';
 import { CouponEventType } from '../types';
 import { CouponEntity } from '../entities';
 export class CouponService extends EventEmitter {

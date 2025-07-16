@@ -1,5 +1,5 @@
 /**
- * @company/auth - Login Form Component
+ * @repo/auth - Login Form Component
  * Pure login form for authentication
  */
 interface LoginFormProps {

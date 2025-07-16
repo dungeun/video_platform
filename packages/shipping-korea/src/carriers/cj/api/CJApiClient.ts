@@ -2,8 +2,8 @@
  * CJ대한통운 API Client
  */
 
-import { HttpClient } from '@company/api-client';
-import { Logger } from '@company/core';
+import { HttpClient } from '@repo/api-client';
+import { Logger } from '@repo/core';
 import { 
   TrackingInfo, 
   ShippingCostRequest, 

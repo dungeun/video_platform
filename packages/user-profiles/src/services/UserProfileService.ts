@@ -1,5 +1,5 @@
-import { Logger } from '@company/core';
-import { DatabaseManager } from '@company/database';
+import { Logger } from '@repo/core';
+import { DatabaseManager } from '@repo/database';
 import type { 
   UserProfile, 
   CreateUserProfileInput, 

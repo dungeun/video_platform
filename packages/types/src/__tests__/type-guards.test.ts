@@ -1,5 +1,5 @@
 /**
- * @company/types - 타입 가드 테스트
+ * @repo/types - 타입 가드 테스트
  */
 
 import { describe, it, expect } from 'vitest';

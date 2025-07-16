@@ -1,4 +1,4 @@
-import { AdminModuleConfig } from '@company/types';
+import { AdminModuleConfig } from '@repo/types';
 import { CouponType, DiscountType } from '../../types';
 
 export const couponsAdminConfig: AdminModuleConfig = {

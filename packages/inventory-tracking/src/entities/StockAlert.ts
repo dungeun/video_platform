@@ -1,10 +1,10 @@
 /**
- * @module @company/inventory-tracking/entities/StockAlert
+ * @module @repo/inventory-tracking/entities/StockAlert
  * @description Stock alert entity implementation
  */
 
 import { z } from 'zod';
-import { generateId } from '@company/utils';
+import { generateId } from '@repo/utils';
 import type { StockAlert } from '../types';
 import { AlertType } from '../types';
 

@@ -1,9 +1,9 @@
 /**
- * @company/auth-core - 인증 서비스
+ * @repo/auth-core - 인증 서비스
  * Zero Error Architecture 기반 인증 핵심 로직
  */
 
-import { ModuleBase, Result, EventBus } from '@company/core';
+import { ModuleBase, Result, EventBus } from '@repo/core';
 import { 
   AuthConfig, 
   LoginCredentials, 
@@ -42,7 +42,7 @@ export class AuthService extends ModuleBase {
 
   constructor(config: AuthConfig) {
     super({
-      name: '@company/auth-core',
+      name: '@repo/auth-core',
       version: '1.0.0',
       description: 'Enterprise Authentication Service'
     });
@@ -150,7 +150,7 @@ export class AuthService extends ModuleBase {
       await this.permissionManager.loadUserPermissions(loginData.user.id);
 
       // 7. 이벤트 발행
-      EventBus.emitModuleEvent('@company/auth-core', 'auth:login', {
+      EventBus.emitModuleEvent('@repo/auth-core', 'auth:login', {
         user: loginData.user,
         session: session.data
       });
@@ -208,7 +208,7 @@ export class AuthService extends ModuleBase {
       if (session.success) {
         await this.permissionManager.loadUserPermissions(signupData.user.id);
         
-        EventBus.emitModuleEvent('@company/auth-core', 'auth:signup', {
+        EventBus.emitModuleEvent('@repo/auth-core', 'auth:signup', {
           user: signupData.user,
           session: session.data
         });
@@ -253,7 +253,7 @@ export class AuthService extends ModuleBase {
       this.permissionManager.clearPermissions();
 
       // 3. 이벤트 발행
-      EventBus.emitModuleEvent('@company/auth-core', 'auth:logout', {
+      EventBus.emitModuleEvent('@repo/auth-core', 'auth:logout', {
         user: currentUser
       });
 
@@ -330,7 +330,7 @@ export class AuthService extends ModuleBase {
       this.sessionManager.updateUser(response.data);
 
       // 이벤트 발행
-      EventBus.emitModuleEvent('@company/auth-core', 'auth:profile-updated', {
+      EventBus.emitModuleEvent('@repo/auth-core', 'auth:profile-updated', {
         user: response.data
       });
 
@@ -381,7 +381,7 @@ export class AuthService extends ModuleBase {
       }
 
       // 4. 이벤트 발행
-      EventBus.emitModuleEvent('@company/auth-core', 'auth:password-changed', {
+      EventBus.emitModuleEvent('@repo/auth-core', 'auth:password-changed', {
         user: currentUser
       });
 
@@ -462,7 +462,7 @@ export class AuthService extends ModuleBase {
       if (session.success) {
         await this.permissionManager.loadUserPermissions(loginData.user.id);
         
-        EventBus.emitModuleEvent('@company/auth-core', 'auth:social-login', {
+        EventBus.emitModuleEvent('@repo/auth-core', 'auth:social-login', {
           provider,
           user: loginData.user,
           session: session.data
@@ -508,7 +508,7 @@ export class AuthService extends ModuleBase {
       if (session.success) {
         await this.permissionManager.loadUserPermissions(loginData.user.id);
         
-        EventBus.emitModuleEvent('@company/auth-core', 'auth:2fa-verified', {
+        EventBus.emitModuleEvent('@repo/auth-core', 'auth:2fa-verified', {
           user: loginData.user,
           type: verification.type
         });

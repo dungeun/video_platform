@@ -1,4 +1,4 @@
-# @company/core
+# @repo/core
 
 Enterprise AI Module System의 핵심 기반 라이브러리
 
@@ -32,7 +32,7 @@ class MyModule extends ModuleBase {
 ### 📡 EventBus
 모듈 간 이벤트 기반 통신
 ```typescript
-import { EventBus } from '@company/core';
+import { EventBus } from '@repo/core';
 
 // 이벤트 구독
 const subscriptionId = EventBus.on('user:login', (event) => {
@@ -49,7 +49,7 @@ EventBus.off(subscriptionId);
 ### 🚨 ErrorHandler
 Zero Error Architecture를 위한 안전한 에러 처리
 ```typescript
-import { ErrorHandler } from '@company/core';
+import { ErrorHandler } from '@repo/core';
 
 const errorHandler = new ErrorHandler('my-module');
 
@@ -70,7 +70,7 @@ try {
 ### 📝 Logger
 구조화된 로깅 시스템
 ```typescript
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 
 const logger = new Logger('my-module');
 
@@ -88,15 +88,15 @@ logger.logPerformance('database-query', 150);
 ### 📋 ModuleRegistry
 모듈 등록 및 관리
 ```typescript
-import { moduleRegistry } from '@company/core';
+import { moduleRegistry } from '@repo/core';
 
 // 모듈 등록
 await moduleRegistry.register(myModule, [
-  { name: '@company/auth-core', version: '1.0.0' }
+  { name: '@repo/auth-core', version: '1.0.0' }
 ]);
 
 // 모듈 검색
-const authModule = moduleRegistry.get('@company/auth-core');
+const authModule = moduleRegistry.get('@repo/auth-core');
 
 // 모든 모듈 상태 확인
 const healthStatus = await moduleRegistry.healthCheck();
@@ -105,7 +105,7 @@ const healthStatus = await moduleRegistry.healthCheck();
 ### 🛠️ Utility Functions
 Zero Error 기반 유틸리티
 ```typescript
-import { safeJsonParse, retry, withTimeout } from '@company/core';
+import { safeJsonParse, retry, withTimeout } from '@repo/core';
 
 // 안전한 JSON 파싱
 const parseResult = safeJsonParse<User>('{"name": "John"}');
@@ -129,14 +129,14 @@ const timeoutResult = await withTimeout(
 ## 📦 설치
 
 ```bash
-npm install @company/core
+npm install @repo/core
 ```
 
 ## 🏗️ 기본 사용법
 
 ### 1. 모듈 생성
 ```typescript
-import { ModuleBase, type ModuleConfig, type Result } from '@company/core';
+import { ModuleBase, type ModuleConfig, type Result } from '@repo/core';
 
 const config: ModuleConfig = {
   name: 'my-awesome-module',
@@ -195,12 +195,12 @@ const myModule = new MyAwesomeModule(config);
 
 ### 2. 모듈 등록
 ```typescript
-import { moduleRegistry } from '@company/core';
+import { moduleRegistry } from '@repo/core';
 
 // 의존성과 함께 등록
 const registerResult = await moduleRegistry.register(myModule, [
-  { name: '@company/auth-core' },
-  { name: '@company/database', version: '2.0.0' }
+  { name: '@repo/auth-core' },
+  { name: '@repo/database', version: '2.0.0' }
 ]);
 
 if (registerResult.success) {

@@ -1,10 +1,10 @@
-# @company/database
+# @repo/database
 
 Enterprise Database Module with Multiple Providers and Query Builder
 
 ## 개요
 
-@company/database는 엔터프라이즈급 데이터베이스 연결, 쿼리 빌더, 마이그레이션, 트랜잭션 관리를 제공하는 통합 모듈입니다. Zero Error Architecture 기반으로 설계되어 안정성과 확장성을 보장합니다.
+@repo/database는 엔터프라이즈급 데이터베이스 연결, 쿼리 빌더, 마이그레이션, 트랜잭션 관리를 제공하는 통합 모듈입니다. Zero Error Architecture 기반으로 설계되어 안정성과 확장성을 보장합니다.
 
 ## 주요 기능
 
@@ -20,7 +20,7 @@ Enterprise Database Module with Multiple Providers and Query Builder
 ## 설치
 
 ```bash
-npm install @company/database
+npm install @repo/database
 ```
 
 ## 의존성
@@ -35,7 +35,7 @@ npm install -D @types/pg @types/sqlite3
 ### 데이터베이스 연결
 
 ```typescript
-import { DatabaseManager } from '@company/database';
+import { DatabaseManager } from '@repo/database';
 
 const dbManager = new DatabaseManager();
 await dbManager.initialize();
@@ -62,7 +62,7 @@ if (pgResult.success) {
 ### 간편한 연결 헬퍼 사용
 
 ```typescript
-import { connectDatabase } from '@company/database';
+import { connectDatabase } from '@repo/database';
 
 const db = await connectDatabase({
   provider: 'sqlite',
@@ -383,7 +383,7 @@ dbManager.on('connection:destroyed', (data) => {
 ### PostgreSQL 전용 기능
 
 ```typescript
-import { PostgreSQLProvider } from '@company/database';
+import { PostgreSQLProvider } from '@repo/database';
 
 const pgProvider = new PostgreSQLProvider(config);
 
@@ -413,7 +413,7 @@ const ftsQuery = pgProvider.buildFullTextSearch(
 ### MySQL 전용 기능
 
 ```typescript
-import { MySQLProvider } from '@company/database';
+import { MySQLProvider } from '@repo/database';
 
 const mysqlProvider = new MySQLProvider(config);
 
@@ -439,7 +439,7 @@ const indexInfo = await mysqlProvider.getIndexInfo('users');
 ### SQLite 전용 기능
 
 ```typescript
-import { SQLiteProvider } from '@company/database';
+import { SQLiteProvider } from '@repo/database';
 
 const sqliteProvider = new SQLiteProvider(config);
 
@@ -466,7 +466,7 @@ const sizeInfo = await sqliteProvider.getDatabaseSize();
 ### 연결 풀 최적화
 
 ```typescript
-import { ConnectionPool } from '@company/database';
+import { ConnectionPool } from '@repo/database';
 
 const pool = new ConnectionPool({
   min: 5,
@@ -488,7 +488,7 @@ const stopMonitoring = pool.startMonitoring(10000);
 ### 쿼리 성능 분석
 
 ```typescript
-import { analyzeQueryPerformance, formatSqlForLogging } from '@company/database';
+import { analyzeQueryPerformance, formatSqlForLogging } from '@repo/database';
 
 const result = await dbManager.query('SELECT * FROM users WHERE active = ?', [true]);
 
@@ -511,7 +511,7 @@ if (result.executionTime) {
 ### 안전한 에러 처리
 
 ```typescript
-import { analyzeDatabaseError } from '@company/database';
+import { analyzeDatabaseError } from '@repo/database';
 
 try {
   const result = await dbManager.query('SELECT * FROM nonexistent_table');
@@ -532,7 +532,7 @@ try {
 ### 사용자 정의 에러 핸들링
 
 ```typescript
-import { DatabaseError, ConnectionError, QueryError } from '@company/database';
+import { DatabaseError, ConnectionError, QueryError } from '@repo/database';
 
 dbManager.on('query:error', (data) => {
   if (data.error.includes('connection')) {
@@ -555,7 +555,7 @@ import {
   buildInsertValues,
   buildUpdateSet,
   createPagination
-} from '@company/database';
+} from '@repo/database';
 
 // WHERE 조건 빌더
 const where = buildWhereConditions({

@@ -1,5 +1,5 @@
 /**
- * @company/ui-forms - useForm Hook
+ * @repo/ui-forms - useForm Hook
  * 
  * 폼 상태 및 검증을 관리하는 메인 훅
  */

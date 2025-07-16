@@ -1,5 +1,5 @@
 /**
- * @company/auth - Session Manager
+ * @repo/auth - Session Manager
  * Pure session management for authentication
  */
 export class SessionManager {

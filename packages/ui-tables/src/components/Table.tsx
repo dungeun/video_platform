@@ -1,5 +1,5 @@
 /**
- * @company/ui-tables - Table Component
+ * @repo/ui-tables - Table Component
  * 
  * 기본 테이블 컴포넌트
  */

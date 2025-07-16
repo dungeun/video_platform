@@ -1,5 +1,5 @@
 /**
- * @company/core - 핵심 타입 정의
+ * @repo/core - 핵심 타입 정의
  * Zero Error Architecture 기반 타입 시스템
  */
 interface ModuleConfig {
@@ -141,7 +141,7 @@ interface ModuleCommunication {
 }
 
 /**
- * @company/core - 이벤트 에미터
+ * @repo/core - 이벤트 에미터
  * 모듈 간 이벤트 기반 통신을 위한 핵심 클래스
  */
 
@@ -210,7 +210,7 @@ declare class GlobalEventBus extends EventEmitter {
 declare const EventBus: GlobalEventBus;
 
 /**
- * @company/core - 로거
+ * @repo/core - 로거
  * 모듈별 구조화된 로깅 시스템
  */
 
@@ -300,7 +300,7 @@ declare class GlobalLogger extends Logger {
 declare const globalLogger: GlobalLogger;
 
 /**
- * @company/core - 에러 핸들러
+ * @repo/core - 에러 핸들러
  * Zero Error Architecture를 위한 안전한 에러 처리
  */
 
@@ -387,7 +387,7 @@ declare function getErrorMessage(error: any): string;
 declare function getErrorCode(error: any): string;
 
 /**
- * @company/core - 모듈 기반 클래스
+ * @repo/core - 모듈 기반 클래스
  * 모든 엔터프라이즈 모듈이 상속받아야 하는 추상 클래스
  */
 
@@ -475,7 +475,7 @@ declare abstract class ModuleBase {
 }
 
 /**
- * @company/core - 모듈 레지스트리
+ * @repo/core - 모듈 레지스트리
  * 모든 모듈의 등록, 관리, 검색을 담당하는 중앙 레지스트리
  */
 
@@ -563,7 +563,7 @@ declare class ModuleRegistry {
 declare const moduleRegistry: ModuleRegistry;
 
 /**
- * @company/core - Enterprise AI Module System Core
+ * @repo/core - Enterprise AI Module System Core
  *
  * 모든 엔터프라이즈 모듈의 기반이 되는 핵심 라이브러리
  * Zero Error Architecture 기반으로 설계됨
@@ -635,7 +635,7 @@ declare function compact<T extends Record<string, any>>(obj: T): Partial<T>;
  */
 declare function shallowEqual(obj1: any, obj2: any): boolean;
 declare const CORE_MODULE_INFO: {
-    readonly name: "@company/core";
+    readonly name: "@repo/core";
     readonly version: "1.0.0";
     readonly description: "Enterprise AI Module System - Core Foundation";
     readonly author: "Enterprise AI Team";

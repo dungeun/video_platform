@@ -1,5 +1,5 @@
 /**
- * @company/shipping-korea
+ * @repo/shipping-korea
  * Core types for Korean domestic delivery services
  */
 

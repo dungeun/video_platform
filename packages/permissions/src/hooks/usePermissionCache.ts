@@ -1,5 +1,5 @@
 /**
- * @company/permissions - usePermissionCache 훅
+ * @repo/permissions - usePermissionCache 훅
  * React hook for permission cache management
  */
 

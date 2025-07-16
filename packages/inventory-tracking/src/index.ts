@@ -1,5 +1,5 @@
 /**
- * @module @company/inventory-tracking
+ * @module @repo/inventory-tracking
  * @description E-commerce inventory tracking module
  * 
  * This module provides comprehensive inventory management features including:
@@ -32,5 +32,5 @@ export * from './errors';
 export * from './events';
 
 // Module metadata
-export const MODULE_NAME = '@company/inventory-tracking';
+export const MODULE_NAME = '@repo/inventory-tracking';
 export const MODULE_VERSION = '1.0.0';

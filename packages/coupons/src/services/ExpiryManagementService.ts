@@ -1,4 +1,4 @@
-import { EventEmitter, Logger } from '@company/core';
+import { EventEmitter, Logger } from '@repo/core';
 import { 
   Coupon, 
   CouponEventType,

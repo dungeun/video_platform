@@ -3,7 +3,7 @@
  */
 
 import { BackupCode, BackupCodeSet } from '../types';
-// import { StorageManager } from '@company/storage';
+// import { StorageManager } from '@repo/storage';
 
 // Simplified storage interface for this module
 interface SimpleStorage {

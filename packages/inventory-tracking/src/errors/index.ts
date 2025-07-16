@@ -1,5 +1,5 @@
 /**
- * @module @company/inventory-tracking/errors
+ * @module @repo/inventory-tracking/errors
  * @description Custom error classes for inventory tracking
  */
 

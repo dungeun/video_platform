@@ -1,5 +1,5 @@
 /**
- * @company/core - 핵심 타입 정의
+ * @repo/core - 핵심 타입 정의
  * Zero Error Architecture 기반 타입 시스템
  */
 

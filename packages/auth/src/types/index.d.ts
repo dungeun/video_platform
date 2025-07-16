@@ -1,5 +1,5 @@
 /**
- * @company/auth - Pure Authentication Types
+ * @repo/auth - Pure Authentication Types
  * Ultra-Fine-Grained Module - Login/Logout Only
  */
 interface Result<T, E = string> {

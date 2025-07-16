@@ -1,5 +1,5 @@
 /**
- * @company/auth - Token Manager
+ * @repo/auth - Token Manager
  * Pure token management for authentication
  */
 

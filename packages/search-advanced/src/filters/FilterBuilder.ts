@@ -5,7 +5,7 @@ import {
   FilterValidation,
   SearchFilters 
 } from '../types';
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 
 export class FilterBuilder {
   private filters: Map<string, FilterConfig> = new Map();

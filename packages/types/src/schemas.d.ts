@@ -1,5 +1,5 @@
 /**
- * @company/types - Zod 검증 스키마
+ * @repo/types - Zod 검증 스키마
  */
 import { z } from 'zod';
 export declare const IdSchema: z.ZodString;

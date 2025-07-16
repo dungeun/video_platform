@@ -1,7 +1,7 @@
 /**
- * @company/utils - 암호화/해시 유틸리티
+ * @repo/utils - 암호화/해시 유틸리티
  */
-import { Result as CoreResult } from '@company/core';
+import { Result as CoreResult } from '@repo/core';
 export type Result<T> = CoreResult<T, string>;
 /**
  * MD5 해시 생성

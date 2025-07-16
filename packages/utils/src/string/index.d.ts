@@ -1,7 +1,7 @@
 /**
- * @company/utils - 문자열 처리 유틸리티
+ * @repo/utils - 문자열 처리 유틸리티
  */
-import { Result as CoreResult } from '@company/core';
+import { Result as CoreResult } from '@repo/core';
 export type Result<T> = CoreResult<T, string>;
 /**
  * 카멜케이스로 변환

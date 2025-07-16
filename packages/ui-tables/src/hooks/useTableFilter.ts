@@ -1,5 +1,5 @@
 /**
- * @company/ui-tables - useTableFilter Hook
+ * @repo/ui-tables - useTableFilter Hook
  * 
  * 테이블 필터링 관리 훅
  */

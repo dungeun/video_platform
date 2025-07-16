@@ -1,5 +1,5 @@
 /**
- * @company/ui-buttons - Components Export
+ * @repo/ui-buttons - Components Export
  * 모든 버튼 컴포넌트 내보내기
  */
 export { Button } from './Button';

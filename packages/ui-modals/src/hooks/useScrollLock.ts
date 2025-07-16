@@ -1,5 +1,5 @@
 /**
- * @company/ui-modals - Scroll Lock Hook
+ * @repo/ui-modals - Scroll Lock Hook
  * 
  * 모달 열림 시 배경 스크롤 방지
  */

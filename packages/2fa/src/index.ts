@@ -1,5 +1,5 @@
 /**
- * @company/2fa - Ultra-fine-grained Two-Factor Authentication Module
+ * @repo/2fa - Ultra-fine-grained Two-Factor Authentication Module
  * 
  * 완전히 세분화된 2FA 모듈로 다음 기능들을 제공합니다:
  * - TOTP (Time-based One-Time Password) 생성 및 검증

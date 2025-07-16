@@ -1,10 +1,10 @@
 /**
- * @company/database - Connection Pool Utility
+ * @repo/database - Connection Pool Utility
  * 
  * 데이터베이스 연결 풀을 관리하는 유틸리티 클래스
  */
 
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 import type { PoolConfig, PoolStats } from '../types';
 
 export class ConnectionPool {

@@ -1,10 +1,10 @@
 /**
- * @module @company/inventory-tracking/admin
+ * @module @repo/inventory-tracking/admin
  * @description Admin utilities for inventory tracking module
  */
 
 export const adminConfig = {
-  moduleName: '@company/inventory-tracking',
+  moduleName: '@repo/inventory-tracking',
   displayName: 'Inventory Tracking',
   description: 'E-commerce inventory management with stock tracking, reservations, and alerts',
   version: '1.0.0',

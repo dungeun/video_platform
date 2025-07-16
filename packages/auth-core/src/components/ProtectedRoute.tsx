@@ -1,5 +1,5 @@
 /**
- * @company/auth-core - 보호된 라우트 컴포넌트
+ * @repo/auth-core - 보호된 라우트 컴포넌트
  * 권한 기반 라우트 보호
  */
 

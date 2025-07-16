@@ -1,5 +1,5 @@
 /**
- * @company/types - UI/UX 관련 타입
+ * @repo/types - UI/UX 관련 타입
  */
 import { ID } from './common';
 export interface Theme {

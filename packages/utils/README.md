@@ -1,4 +1,4 @@
-# @company/utils
+# @repo/utils
 
 Enterprise AI Module System의 공통 유틸리티 함수 라이브러리입니다.
 
@@ -22,7 +22,7 @@ Enterprise AI Module System의 공통 유틸리티 함수 라이브러리입니�
 ## 설치
 
 ```bash
-pnpm add @company/utils
+pnpm add @repo/utils
 ```
 
 ## 사용법
@@ -30,7 +30,7 @@ pnpm add @company/utils
 ### 전체 import
 
 ```typescript
-import * as utils from '@company/utils';
+import * as utils from '@repo/utils';
 
 // 사용 예
 const hashResult = utils.sha256('hello world');
@@ -43,34 +43,34 @@ if (hashResult.success) {
 
 ```typescript
 // 암호화/해시
-import { sha256, aesEncrypt, generateUuid } from '@company/utils/crypto';
+import { sha256, aesEncrypt, generateUuid } from '@repo/utils/crypto';
 
 // 날짜/시간
-import { formatDate, addDays, isValidDate } from '@company/utils/date';
+import { formatDate, addDays, isValidDate } from '@repo/utils/date';
 
 // 문자열 처리
-import { toCamelCase, isEmail, truncate } from '@company/utils/string';
+import { toCamelCase, isEmail, truncate } from '@repo/utils/string';
 
 // 배열 처리
-import { removeDuplicates, chunk, intersection } from '@company/utils/array';
+import { removeDuplicates, chunk, intersection } from '@repo/utils/array';
 
 // 객체 처리
-import { deepClone, merge, pick } from '@company/utils/object';
+import { deepClone, merge, pick } from '@repo/utils/object';
 
 // 검증
-import { isString, isEmail, validateAll } from '@company/utils/validation';
+import { isString, isEmail, validateAll } from '@repo/utils/validation';
 
 // 비동기 처리
-import { delay, retry, withTimeout } from '@company/utils/async';
+import { delay, retry, withTimeout } from '@repo/utils/async';
 
 // 포맷팅
-import { formatCurrency, formatFileSize, maskEmail } from '@company/utils/format';
+import { formatCurrency, formatFileSize, maskEmail } from '@repo/utils/format';
 
 // HTTP 요청
-import { HttpClient, UrlBuilder } from '@company/utils/http';
+import { HttpClient, UrlBuilder } from '@repo/utils/http';
 
 // 파일 처리 (Node.js 환경)
-import { readTextFile, writeJsonFile, exists } from '@company/utils/file';
+import { readTextFile, writeJsonFile, exists } from '@repo/utils/file';
 ```
 
 ## 카테고리별 사용 예제
@@ -78,7 +78,7 @@ import { readTextFile, writeJsonFile, exists } from '@company/utils/file';
 ### 1. 암호화/해시
 
 ```typescript
-import { sha256, aesEncrypt, aesDecrypt, generateUuid } from '@company/utils/crypto';
+import { sha256, aesEncrypt, aesDecrypt, generateUuid } from '@repo/utils/crypto';
 
 // 해시 생성
 const hashResult = sha256('password123');
@@ -105,7 +105,7 @@ if (uuidResult.success) {
 ### 2. 날짜/시간
 
 ```typescript
-import { formatDate, addDays, getDaysDifference, formatRelativeTime } from '@company/utils/date';
+import { formatDate, addDays, getDaysDifference, formatRelativeTime } from '@repo/utils/date';
 
 const now = new Date();
 
@@ -131,7 +131,7 @@ if (relativeResult.success) {
 ### 3. 문자열 처리
 
 ```typescript
-import { toCamelCase, isEmail, truncate, generateSlug } from '@company/utils/string';
+import { toCamelCase, isEmail, truncate, generateSlug } from '@repo/utils/string';
 
 // 케이스 변환
 const camelResult = toCamelCase('hello-world');
@@ -161,7 +161,7 @@ if (slugResult.success) {
 ### 4. 배열 처리
 
 ```typescript
-import { removeDuplicates, chunk, intersection, groupBy } from '@company/utils/array';
+import { removeDuplicates, chunk, intersection, groupBy } from '@repo/utils/array';
 
 // 중복 제거
 const uniqueResult = removeDuplicates([1, 2, 2, 3, 3, 4]);
@@ -197,7 +197,7 @@ if (groupResult.success) {
 ### 5. 객체 처리
 
 ```typescript
-import { deepClone, merge, pick, get, set } from '@company/utils/object';
+import { deepClone, merge, pick, get, set } from '@repo/utils/object';
 
 const original = { a: 1, b: { c: 2, d: 3 } };
 
@@ -229,7 +229,7 @@ if (getResult.success) {
 ### 6. 비동기 처리
 
 ```typescript
-import { delay, retry, withTimeout, processInChunks } from '@company/utils/async';
+import { delay, retry, withTimeout, processInChunks } from '@repo/utils/async';
 
 // 지연
 await delay(1000); // 1초 대기
@@ -266,7 +266,7 @@ const batchResult = await processInChunks(
 ### 7. HTTP 요청
 
 ```typescript
-import { HttpClient, UrlBuilder, createBearerAuthHeader } from '@company/utils/http';
+import { HttpClient, UrlBuilder, createBearerAuthHeader } from '@repo/utils/http';
 
 // HTTP 클라이언트
 const client = new HttpClient({
@@ -314,7 +314,7 @@ import {
   formatPercentage,
   maskEmail,
   formatKoreanPhoneNumber 
-} from '@company/utils/format';
+} from '@repo/utils/format';
 
 // 통화 포맷팅
 const currencyResult = formatCurrency(1234567, 'USD');
@@ -361,7 +361,7 @@ if (phoneResult.success) {
 모든 유틸리티 함수는 예외를 던지지 않고 `Result<T>` 타입을 반환합니다:
 
 ```typescript
-import { Result } from '@company/core';
+import { Result } from '@repo/core';
 
 const result = someUtilityFunction(input);
 
@@ -401,8 +401,8 @@ pnpm clean
 
 ## 의존성
 
-- `@company/core`: 기본 Result 타입과 에러 처리
-- `@company/types`: 공통 타입 정의
+- `@repo/core`: 기본 Result 타입과 에러 처리
+- `@repo/types`: 공통 타입 정의
 - `zod`: 런타임 검증
 - `crypto-js`: 암호화 기능
 

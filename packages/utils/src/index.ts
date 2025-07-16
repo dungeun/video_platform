@@ -1,5 +1,5 @@
 /**
- * @company/utils - Enterprise AI Module System Utilities
+ * @repo/utils - Enterprise AI Module System Utilities
  * 
  * 모든 엔터프라이즈 AI 모듈에서 사용하는 공통 유틸리티 함수들
  * 
@@ -39,7 +39,7 @@ export * as file from './file';
 
 // ===== 모듈 정보 =====
 export const UTILS_MODULE_INFO = {
-  name: '@company/utils',
+  name: '@repo/utils',
   version: '1.0.0',
   description: 'Enterprise AI Module System - Utility Functions',
   author: 'Enterprise AI Team',

@@ -1,5 +1,5 @@
 /**
- * @company/types - 공통 기본 타입
+ * @repo/types - 공통 기본 타입
  */
 export type ID = string;
 export type UUID = string;

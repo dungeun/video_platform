@@ -1,5 +1,5 @@
 /**
- * @company/ui-buttons - Button Group Classes Hook
+ * @repo/ui-buttons - Button Group Classes Hook
  * 버튼 그룹 스타일 클래스를 생성하는 훅
  */
 interface UseButtonGroupClassesProps {

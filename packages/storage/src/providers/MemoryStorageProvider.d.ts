@@ -1,8 +1,8 @@
 /**
- * @company/storage - Memory 스토리지 프로바이더
+ * @repo/storage - Memory 스토리지 프로바이더
  * 메모리 기반 임시 스토리지
  */
-import { Result } from '@company/core';
+import { Result } from '@repo/core';
 import { StorageProvider, StorageType, StorageOptions, StorageQuery, MemoryStorageConfig } from '../types';
 export declare class MemoryStorageProvider implements StorageProvider {
     readonly name = "MemoryStorage";

@@ -21,13 +21,13 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@company/api-client': path.resolve(__dirname, '../api-client/src'),
-      '@company/auth-core': path.resolve(__dirname, '../auth-core/src'),
-      '@company/cache': path.resolve(__dirname, '../cache/src'),
-      '@company/core': path.resolve(__dirname, '../core/src'),
-      '@company/storage': path.resolve(__dirname, '../storage/src'),
-      '@company/types': path.resolve(__dirname, '../types/src'),
-      '@company/utils': path.resolve(__dirname, '../utils/src')
+      '@repo/api-client': path.resolve(__dirname, '../api-client/src'),
+      '@repo/auth-core': path.resolve(__dirname, '../auth-core/src'),
+      '@repo/cache': path.resolve(__dirname, '../cache/src'),
+      '@repo/core': path.resolve(__dirname, '../core/src'),
+      '@repo/storage': path.resolve(__dirname, '../storage/src'),
+      '@repo/types': path.resolve(__dirname, '../types/src'),
+      '@repo/utils': path.resolve(__dirname, '../utils/src')
     }
   }
 });

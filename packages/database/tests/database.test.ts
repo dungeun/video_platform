@@ -1,5 +1,5 @@
 /**
- * @company/database - Database Module Tests
+ * @repo/database - Database Module Tests
  * 
  * 데이터베이스 모듈의 핵심 기능 테스트
  */

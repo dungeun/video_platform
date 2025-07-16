@@ -1,7 +1,7 @@
 /**
- * @company/utils - 날짜/시간 유틸리티
+ * @repo/utils - 날짜/시간 유틸리티
  */
-import { Result as CoreResult } from '@company/core';
+import { Result as CoreResult } from '@repo/core';
 export type Result<T> = CoreResult<T, string>;
 /**
  * 날짜를 ISO 8601 형식으로 포맷

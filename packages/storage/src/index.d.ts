@@ -1,5 +1,5 @@
 /**
- * @company/storage - Enterprise Storage Module
+ * @repo/storage - Enterprise Storage Module
  *
  * 다양한 스토리지 프로바이더를 통합 관리하는 엔터프라이즈 스토리지 모듈
  * - LocalStorage, SessionStorage, Memory, IndexedDB 지원
@@ -67,7 +67,7 @@ export declare const STORAGE_LIMITS: {
     indexedDB: number;
 };
 export declare const STORAGE_MODULE_INFO: {
-    readonly name: "@company/storage";
+    readonly name: "@repo/storage";
     readonly version: "1.0.0";
     readonly description: "Enterprise Storage Module with Multiple Providers";
     readonly author: "Enterprise AI Team";

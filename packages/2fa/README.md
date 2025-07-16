@@ -1,4 +1,4 @@
-# @company/2fa
+# @repo/2fa
 
 Ultra-fine-grained Two-Factor Authentication module providing comprehensive 2FA functionality with TOTP generation, verification, backup codes, and recovery methods.
 
@@ -40,11 +40,11 @@ Ultra-fine-grained Two-Factor Authentication module providing comprehensive 2FA 
 ## Installation
 
 ```bash
-npm install @company/2fa
+npm install @repo/2fa
 # or
-yarn add @company/2fa
+yarn add @repo/2fa
 # or
-pnpm add @company/2fa
+pnpm add @repo/2fa
 ```
 
 ## Quick Start
@@ -52,7 +52,7 @@ pnpm add @company/2fa
 ### Basic Usage
 
 ```typescript
-import { TwoFactorService } from '@company/2fa';
+import { TwoFactorService } from '@repo/2fa';
 
 const twoFactorService = new TwoFactorService();
 
@@ -90,7 +90,7 @@ import {
   TwoFactorSetup, 
   TwoFactorVerify,
   useTwoFactorContext 
-} from '@company/2fa';
+} from '@repo/2fa';
 
 function App() {
   return (
@@ -135,7 +135,7 @@ function TwoFactorApp() {
 
 #### TotpGenerator
 ```typescript
-import { TotpGenerator } from '@company/2fa';
+import { TotpGenerator } from '@repo/2fa';
 
 const totp = new TotpGenerator({
   algorithm: 'SHA1',
@@ -158,7 +158,7 @@ const isValid = totp.verifyToken(secret.secret, '123456');
 
 #### BackupCodeGenerator
 ```typescript
-import { BackupCodeGenerator } from '@company/2fa';
+import { BackupCodeGenerator } from '@repo/2fa';
 
 const generator = new BackupCodeGenerator({
   count: 10,
@@ -177,7 +177,7 @@ const result = generator.verifyCode(codeSet, 'ABCD-1234');
 
 #### VerificationManager
 ```typescript
-import { VerificationManager } from '@company/2fa';
+import { VerificationManager } from '@repo/2fa';
 
 const verifier = new VerificationManager({
   maxFailedAttempts: 5,

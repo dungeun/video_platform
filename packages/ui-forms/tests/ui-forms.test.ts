@@ -1,5 +1,5 @@
 /**
- * @company/ui-forms - Tests
+ * @repo/ui-forms - Tests
  * 
  * UI Forms 모듈의 기본 테스트
  */
@@ -16,10 +16,10 @@ import {
 } from '../src';
 import type { ValidationRule, FieldError } from '../src';
 
-describe('@company/ui-forms', () => {
+describe('@repo/ui-forms', () => {
   describe('Module Info', () => {
     it('should have correct module information', () => {
-      expect(UI_FORMS_MODULE_INFO.name).toBe('@company/ui-forms');
+      expect(UI_FORMS_MODULE_INFO.name).toBe('@repo/ui-forms');
       expect(UI_FORMS_MODULE_INFO.version).toBe('1.0.0');
       expect(UI_FORMS_MODULE_INFO.author).toBe('Enterprise AI Team');
       expect(UI_FORMS_MODULE_INFO.features).toContain('Form State Management');

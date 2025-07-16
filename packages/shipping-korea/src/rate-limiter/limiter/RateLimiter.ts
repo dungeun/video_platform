@@ -2,7 +2,7 @@
  * Rate limiter for API requests
  */
 
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 import { RateLimitConfig } from '../../types';
 
 export class RateLimiter {

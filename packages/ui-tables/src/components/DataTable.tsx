@@ -1,5 +1,5 @@
 /**
- * @company/ui-tables - DataTable Component
+ * @repo/ui-tables - DataTable Component
  * 
  * 고급 기능을 포함한 데이터 테이블 컴포넌트
  */

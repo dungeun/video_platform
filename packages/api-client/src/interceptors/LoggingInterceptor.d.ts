@@ -1,5 +1,5 @@
 /**
- * @company/api-client - 로깅 인터셉터
+ * @repo/api-client - 로깅 인터셉터
  * HTTP 요청/응답 로깅
  */
 import { RequestInterceptor, ResponseInterceptor } from '../types';

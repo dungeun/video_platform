@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 /**
- * @company/ui-forms - Field Component
+ * @repo/ui-forms - Field Component
  *
  * 라벨, 힌트, 에러를 포함한 필드 래퍼 컴포넌트
  */

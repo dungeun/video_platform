@@ -1,4 +1,4 @@
-import { ModuleBase, Logger, ErrorHandler } from '@company/core';
+import { ModuleBase, Logger, ErrorHandler } from '@repo/core';
 import { 
   SearchParams, 
   SearchResult, 
@@ -7,8 +7,8 @@ import {
   SearchEngineConfig,
   SearchError
 } from '../types';
-import { debounce } from '@company/utils';
-import { CacheManager } from '@company/cache';
+import { debounce } from '@repo/utils';
+import { CacheManager } from '@repo/cache';
 
 export abstract class SearchEngine extends ModuleBase {
   protected logger: Logger;

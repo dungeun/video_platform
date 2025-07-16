@@ -1,9 +1,9 @@
 /**
- * @company/cache - 캐시 매니저
+ * @repo/cache - 캐시 매니저
  * 캐시 전략을 사용한 캐시 관리
  */
 
-import { ModuleBase, Result, EventEmitter } from '@company/core';
+import { ModuleBase, Result, EventEmitter } from '@repo/core';
 import {
   CacheProvider,
   CacheStrategy,
@@ -39,7 +39,7 @@ export class CacheManager<T = any> extends ModuleBase implements CacheProvider<T
 
   constructor(config?: CacheConfig) {
     super({
-      name: '@company/cache',
+      name: '@repo/cache',
       version: '1.0.0',
       description: 'Enterprise Cache Manager'
     });

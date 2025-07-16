@@ -1,7 +1,7 @@
 /**
- * @company/utils - HTTP 요청 유틸리티
+ * @repo/utils - HTTP 요청 유틸리티
  */
-import { Result as CoreResult } from '@company/core';
+import { Result as CoreResult } from '@repo/core';
 export type Result<T> = CoreResult<T, string>;
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS';
 export interface RequestOptions {

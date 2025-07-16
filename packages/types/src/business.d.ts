@@ -1,5 +1,5 @@
 /**
- * @company/types - 비즈니스 도메인 타입
+ * @repo/types - 비즈니스 도메인 타입
  */
 import { ID, EntityMetadata, Money, Address, ContactInfo, FileInfo, Status } from './common';
 export interface Product extends EntityMetadata {

@@ -10,7 +10,7 @@ import {
   SearchConfig,
   SearchError
 } from '../types';
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 
 export class SearchService {
   private engine: SearchEngine;

@@ -1,9 +1,9 @@
 /**
- * @module @company/inventory-tracking/services/StockMovementService
+ * @module @repo/inventory-tracking/services/StockMovementService
  * @description Stock movement tracking service
  */
 
-import { ModuleBase } from '@company/core';
+import { ModuleBase } from '@repo/core';
 import type { StockMovement, StockMovementType, MovementFilterOptions } from '../types';
 import type { IStockMovementRepository } from '../repositories/interfaces';
 

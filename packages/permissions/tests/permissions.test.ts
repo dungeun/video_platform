@@ -1,5 +1,5 @@
 /**
- * @company/permissions - 권한 관리 테스트
+ * @repo/permissions - 권한 관리 테스트
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';

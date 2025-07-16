@@ -1,5 +1,5 @@
 /**
- * @company/ui-forms - useFormClasses Hook
+ * @repo/ui-forms - useFormClasses Hook
  *
  * 폼 컴포넌트의 CSS 클래스를 생성하는 훅
  */

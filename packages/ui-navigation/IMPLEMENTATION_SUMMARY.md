@@ -2,7 +2,7 @@
 
 ## 📋 개요
 
-`@company/ui-navigation` 모듈은 완전히 독립적인 네비게이션 전용 모듈로, 메가 메뉴, 슬라이드 메뉴, 모바일 네비게이션, 브레드크럼, 검색바, 사용자 메뉴 등 모든 네비게이션 요소를 포함하는 초세분화 모듈입니다.
+`@repo/ui-navigation` 모듈은 완전히 독립적인 네비게이션 전용 모듈로, 메가 메뉴, 슬라이드 메뉴, 모바일 네비게이션, 브레드크럼, 검색바, 사용자 메뉴 등 모든 네비게이션 요소를 포함하는 초세분화 모듈입니다.
 
 ## ✅ 완료된 작업
 
@@ -190,7 +190,7 @@ import {
   MegaMenuProps,
   BreadcrumbItem,
   // ... 모든 타입
-} from '@company/ui-navigation';
+} from '@repo/ui-navigation';
 ```
 
 ## 🚀 배포 준비 상태

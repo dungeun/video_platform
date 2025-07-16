@@ -1,4 +1,4 @@
-import { EventEmitter } from '@company/core';
+import { EventEmitter } from '@repo/core';
 import { CouponEventType } from '../types';
 export class CouponEventBus extends EventEmitter {
     constructor() {

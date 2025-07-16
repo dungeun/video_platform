@@ -1,5 +1,5 @@
 /**
- * @company/ui-modals - Modal Provider
+ * @repo/ui-modals - Modal Provider
  * 
  * 전역 모달 상태 관리를 위한 Provider
  */

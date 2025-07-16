@@ -1,4 +1,4 @@
-import { Result } from '@company/core';
+import { Result } from '@repo/core';
 export interface EncryptionOptions {
     algorithm?: 'AES-GCM' | 'AES-CBC' | 'AES-CTR';
     keySize?: 128 | 192 | 256;

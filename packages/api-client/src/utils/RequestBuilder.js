@@ -1,9 +1,9 @@
 /**
- * @company/api-client - 요청 빌더
+ * @repo/api-client - 요청 빌더
  * HTTP 요청 설정 구성
  */
 import qs from 'qs';
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 export class RequestBuilder {
     constructor() {
         this.logger = new Logger('RequestBuilder');

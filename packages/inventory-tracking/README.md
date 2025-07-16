@@ -1,4 +1,4 @@
-# @company/inventory-tracking
+# @repo/inventory-tracking
 
 E-commerce inventory management module with stock tracking, reservations, alerts, and warehouse management.
 
@@ -15,7 +15,7 @@ E-commerce inventory management module with stock tracking, reservations, alerts
 ## Installation
 
 ```bash
-npm install @company/inventory-tracking
+npm install @repo/inventory-tracking
 ```
 
 ## Usage
@@ -27,7 +27,7 @@ import {
   InventoryService, 
   WarehouseService,
   ReservationService 
-} from '@company/inventory-tracking';
+} from '@repo/inventory-tracking';
 
 // Initialize services
 const inventoryService = new InventoryService(

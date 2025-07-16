@@ -1,5 +1,5 @@
 /**
- * @company/utils - 암호화/해시 유틸리티
+ * @repo/utils - 암호화/해시 유틸리티
  */
 import CryptoJS from 'crypto-js';
 import * as crypto from 'crypto';

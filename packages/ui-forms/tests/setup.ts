@@ -1,5 +1,5 @@
 /**
- * @company/ui-forms - Test Setup
+ * @repo/ui-forms - Test Setup
  * 
  * 테스트 환경 설정
  */

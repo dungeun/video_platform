@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { ConfigManager, ConfigValidator, parseEnvValue } from '../src';
 import { AppConfig } from '../src/types';
 
-describe('@company/config', () => {
+describe('@repo/config', () => {
   let configManager: ConfigManager;
   
   beforeEach(() => {

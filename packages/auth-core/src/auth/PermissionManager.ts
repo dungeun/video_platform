@@ -1,9 +1,9 @@
 /**
- * @company/auth-core - 권한 관리자
+ * @repo/auth-core - 권한 관리자
  * 사용자 권한 및 역할 관리
  */
 
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 import { Role, Permission, PermissionAction, PermissionCondition } from '../types';
 
 export class PermissionManager {

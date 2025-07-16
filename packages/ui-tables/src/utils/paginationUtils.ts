@@ -1,5 +1,5 @@
 /**
- * @company/ui-tables - Pagination Utilities
+ * @repo/ui-tables - Pagination Utilities
  * 
  * 페이지네이션 관련 유틸리티
  */

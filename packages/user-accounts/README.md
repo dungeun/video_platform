@@ -1,4 +1,4 @@
-# @company/user-accounts
+# @repo/user-accounts
 
 A comprehensive user accounts management module focused on account management, email and password management, account validation, and security features following the CRUD pattern and ultra-fine-grained architecture principle.
 
@@ -40,7 +40,7 @@ A comprehensive user accounts management module focused on account management, e
 ## Installation
 
 ```bash
-npm install @company/user-accounts
+npm install @repo/user-accounts
 ```
 
 ## Dependencies
@@ -62,7 +62,7 @@ import {
   UserAccountService, 
   SimpleDatabaseAdapter, 
   createDatabaseAdapter 
-} from '@company/user-accounts';
+} from '@repo/user-accounts';
 
 // Using the simple adapter for demonstration
 const adapter = new SimpleDatabaseAdapter();
@@ -76,7 +76,7 @@ const userAccountService = new UserAccountService(adapter);
 ### React Integration
 
 ```tsx
-import { UserAccountProvider, useUserAccountService } from '@company/user-accounts';
+import { UserAccountProvider, useUserAccountService } from '@repo/user-accounts';
 
 function App() {
   const adapter = new SimpleDatabaseAdapter();
@@ -182,7 +182,7 @@ const eventsResult = await userAccountService.getSecurityEvents(userId, {
 ### React Hooks
 
 ```tsx
-import { useUserAccount, useUserAccounts, usePasswordManagement } from '@company/user-accounts';
+import { useUserAccount, useUserAccounts, usePasswordManagement } from '@repo/user-accounts';
 
 function UserAccountComponent({ accountId }: { accountId: string }) {
   const service = useUserAccountService();
@@ -206,7 +206,7 @@ function UserAccountComponent({ accountId }: { accountId: string }) {
 ### React Components
 
 ```tsx
-import { UserAccountForm, UserAccountList, PasswordChangeForm } from '@company/user-accounts';
+import { UserAccountForm, UserAccountList, PasswordChangeForm } from '@repo/user-accounts';
 
 function CreateAccountPage() {
   const service = useUserAccountService();

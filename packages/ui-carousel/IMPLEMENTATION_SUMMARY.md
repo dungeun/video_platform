@@ -1,7 +1,7 @@
 # UI Carousel Module Implementation Summary
 
 ## Overview
-Successfully created the `@company/ui-carousel` module with comprehensive carousel functionality including hero slider, product carousel, auto-play, touch/swipe support, navigation dots, and responsive design.
+Successfully created the `@repo/ui-carousel` module with comprehensive carousel functionality including hero slider, product carousel, auto-play, touch/swipe support, navigation dots, and responsive design.
 
 ## Created Files
 

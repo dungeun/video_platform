@@ -1,4 +1,4 @@
-# @company/types
+# @repo/types
 
 Enterprise AI Module System의 공통 타입 정의 라이브러리입니다.
 
@@ -19,7 +19,7 @@ Enterprise AI Module System의 공통 타입 정의 라이브러리입니다.
 ## 설치
 
 ```bash
-pnpm add @company/types
+pnpm add @repo/types
 ```
 
 ## 사용법
@@ -27,7 +27,7 @@ pnpm add @company/types
 ### 기본 타입 사용
 
 ```typescript
-import { ID, Response, PaginationParams } from '@company/types';
+import { ID, Response, PaginationParams } from '@repo/types';
 
 // API 응답 타입
 const apiResponse: Response<User[]> = {
@@ -52,7 +52,7 @@ const pagination: PaginationParams = {
 ### 인증 타입 사용
 
 ```typescript
-import { User, LoginCredentials, UserSession } from '@company/types';
+import { User, LoginCredentials, UserSession } from '@repo/types';
 
 const credentials: LoginCredentials = {
   email: 'user@example.com',
@@ -72,7 +72,7 @@ const user: User = {
 ### 비즈니스 타입 사용
 
 ```typescript
-import { Product, Order, Customer } from '@company/types';
+import { Product, Order, Customer } from '@repo/types';
 
 const product: Product = {
   id: 'product-123',
@@ -97,7 +97,7 @@ const order: Order = {
 ### Zod 스키마 검증
 
 ```typescript
-import { UserSchema, ProductSchema, validate } from '@company/types';
+import { UserSchema, ProductSchema, validate } from '@repo/types';
 
 // 사용자 데이터 검증
 const userData = { /* user data */ };
@@ -110,7 +110,7 @@ if (userResult.success) {
 }
 
 // 비동기 검증
-import { validateAsync } from '@company/types';
+import { validateAsync } from '@repo/types';
 
 const productResult = await validateAsync(ProductSchema, productData);
 ```
@@ -124,7 +124,7 @@ import {
   isEmail, 
   isNotNull, 
   isArrayOf 
-} from '@company/types';
+} from '@repo/types';
 
 function processValue(value: unknown) {
   if (isString(value)) {
@@ -154,7 +154,7 @@ import {
   toDate,
   deepClone,
   removeNullish 
-} from '@company/types';
+} from '@repo/types';
 
 // 안전한 타입 변환
 const str = toString(123); // "123"
@@ -189,13 +189,13 @@ src/
 
 ```typescript
 // 전체 import
-import { User, Product } from '@company/types';
+import { User, Product } from '@repo/types';
 
 // 서브모듈 import
-import { User } from '@company/types/auth';
-import { Product } from '@company/types/business';
-import { Theme } from '@company/types/ui';
-import { UserSchema } from '@company/types/schemas';
+import { User } from '@repo/types/auth';
+import { Product } from '@repo/types/business';
+import { Theme } from '@repo/types/ui';
+import { UserSchema } from '@repo/types/schemas';
 ```
 
 ## 타입 확장

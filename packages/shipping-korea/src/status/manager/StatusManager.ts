@@ -2,8 +2,8 @@
  * Delivery status manager
  */
 
-import { Logger, EventEmitter } from '@company/core';
-import { StorageManager } from '@company/storage';
+import { Logger, EventEmitter } from '@repo/core';
+import { StorageManager } from '@repo/storage';
 import {
   DeliveryStatus,
   TrackingInfo,

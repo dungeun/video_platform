@@ -1,5 +1,5 @@
 /**
- * @company/auth-core 테스트
+ * @repo/auth-core 테스트
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -12,7 +12,7 @@ import {
   isTokenExpired
 } from '../src';
 
-describe('@company/auth-core', () => {
+describe('@repo/auth-core', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

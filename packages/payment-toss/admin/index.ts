@@ -1,4 +1,4 @@
-import { ModuleConfig } from '@company/core'
+import { ModuleConfig } from '@repo/core'
 import { TossPaymentsConfig } from '../src/types'
 
 /**

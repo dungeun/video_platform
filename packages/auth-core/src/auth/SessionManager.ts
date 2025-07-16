@@ -1,9 +1,9 @@
 /**
- * @company/auth-core - 세션 관리자
+ * @repo/auth-core - 세션 관리자
  * 사용자 세션 생성, 유지, 종료 관리
  */
 
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 import { AuthConfig, AuthSession, UserProfile, AuthTokens, AuthResult } from '../types';
 
 export class SessionManager {

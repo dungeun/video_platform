@@ -1,9 +1,9 @@
 /**
- * @company/api-client - 캐시 관리자
+ * @repo/api-client - 캐시 관리자
  * HTTP 응답 캐싱 관리
  */
 
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 import { CacheConfig, CacheEntry, CacheStorage, HttpRequestConfig, HttpResponse } from '../types';
 
 export class CacheManager {

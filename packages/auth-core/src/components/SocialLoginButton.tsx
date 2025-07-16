@@ -1,5 +1,5 @@
 import React from 'react';
-import { Result } from '@company/core';
+import { Result } from '@repo/core';
 
 export type SocialProvider = 'google' | 'kakao' | 'naver' | 'facebook' | 'apple';
 

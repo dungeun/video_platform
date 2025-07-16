@@ -1,5 +1,5 @@
 /**
- * @company/shipping-korea
+ * @repo/shipping-korea
  * Korean domestic delivery services integration module
  */
 

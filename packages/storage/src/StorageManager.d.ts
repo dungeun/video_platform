@@ -1,8 +1,8 @@
 /**
- * @company/storage - 스토리지 매니저
+ * @repo/storage - 스토리지 매니저
  * 여러 스토리지 프로바이더를 통합 관리
  */
-import { ModuleBase, Result } from '@company/core';
+import { ModuleBase, Result } from '@repo/core';
 import { StorageProvider, StorageType, StorageConfig, StorageOptions, StorageQuery, StorageListener, StorageStats } from './types';
 export declare class StorageManager extends ModuleBase {
     private providers;

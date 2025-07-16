@@ -1,5 +1,5 @@
 /**
- * @company/campaign-management - Tests
+ * @repo/campaign-management - Tests
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -22,7 +22,7 @@ import type {
 } from '../src/types';
 
 // Mock API Client
-vi.mock('@company/utils', () => ({
+vi.mock('@repo/utils', () => ({
   ApiClient: vi.fn().mockImplementation(() => ({
     post: vi.fn(),
     get: vi.fn(),
@@ -33,7 +33,7 @@ vi.mock('@company/utils', () => ({
 }));
 
 // Mock Event Bus
-vi.mock('@company/core', () => ({
+vi.mock('@repo/core', () => ({
   EventBus: {
     getInstance: vi.fn().mockReturnValue({
       emit: vi.fn()

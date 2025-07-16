@@ -1,10 +1,10 @@
 /**
- * @module @company/inventory-tracking/entities/Warehouse
+ * @module @repo/inventory-tracking/entities/Warehouse
  * @description Warehouse entity implementation
  */
 
 import { z } from 'zod';
-import { generateId } from '@company/utils';
+import { generateId } from '@repo/utils';
 import type { Warehouse } from '../types';
 
 /**

@@ -1,5 +1,5 @@
 import * as crypto from 'crypto';
-import { Result } from '@company/core';
+import { Result } from '@repo/core';
 
 export interface TotpConfig {
   algorithm: 'SHA1' | 'SHA256' | 'SHA512';

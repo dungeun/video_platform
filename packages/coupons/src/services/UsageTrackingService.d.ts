@@ -1,4 +1,4 @@
-import { EventEmitter } from '@company/core';
+import { EventEmitter } from '@repo/core';
 import { CouponUsage, UsageStats, UsageQuery, ServiceResponse } from '../types';
 import { CouponUsageRepository, CouponRepository } from '../repositories/interfaces';
 export declare class UsageTrackingService extends EventEmitter {

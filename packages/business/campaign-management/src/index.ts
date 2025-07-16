@@ -1,5 +1,5 @@
 /**
- * @company/campaign-management - Campaign Management Module
+ * @repo/campaign-management - Campaign Management Module
  * 
  * Complete campaign lifecycle management for influencer marketing platform
  * Handles campaign creation, participant management, content approval, and settlement
@@ -155,7 +155,7 @@ export {
 
 // ===== Module Info =====
 export const CAMPAIGN_MODULE_INFO = {
-  name: '@company/campaign-management',
+  name: '@repo/campaign-management',
   version: '1.0.0',
   description: 'Campaign Management Module for Influencer Marketing Platform',
   author: 'Enterprise AI Team',
@@ -249,8 +249,8 @@ export function isParticipant(obj: any): obj is Participant {
     Array.isArray(obj.content);
 }
 
-// ===== Re-export common types from @company/types =====
-export type { ID, Money, EntityMetadata } from '@company/types';
+// ===== Re-export common types from @repo/types =====
+export type { ID, Money, EntityMetadata } from '@repo/types';
 
 // ===== Initialization Log =====
 if (typeof window !== 'undefined') {

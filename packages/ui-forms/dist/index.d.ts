@@ -1,5 +1,5 @@
 /**
- * @company/ui-forms - UI Forms Module
+ * @repo/ui-forms - UI Forms Module
  *
  * 초세분화된 폼 전용 모듈
  * - 폼 컴포넌트만 담당
@@ -16,7 +16,7 @@ export { useForm, useFieldState, useFormClasses } from './hooks';
 export type { UseFormOptions, UseFieldStateOptions, UseFormClassesOptions } from './hooks';
 export { validateRequired, validateMinLength, validateMaxLength, validateMin, validateMax, validatePattern, validateEmail, validateUrl, validateField, validateFields, getErrorMessage, isFieldValid, isFormValid, normalizeFieldValue, mergeValidationRules, defaultFormTheme, getFormTheme, setFormTheme, resetFormTheme, getFormSizeStyle, getFormVariantStyle, getValidationStateStyle, getFocusStyle, getDisabledStyle, getReadOnlyStyle, getLabelStyle, getHintStyle, getErrorStyle, getInputStyle, getFormClasses } from './utils';
 export declare const UI_FORMS_MODULE_INFO: {
-    readonly name: "@company/ui-forms";
+    readonly name: "@repo/ui-forms";
     readonly version: "1.0.0";
     readonly description: "Ultra-Fine-Grained UI Form Components Module";
     readonly author: "Enterprise AI Team";

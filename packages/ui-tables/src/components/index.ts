@@ -1,5 +1,5 @@
 /**
- * @company/ui-tables - Components
+ * @repo/ui-tables - Components
  * 
  * 테이블 컴포넌트 내보내기
  */

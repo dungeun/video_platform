@@ -3,7 +3,7 @@
 ## Basic Carousel
 
 ```tsx
-import { Carousel } from '@company/ui-carousel';
+import { Carousel } from '@repo/ui-carousel';
 
 const items = [
   { id: '1', content: <div>Slide 1</div> },
@@ -26,7 +26,7 @@ function BasicExample() {
 ## Hero Slider Example
 
 ```tsx
-import { HeroSlider } from '@company/ui-carousel';
+import { HeroSlider } from '@repo/ui-carousel';
 
 const heroItems = [
   {
@@ -65,7 +65,7 @@ function HeroExample() {
 ## Product Carousel Example
 
 ```tsx
-import { ProductCarousel } from '@company/ui-carousel';
+import { ProductCarousel } from '@repo/ui-carousel';
 
 const products = [
   {
@@ -123,7 +123,7 @@ function ProductExample() {
 ## Responsive Carousel Example
 
 ```tsx
-import { Carousel } from '@company/ui-carousel';
+import { Carousel } from '@repo/ui-carousel';
 
 const responsive = [
   {
@@ -163,7 +163,7 @@ function ResponsiveExample() {
 ## Custom Hook Usage
 
 ```tsx
-import { useCarousel, useAutoPlay } from '@company/ui-carousel';
+import { useCarousel, useAutoPlay } from '@repo/ui-carousel';
 
 function CustomCarouselExample() {
   const {
@@ -218,7 +218,7 @@ function CustomCarouselExample() {
 ## Advanced Configuration
 
 ```tsx
-import { Carousel } from '@company/ui-carousel';
+import { Carousel } from '@repo/ui-carousel';
 
 function AdvancedExample() {
   return (

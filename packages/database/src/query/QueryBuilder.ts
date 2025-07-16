@@ -1,11 +1,11 @@
 /**
- * @company/database - Query Builder
+ * @repo/database - Query Builder
  * 
  * SQL 쿼리를 체이닝 방식으로 구성하는 빌더 클래스
  * Zero Error Architecture 기반으로 설계됨
  */
 
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 import type {
   QueryBuilder as IQueryBuilder,
   QueryResult,

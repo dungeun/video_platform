@@ -1,5 +1,5 @@
 /**
- * @company/ui-tables - UI Tables Module
+ * @repo/ui-tables - UI Tables Module
  * 
  * 초세분화된 테이블 전용 모듈
  * - 테이블 컴포넌트만 담당
@@ -97,7 +97,7 @@ export {
 
 // ===== 모듈 정보 =====
 export const UI_TABLES_MODULE_INFO = {
-  name: '@company/ui-tables',
+  name: '@repo/ui-tables',
   version: '1.0.0',
   description: 'Ultra-Fine-Grained UI Table Components Module',
   author: 'Enterprise AI Team',

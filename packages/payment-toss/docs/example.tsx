@@ -11,7 +11,7 @@ import {
   formatCurrency,
   formatPaymentStatus,
   PaymentUtils
-} from '@company/payment-toss'
+} from '@repo/payment-toss'
 
 /**
  * 토스페이먼츠 결제 모듈 사용 예제

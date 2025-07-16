@@ -1,5 +1,5 @@
 /**
- * @company/permissions - 권한 관리 모듈
+ * @repo/permissions - 권한 관리 모듈
  * Ultra-fine-grained permission checking and access control
  * 
  * 이 모듈은 auth-core에서 분리된 순수한 권한 관리 기능을 제공합니다.
@@ -59,7 +59,7 @@ export const defaultPermissionConfig = {
 
 // ===== 모듈 정보 =====
 export const moduleInfo = {
-  name: '@company/permissions',
+  name: '@repo/permissions',
   version: '1.0.0',
   description: 'Ultra-fine-grained permission checking and access control',
   author: 'Company',

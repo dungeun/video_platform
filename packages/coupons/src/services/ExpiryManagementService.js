@@ -1,4 +1,4 @@
-import { EventEmitter, Logger } from '@company/core';
+import { EventEmitter, Logger } from '@repo/core';
 import { CouponEventType } from '../types';
 import { CouponEntity } from '../entities';
 export class ExpiryManagementService extends EventEmitter {

@@ -1,4 +1,4 @@
-import { EventEmitter } from '@company/core';
+import { EventEmitter } from '@repo/core';
 import { Coupon, CouponQuery, ServiceResponse } from '../types';
 import { CouponRepository } from '../repositories/interfaces';
 import { CouponValidator } from '../validators';

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { type Result } from '@company/core'
+import { type Result } from '@repo/core'
 import { TossPaymentService } from '../services/TossPaymentService'
 import {
   PaymentRequest,

@@ -1,5 +1,5 @@
 /**
- * @company/database - Database Types
+ * @repo/database - Database Types
  * 
  * 데이터베이스 모듈의 핵심 타입 정의
  * Zero Error Architecture 기반으로 설계됨

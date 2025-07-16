@@ -1,5 +1,5 @@
 /**
- * @company/permissions - 테스트 설정
+ * @repo/permissions - 테스트 설정
  */
 
 import { beforeAll, afterAll, vi } from 'vitest';

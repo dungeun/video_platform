@@ -1,5 +1,5 @@
 /**
- * @company/ui-tables - useTableSelection Hook
+ * @repo/ui-tables - useTableSelection Hook
  * 
  * 테이블 행 선택 관리 훅
  */

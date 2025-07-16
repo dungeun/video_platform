@@ -1,5 +1,5 @@
 /**
- * @company/ui-modals - Drawer Modal Component
+ * @repo/ui-modals - Drawer Modal Component
  * 
  * 슬라이드 방식의 서랍형 모달 컴포넌트
  */

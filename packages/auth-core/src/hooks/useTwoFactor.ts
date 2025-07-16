@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Result } from '@company/core';
+import { Result } from '@repo/core';
 import { totpManager, TotpSecret } from '../utils/TotpManager';
 import { useAuth } from './useAuth';
 

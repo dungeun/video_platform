@@ -1,5 +1,5 @@
 /**
- * @module @company/address-korea
+ * @module @repo/address-korea
  * @description Korean address handling module with Kakao/Naver integration
  */
 

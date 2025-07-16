@@ -1,5 +1,5 @@
 /**
- * @company/permissions - 권한 게이트
+ * @repo/permissions - 권한 게이트
  * Higher-order component for permission-based access control
  */
 

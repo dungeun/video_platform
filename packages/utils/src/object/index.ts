@@ -1,8 +1,8 @@
 /**
- * @company/utils - 객체 처리 유틸리티
+ * @repo/utils - 객체 처리 유틸리티
  */
 
-import { Result as CoreResult } from '@company/core';
+import { Result as CoreResult } from '@repo/core';
 
 // Utils에서 사용할 Result 타입 (에러를 문자열로 처리)
 export type Result<T> = CoreResult<T, string>;

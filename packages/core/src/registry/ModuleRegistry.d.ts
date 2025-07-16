@@ -1,5 +1,5 @@
 /**
- * @company/core - 모듈 레지스트리
+ * @repo/core - 모듈 레지스트리
  * 모든 모듈의 등록, 관리, 검색을 담당하는 중앙 레지스트리
  */
 import { ModuleBase } from '../base/ModuleBase';

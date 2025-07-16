@@ -1,5 +1,5 @@
-import { Result } from '@company/core'
-import { HttpClient } from '@company/api-client'
+import { Result } from '@repo/core'
+import { HttpClient } from '@repo/api-client'
 import CryptoJS from 'crypto-js'
 import {
   PaymentService,

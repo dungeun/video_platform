@@ -1,9 +1,9 @@
 /**
- * @company/permissions - 권한 관리자
+ * @repo/permissions - 권한 관리자
  * Ultra-fine-grained permission checking and access control
  */
 
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 import {
   Role,
   Permission,

@@ -1,8 +1,8 @@
 /**
- * @company/storage - 타입 정의
+ * @repo/storage - 타입 정의
  * 스토리지 시스템 타입
  */
-import { Result } from '@company/core';
+import { Result } from '@repo/core';
 export interface StorageValue<T = any> {
     data: T;
     metadata?: StorageMetadata;

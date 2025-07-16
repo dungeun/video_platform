@@ -1,4 +1,4 @@
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 import { IWishlistNotificationRepository } from '../repositories/interfaces';
 import { WishlistNotification, NotificationType } from '../entities';
 import { NotificationListResponse } from '../types';

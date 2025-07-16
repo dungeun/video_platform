@@ -1,5 +1,5 @@
 /**
- * @company/utils - 문자열 유틸리티 테스트
+ * @repo/utils - 문자열 유틸리티 테스트
  */
 
 import { describe, it, expect } from 'vitest';

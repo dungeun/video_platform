@@ -1,5 +1,5 @@
 /**
- * @company/ui-modals - Modal Theme
+ * @repo/ui-modals - Modal Theme
  * 
  * 모달 테마 설정 및 관리
  */

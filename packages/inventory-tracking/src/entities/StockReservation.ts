@@ -1,10 +1,10 @@
 /**
- * @module @company/inventory-tracking/entities/StockReservation
+ * @module @repo/inventory-tracking/entities/StockReservation
  * @description Stock reservation entity implementation
  */
 
 import { z } from 'zod';
-import { generateId } from '@company/utils';
+import { generateId } from '@repo/utils';
 import type { StockReservation } from '../types';
 import { StockStatus } from '../types';
 

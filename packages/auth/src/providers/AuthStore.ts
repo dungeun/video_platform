@@ -1,5 +1,5 @@
 /**
- * @company/auth - Authentication Store
+ * @repo/auth - Authentication Store
  * Zustand-based state management for pure authentication
  */
 

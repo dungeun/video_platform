@@ -1,5 +1,5 @@
 /**
- * @company/ui-modals - Base Modal Component
+ * @repo/ui-modals - Base Modal Component
  * 
  * 기본 모달 컴포넌트
  */

@@ -1,4 +1,4 @@
-import { ModuleBase, Logger, ErrorHandler } from '@company/core';
+import { ModuleBase, Logger, ErrorHandler } from '@repo/core';
 import { SearchService } from '../services/SearchService';
 import {
   FacetedSearchParams,

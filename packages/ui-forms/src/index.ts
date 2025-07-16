@@ -1,5 +1,5 @@
 /**
- * @company/ui-forms - UI Forms Module
+ * @repo/ui-forms - UI Forms Module
  * 
  * 초세분화된 폼 전용 모듈
  * - 폼 컴포넌트만 담당
@@ -110,7 +110,7 @@ export {
 
 // ===== 모듈 정보 =====
 export const UI_FORMS_MODULE_INFO = {
-  name: '@company/ui-forms',
+  name: '@repo/ui-forms',
   version: '1.0.0',
   description: 'Ultra-Fine-Grained UI Form Components Module',
   author: 'Enterprise AI Team',

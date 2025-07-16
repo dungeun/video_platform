@@ -1,4 +1,4 @@
-# @company/shopping-cart
+# @repo/shopping-cart
 
 E-commerce shopping cart module with comprehensive cart management functionality.
 
@@ -15,7 +15,7 @@ E-commerce shopping cart module with comprehensive cart management functionality
 ## Installation
 
 ```bash
-npm install @company/shopping-cart
+npm install @repo/shopping-cart
 ```
 
 ## Basic Usage
@@ -23,7 +23,7 @@ npm install @company/shopping-cart
 ### Provider Setup
 
 ```tsx
-import { CartProvider } from '@company/shopping-cart';
+import { CartProvider } from '@repo/shopping-cart';
 
 function App() {
   return (
@@ -46,7 +46,7 @@ function App() {
 ### Using Cart Hook
 
 ```tsx
-import { useCart } from '@company/shopping-cart';
+import { useCart } from '@repo/shopping-cart';
 
 function ProductPage({ product }) {
   const { addItem, cart, loading } = useCart();
@@ -76,7 +76,7 @@ function ProductPage({ product }) {
 ### Cart Components
 
 ```tsx
-import { CartList, CartSummary, MiniCart } from '@company/shopping-cart';
+import { CartList, CartSummary, MiniCart } from '@repo/shopping-cart';
 
 // Full cart page
 function CartPage() {
@@ -125,7 +125,7 @@ function Header() {
 ### Cart Persistence
 
 ```tsx
-import { useCartPersistence } from '@company/shopping-cart';
+import { useCartPersistence } from '@repo/shopping-cart';
 
 function App() {
   // Enable cart persistence with sync
@@ -141,7 +141,7 @@ function App() {
 ### Custom Calculations
 
 ```tsx
-import { CartCalculator } from '@company/shopping-cart';
+import { CartCalculator } from '@repo/shopping-cart';
 
 const calculator = new CartCalculator();
 
@@ -162,7 +162,7 @@ const shipping = calculator.calculateShipping(cart, {
 ### API Integration
 
 ```tsx
-import { CartProvider, HttpClient } from '@company/shopping-cart';
+import { CartProvider, HttpClient } from '@repo/shopping-cart';
 
 const httpClient = new HttpClient({ baseURL: '/api' });
 

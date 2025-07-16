@@ -1,5 +1,5 @@
 /**
- * @company/auth - Auth Status Component
+ * @repo/auth - Auth Status Component
  * Display authentication status information
  */
 

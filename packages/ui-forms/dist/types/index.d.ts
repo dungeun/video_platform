@@ -1,5 +1,5 @@
 /**
- * @company/ui-forms - Form Types
+ * @repo/ui-forms - Form Types
  *
  * 폼 컴포넌트를 위한 타입 정의
  */

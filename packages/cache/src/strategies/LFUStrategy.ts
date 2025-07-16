@@ -1,10 +1,10 @@
 /**
- * @company/cache - LFU 캐시 전략
+ * @repo/cache - LFU 캐시 전략
  * Least Frequently Used 캐시 전략 구현
  */
 
 import { CacheStrategy, CacheMetadata, CacheEntry } from '../types';
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 
 interface LFUEntry<T> extends CacheEntry<T> {
   frequency: number;

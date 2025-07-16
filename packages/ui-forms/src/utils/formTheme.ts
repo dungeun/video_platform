@@ -1,5 +1,5 @@
 /**
- * @company/ui-forms - Form Theme Utilities
+ * @repo/ui-forms - Form Theme Utilities
  * 
  * 폼 컴포넌트의 테마와 스타일을 관리하는 유틸리티
  */

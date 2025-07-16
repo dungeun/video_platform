@@ -1,5 +1,5 @@
 /**
- * @company/ui-forms - TextInput Component
+ * @repo/ui-forms - TextInput Component
  *
  * 텍스트 입력을 위한 기본 입력 컴포넌트
  */

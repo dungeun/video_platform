@@ -1,5 +1,5 @@
 /**
- * @company/ui-forms - Hooks Index
+ * @repo/ui-forms - Hooks Index
  * 
  * 폼 훅들의 통합 내보내기
  */

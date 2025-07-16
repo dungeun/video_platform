@@ -1,5 +1,5 @@
 /**
- * @company/ui-modals - Confirm Modal Component
+ * @repo/ui-modals - Confirm Modal Component
  * 
  * 확인 대화상자 모달 컴포넌트
  */

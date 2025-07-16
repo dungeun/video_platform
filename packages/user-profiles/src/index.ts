@@ -1,5 +1,5 @@
 /**
- * @company/user-profiles
+ * @repo/user-profiles
  * 
  * User Profile Management Module
  * Provides CRUD operations for user profile information (name, picture, bio)

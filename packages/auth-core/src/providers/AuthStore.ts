@@ -1,5 +1,5 @@
 /**
- * @company/auth-core - 인증 상태 저장소
+ * @repo/auth-core - 인증 상태 저장소
  * Zustand를 사용한 전역 인증 상태 관리
  */
 

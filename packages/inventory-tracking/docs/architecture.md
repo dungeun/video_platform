@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `@company/inventory-tracking` module provides comprehensive inventory management functionality for e-commerce applications. It follows a CRUD pattern with ultra-fine-grained architecture, separating concerns across entities, repositories, services, and controllers.
+The `@repo/inventory-tracking` module provides comprehensive inventory management functionality for e-commerce applications. It follows a CRUD pattern with ultra-fine-grained architecture, separating concerns across entities, repositories, services, and controllers.
 
 ## Core Components
 
@@ -71,12 +71,12 @@ The `@company/inventory-tracking` module provides comprehensive inventory manage
 ## Integration Points
 
 ### Dependencies
-- `@company/core`: Base classes and utilities
-- `@company/types`: Shared type definitions
-- `@company/utils`: Common utilities
-- `@company/database`: Database abstractions
-- `@company/api-client`: HTTP client
-- `@company/cache`: Caching layer
+- `@repo/core`: Base classes and utilities
+- `@repo/types`: Shared type definitions
+- `@repo/utils`: Common utilities
+- `@repo/database`: Database abstractions
+- `@repo/api-client`: HTTP client
+- `@repo/cache`: Caching layer
 
 ### Events
 The module emits events for key operations:

@@ -1,5 +1,5 @@
 /**
- * @company/permissions - 보호된 컴포넌트
+ * @repo/permissions - 보호된 컴포넌트
  * Component that conditionally renders based on permissions
  */
 

@@ -1,5 +1,5 @@
 /**
- * @company/api-client - 요청 빌더
+ * @repo/api-client - 요청 빌더
  * HTTP 요청 설정 구성
  */
 import { AxiosRequestConfig } from 'axios';

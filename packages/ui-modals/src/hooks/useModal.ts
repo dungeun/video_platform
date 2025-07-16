@@ -1,5 +1,5 @@
 /**
- * @company/ui-modals - Modal Hook
+ * @repo/ui-modals - Modal Hook
  * 
  * 모달 상태 관리를 위한 편의 훅
  */

@@ -1,5 +1,5 @@
 /**
- * @company/ui-forms - Select Component
+ * @repo/ui-forms - Select Component
  * 
  * 선택 옵션을 위한 드롭다운 컴포넌트
  */

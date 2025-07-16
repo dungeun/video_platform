@@ -1,5 +1,5 @@
 /**
- * @company/types - 인증/인가 타입
+ * @repo/types - 인증/인가 타입
  */
 
 import { ID, Timestamp, EntityMetadata, ContactInfo } from './common';

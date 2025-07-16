@@ -1,5 +1,5 @@
 /**
- * @company/database - Enterprise Database Module
+ * @repo/database - Enterprise Database Module
  *
  * 데이터베이스 연결, 쿼리 빌더, 마이그레이션, 트랜잭션을 통합 지원하는 엔터프라이즈 모듈
  * Zero Error Architecture 기반으로 설계됨
@@ -180,7 +180,7 @@ export const SUPPORTED_PROVIDERS = [
 ];
 // ===== 모듈 정보 =====
 export const DATABASE_MODULE_INFO = {
-    name: '@company/database',
+    name: '@repo/database',
     version: '1.0.0',
     description: 'Enterprise Database Module with Multiple Providers and Query Builder',
     author: 'Enterprise AI Team',

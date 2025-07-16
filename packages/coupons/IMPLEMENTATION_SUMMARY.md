@@ -1,7 +1,7 @@
 # Coupons Module Implementation Summary
 
 ## Module Overview
-The `@company/coupons` module has been successfully created with comprehensive coupon management functionality following the ultra-fine-grained architecture pattern.
+The `@repo/coupons` module has been successfully created with comprehensive coupon management functionality following the ultra-fine-grained architecture pattern.
 
 ## Implemented Features
 
@@ -127,10 +127,10 @@ coupons/
 - Helper function tests
 
 ## Dependencies
-- `@company/core`: Core module functionality
-- `@company/database`: Database operations
-- `@company/types`: Shared type definitions
-- `@company/utils`: Utility functions
+- `@repo/core`: Core module functionality
+- `@repo/database`: Database operations
+- `@repo/types`: Shared type definitions
+- `@repo/utils`: Utility functions
 - `date-fns`: Date manipulation
 - `zod`: Runtime type validation
 

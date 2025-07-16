@@ -1,5 +1,5 @@
 /**
- * @company/ui-forms - Utilities Index
+ * @repo/ui-forms - Utilities Index
  * 
  * 폼 유틸리티 함수들의 통합 내보내기
  */

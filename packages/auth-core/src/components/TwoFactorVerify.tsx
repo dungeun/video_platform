@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Result } from '@company/core';
+import { Result } from '@repo/core';
 import { totpManager } from '../utils/TotpManager';
 
 export interface TwoFactorVerifyProps {

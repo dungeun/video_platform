@@ -1,4 +1,4 @@
-# @company/api-client
+# @repo/api-client
 
 엔터프라이즈급 HTTP 클라이언트 모듈
 
@@ -14,13 +14,13 @@
 ## 설치
 
 ```bash
-pnpm add @company/api-client
+pnpm add @repo/api-client
 ```
 
 ## 기본 사용법
 
 ```typescript
-import { createHttpClient } from '@company/api-client';
+import { createHttpClient } from '@repo/api-client';
 
 // 기본 클라이언트 생성
 const client = createHttpClient({
@@ -44,7 +44,7 @@ const newUser = await client.post('/users', {
 ## 인터셉터 설정
 
 ```typescript
-import { createHttpClientWithInterceptors } from '@company/api-client';
+import { createHttpClientWithInterceptors } from '@repo/api-client';
 
 const client = createHttpClientWithInterceptors(
   {

@@ -2,8 +2,8 @@
  * Unified tracking service for all carriers
  */
 
-import { Logger, EventEmitter } from '@company/core';
-import { CacheManager } from '@company/cache';
+import { Logger, EventEmitter } from '@repo/core';
+import { CacheManager } from '@repo/cache';
 import {
   TrackingRequest,
   TrackingInfo,

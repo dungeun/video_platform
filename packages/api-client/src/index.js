@@ -1,5 +1,5 @@
 /**
- * @company/api-client - Enterprise HTTP Client Module
+ * @repo/api-client - Enterprise HTTP Client Module
  *
  * 엔터프라이즈급 HTTP 통신 모듈
  * - Zero Error Architecture 기반
@@ -106,7 +106,7 @@ export const DEFAULT_MAX_RETRIES = 3;
 export const DEFAULT_RETRY_DELAY = 1000; // 1초
 // ===== 모듈 정보 =====
 export const API_CLIENT_MODULE_INFO = {
-    name: '@company/api-client',
+    name: '@repo/api-client',
     version: '1.0.0',
     description: 'Enterprise HTTP Client Module with Interceptors',
     author: 'Enterprise AI Team',

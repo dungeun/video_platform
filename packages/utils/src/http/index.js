@@ -1,5 +1,5 @@
 /**
- * @company/utils - HTTP 요청 유틸리티
+ * @repo/utils - HTTP 요청 유틸리티
  */
 // ===== HTTP 클라이언트 =====
 export class HttpClient {

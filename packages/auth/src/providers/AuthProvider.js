@@ -1,6 +1,6 @@
 import { jsx as _jsx } from "react/jsx-runtime";
 /**
- * @company/auth - Authentication Provider
+ * @repo/auth - Authentication Provider
  * React Context provider for pure authentication
  */
 import React, { createContext, useContext, useEffect } from 'react';

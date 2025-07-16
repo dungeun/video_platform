@@ -1,5 +1,5 @@
 /**
- * @company/ui-forms - Components Index
+ * @repo/ui-forms - Components Index
  *
  * 폼 컴포넌트들의 통합 내보내기
  */

@@ -10,9 +10,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
-      '@company/core': resolve(__dirname, '../core/src'),
-      '@company/types': resolve(__dirname, '../types/src'),
-      '@company/utils': resolve(__dirname, '../utils/src')
+      '@repo/core': resolve(__dirname, '../core/src'),
+      '@repo/types': resolve(__dirname, '../types/src'),
+      '@repo/utils': resolve(__dirname, '../utils/src')
     }
   }
 });

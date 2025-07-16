@@ -1,10 +1,10 @@
 /**
- * @module @company/inventory-tracking/services/ReservationService
+ * @module @repo/inventory-tracking/services/ReservationService
  * @description Stock reservation management service
  */
 
-import { ModuleBase } from '@company/core';
-import { EventEmitter } from '@company/core';
+import { ModuleBase } from '@repo/core';
+import { EventEmitter } from '@repo/core';
 import type { StockReservation } from '../types';
 import type {
   IStockReservationRepository,

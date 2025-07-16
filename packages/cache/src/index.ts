@@ -1,5 +1,5 @@
 /**
- * @company/cache - Enterprise Cache Module
+ * @repo/cache - Enterprise Cache Module
  * 
  * 다양한 캐시 전략을 지원하는 엔터프라이즈 캐시 모듈
  * - LRU, LFU, FIFO 전략 지원
@@ -211,7 +211,7 @@ export const CACHE_LIMITS = {
 // ===== 모듈 정보 =====
 
 export const CACHE_MODULE_INFO = {
-  name: '@company/cache',
+  name: '@repo/cache',
   version: '1.0.0',
   description: 'Enterprise Cache Module with Multiple Strategies',
   author: 'Enterprise AI Team',

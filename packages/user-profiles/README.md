@@ -1,4 +1,4 @@
-# @company/user-profiles
+# @repo/user-profiles
 
 User Profile Management Module providing CRUD operations for user profile information including name, picture, and bio.
 
@@ -7,14 +7,14 @@ User Profile Management Module providing CRUD operations for user profile inform
 - ✅ **CRUD Operations**: Create, Read, Update, Delete user profiles
 - ✅ **Validation**: Built-in input validation and sanitization
 - ✅ **React Integration**: Hooks and components for React applications
-- ✅ **Database Integration**: Works with @company/database module
+- ✅ **Database Integration**: Works with @repo/database module
 - ✅ **TypeScript**: Full TypeScript support with comprehensive types
 - ✅ **Testing**: Complete test coverage with Vitest
 
 ## Installation
 
 ```bash
-pnpm add @company/user-profiles
+pnpm add @repo/user-profiles
 ```
 
 ## Quick Start
@@ -22,8 +22,8 @@ pnpm add @company/user-profiles
 ### Service Usage
 
 ```typescript
-import { UserProfileService } from '@company/user-profiles';
-import { DatabaseManager } from '@company/database';
+import { UserProfileService } from '@repo/user-profiles';
+import { DatabaseManager } from '@repo/database';
 
 const db = new DatabaseManager(/* config */);
 const profileService = new UserProfileService(db);
@@ -52,7 +52,7 @@ await profileService.delete('user-123');
 ### React Hook Usage
 
 ```typescript
-import { useUserProfile } from '@company/user-profiles';
+import { useUserProfile } from '@repo/user-profiles';
 
 function UserProfileComponent({ userId }: { userId: string }) {
   const { profile, loading, error, update } = useUserProfile({
@@ -77,7 +77,7 @@ function UserProfileComponent({ userId }: { userId: string }) {
 ### React Component Usage
 
 ```typescript
-import { UserProfileCard, UserProfileForm } from '@company/user-profiles';
+import { UserProfileCard, UserProfileForm } from '@repo/user-profiles';
 
 function ProfileDisplay({ profile }: { profile: UserProfile }) {
   return (

@@ -1,11 +1,11 @@
 /**
- * @company/database - Transaction Manager
+ * @repo/database - Transaction Manager
  * 
  * 데이터베이스 트랜잭션을 관리하는 클래스
  * Zero Error Architecture 기반으로 설계됨
  */
 
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 import { QueryBuilder } from '../query/QueryBuilder';
 import type {
   Transaction,

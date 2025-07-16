@@ -1,6 +1,6 @@
 "use strict";
 /**
- * @company/auth - Pure Authentication Types
+ * @repo/auth - Pure Authentication Types
  * Ultra-Fine-Grained Module - Login/Logout Only
  */
 Object.defineProperty(exports, "__esModule", { value: true });

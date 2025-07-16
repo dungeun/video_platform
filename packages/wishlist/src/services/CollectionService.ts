@@ -1,5 +1,5 @@
-import { Logger } from '@company/core';
-import { CacheManager } from '@company/cache';
+import { Logger } from '@repo/core';
+import { CacheManager } from '@repo/cache';
 import { 
   ICollectionRepository,
   IWishlistRepository 

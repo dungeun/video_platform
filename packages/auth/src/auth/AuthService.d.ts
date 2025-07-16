@@ -1,5 +1,5 @@
 /**
- * @company/auth - Pure Authentication Service
+ * @repo/auth - Pure Authentication Service
  * Ultra-Fine-Grained Module - Login/Logout Only
  */
 interface Result<T, E = string> {

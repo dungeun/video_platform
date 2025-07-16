@@ -1,4 +1,4 @@
-# @company/sessions
+# @repo/sessions
 
 Ultra-fine-grained session management module for React applications with comprehensive session lifecycle, validation, storage, and security features.
 
@@ -16,7 +16,7 @@ Ultra-fine-grained session management module for React applications with compreh
 ## Installation
 
 ```bash
-npm install @company/sessions
+npm install @repo/sessions
 ```
 
 ## Basic Usage
@@ -24,7 +24,7 @@ npm install @company/sessions
 ### React Provider Setup
 
 ```tsx
-import { SessionProvider } from '@company/sessions';
+import { SessionProvider } from '@repo/sessions';
 
 function App() {
   return (
@@ -48,7 +48,7 @@ function App() {
 ### Using Sessions in Components
 
 ```tsx
-import { useSession, SessionStatus } from '@company/sessions';
+import { useSession, SessionStatus } from '@repo/sessions';
 
 function MyComponent() {
   const { 
@@ -90,7 +90,7 @@ import {
   SessionService,
   MemorySessionStorageProvider,
   type SessionConfig 
-} from '@company/sessions';
+} from '@repo/sessions';
 
 const config: SessionConfig = {
   maxAge: 60 * 60 * 1000, // 1 hour
@@ -147,7 +147,7 @@ await sessionService.endSession();
 ### Custom Storage Provider
 
 ```tsx
-import { SessionStorageProvider, SessionData } from '@company/sessions';
+import { SessionStorageProvider, SessionData } from '@repo/sessions';
 
 class RedisSessionStorageProvider implements SessionStorageProvider {
   async get(sessionId: string): Promise<SessionData | null> {
@@ -187,7 +187,7 @@ class RedisSessionStorageProvider implements SessionStorageProvider {
 ### Session Management
 
 ```tsx
-import { useSessionManager } from '@company/sessions';
+import { useSessionManager } from '@repo/sessions';
 
 function SessionManager() {
   const {
@@ -232,7 +232,7 @@ function SessionManager() {
 ### SessionInfo
 
 ```tsx
-import { SessionInfo } from '@company/sessions';
+import { SessionInfo } from '@repo/sessions';
 
 <SessionInfo 
   session={currentSession}
@@ -244,7 +244,7 @@ import { SessionInfo } from '@company/sessions';
 ### SessionList
 
 ```tsx
-import { SessionList } from '@company/sessions';
+import { SessionList } from '@repo/sessions';
 
 <SessionList
   sessions={sessions}
@@ -256,7 +256,7 @@ import { SessionList } from '@company/sessions';
 ### SessionStatus
 
 ```tsx
-import { SessionStatus } from '@company/sessions';
+import { SessionStatus } from '@repo/sessions';
 
 <SessionStatus
   showDetails={true}
@@ -333,7 +333,7 @@ import {
   SessionValidationError,
   SessionStorageError,
   SessionSecurityError 
-} from '@company/sessions';
+} from '@repo/sessions';
 
 try {
   await sessionService.startSession('user123');

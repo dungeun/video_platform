@@ -1,8 +1,8 @@
 /**
- * @company/storage - 스토리지 매니저
+ * @repo/storage - 스토리지 매니저
  * 여러 스토리지 프로바이더를 통합 관리
  */
-import { ModuleBase } from '@company/core';
+import { ModuleBase } from '@repo/core';
 import { StorageType, StorageEventType } from './types';
 import { LocalStorageProvider } from './providers/LocalStorageProvider';
 import { SessionStorageProvider } from './providers/SessionStorageProvider';
@@ -10,7 +10,7 @@ import { MemoryStorageProvider } from './providers/MemoryStorageProvider';
 export class StorageManager extends ModuleBase {
     constructor(config) {
         super({
-            name: '@company/storage',
+            name: '@repo/storage',
             version: '1.0.0',
             description: 'Enterprise Storage Manager'
         });

@@ -1,4 +1,4 @@
-import { EventEmitter } from '@company/core';
+import { EventEmitter } from '@repo/core';
 import { PromotionCampaign, CampaignPerformance, ServiceResponse, Coupon } from '../types';
 import { PromotionCampaignRepository, CouponRepository, CouponUsageRepository } from '../repositories/interfaces';
 export declare class PromotionCampaignService extends EventEmitter {

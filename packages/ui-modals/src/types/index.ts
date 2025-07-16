@@ -1,5 +1,5 @@
 /**
- * @company/ui-modals - Types
+ * @repo/ui-modals - Types
  * 
  * 모달 컴포넌트 전용 타입 정의
  */

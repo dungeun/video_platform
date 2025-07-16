@@ -1,5 +1,5 @@
 /**
- * @company/storage - Enterprise Storage Module
+ * @repo/storage - Enterprise Storage Module
  * 
  * 다양한 스토리지 프로바이더를 통합 관리하는 엔터프라이즈 스토리지 모듈
  * - LocalStorage, SessionStorage, Memory, IndexedDB 지원
@@ -238,7 +238,7 @@ export const STORAGE_LIMITS = {
 // ===== 모듈 정보 =====
 
 export const STORAGE_MODULE_INFO = {
-  name: '@company/storage',
+  name: '@repo/storage',
   version: '1.0.0',
   description: 'Enterprise Storage Module with Multiple Providers',
   author: 'Enterprise AI Team',

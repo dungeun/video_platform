@@ -1,10 +1,10 @@
 /**
- * @company/storage - SessionStorage 프로바이더
+ * @repo/storage - SessionStorage 프로바이더
  * 브라우저 SessionStorage 기반 스토리지
  */
 import { LocalStorageProvider } from './LocalStorageProvider';
 import { StorageType } from '../types';
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 export class SessionStorageProvider extends LocalStorageProvider {
     constructor(config) {
         super(config);

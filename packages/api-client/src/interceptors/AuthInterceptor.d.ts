@@ -1,5 +1,5 @@
 /**
- * @company/api-client - 인증 인터셉터
+ * @repo/api-client - 인증 인터셉터
  * 자동 토큰 주입 및 갱신
  */
 import { RequestInterceptor, ResponseInterceptor, HttpError } from '../types';

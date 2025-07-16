@@ -1,5 +1,5 @@
 /**
- * @company/permissions - usePermission 훅
+ * @repo/permissions - usePermission 훅
  * React hook for permission checking
  */
 

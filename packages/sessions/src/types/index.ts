@@ -1,4 +1,4 @@
-import type { BaseEntity, TimestampedEntity } from '@company/types';
+import type { BaseEntity, TimestampedEntity } from '@repo/types';
 
 // Core Session Types
 export interface SessionData extends TimestampedEntity {

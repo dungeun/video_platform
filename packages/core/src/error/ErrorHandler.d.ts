@@ -1,5 +1,5 @@
 /**
- * @company/core - 에러 핸들러
+ * @repo/core - 에러 핸들러
  * Zero Error Architecture를 위한 안전한 에러 처리
  */
 import { ModuleError } from '../types';

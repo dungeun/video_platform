@@ -1,5 +1,5 @@
 /**
- * @company/ui-forms - useFieldState Hook
+ * @repo/ui-forms - useFieldState Hook
  * 
  * 개별 필드의 상태를 관리하는 훅
  */

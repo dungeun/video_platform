@@ -1,8 +1,8 @@
 /**
- * @company/api-client - 인증 인터셉터
+ * @repo/api-client - 인증 인터셉터
  * 자동 토큰 주입 및 갱신
  */
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 export class AuthInterceptor {
     constructor(config) {
         this.isRefreshing = false;

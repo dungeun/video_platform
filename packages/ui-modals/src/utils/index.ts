@@ -1,5 +1,5 @@
 /**
- * @company/ui-modals - Utils Export
+ * @repo/ui-modals - Utils Export
  */
 
 export * from './modalStyles';

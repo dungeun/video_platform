@@ -1,5 +1,5 @@
 /**
- * @company/core - Enterprise AI Module System Core
+ * @repo/core - Enterprise AI Module System Core
  * 
  * 모든 엔터프라이즈 모듈의 기반이 되는 핵심 라이브러리
  * Zero Error Architecture 기반으로 설계됨
@@ -194,7 +194,7 @@ export function shallowEqual(obj1: any, obj2: any): boolean {
 
 // ===== 모듈 정보 =====
 export const CORE_MODULE_INFO = {
-  name: '@company/core',
+  name: '@repo/core',
   version: '1.0.0',
   description: 'Enterprise AI Module System - Core Foundation',
   author: 'Enterprise AI Team',

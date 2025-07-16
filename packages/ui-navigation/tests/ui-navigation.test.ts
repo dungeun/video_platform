@@ -1,5 +1,5 @@
 /**
- * @company/ui-navigation Tests
+ * @repo/ui-navigation Tests
  * 네비게이션 모듈 테스트
  */
 
@@ -14,10 +14,10 @@ import {
   getNavigationTheme
 } from '../src';
 
-describe('@company/ui-navigation', () => {
+describe('@repo/ui-navigation', () => {
   describe('Module Info', () => {
     test('should have correct module information', () => {
-      expect(UI_NAVIGATION_MODULE_INFO.name).toBe('@company/ui-navigation');
+      expect(UI_NAVIGATION_MODULE_INFO.name).toBe('@repo/ui-navigation');
       expect(UI_NAVIGATION_MODULE_INFO.version).toBe('1.0.0');
       expect(UI_NAVIGATION_MODULE_INFO.features).toContain('Mega Menu with Multi-column Support');
       expect(UI_NAVIGATION_MODULE_INFO.features).toContain('Mobile Navigation with Touch Support');

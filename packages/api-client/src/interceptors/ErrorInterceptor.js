@@ -1,8 +1,8 @@
 /**
- * @company/api-client - 에러 인터셉터
+ * @repo/api-client - 에러 인터셉터
  * HTTP 에러 처리 및 변환
  */
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 export class ErrorInterceptor {
     constructor(config) {
         this.defaultErrorMessages = {

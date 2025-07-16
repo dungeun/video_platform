@@ -1,5 +1,5 @@
 /**
- * @company/ui-modals - Alert Modal Component
+ * @repo/ui-modals - Alert Modal Component
  * 
  * 알림 전용 모달 컴포넌트
  */

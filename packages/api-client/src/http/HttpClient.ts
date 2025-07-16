@@ -1,10 +1,10 @@
 /**
- * @company/api-client - HTTP 클라이언트
+ * @repo/api-client - HTTP 클라이언트
  * Zero Error Architecture 기반 HTTP 통신 모듈
  */
 
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
-import { ModuleBase, Result, Logger } from '@company/core';
+import { ModuleBase, Result, Logger } from '@repo/core';
 import { 
   HttpRequestConfig, 
   HttpResponse, 
@@ -30,7 +30,7 @@ export class HttpClient extends ModuleBase {
 
   constructor(config: ApiClientConfig) {
     super({
-      name: '@company/api-client',
+      name: '@repo/api-client',
       version: '1.0.0',
       description: 'Enterprise HTTP Client'
     });

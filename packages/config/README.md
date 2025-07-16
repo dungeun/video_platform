@@ -1,4 +1,4 @@
-# @company/config
+# @repo/config
 
 🔧 **엔터프라이즈 설정 관리 모듈**  
 다양한 환경별 설정을 통합 관리하는 설정 모듈
@@ -29,7 +29,7 @@
 ## 📦 설치
 
 ```bash
-npm install @company/config
+npm install @repo/config
 ```
 
 ## 🎯 빠른 시작
@@ -37,7 +37,7 @@ npm install @company/config
 ### 1. 기본 사용법
 
 ```typescript
-import { initializeGlobalConfig, getConfig } from '@company/config';
+import { initializeGlobalConfig, getConfig } from '@repo/config';
 
 // 설정 초기화
 const result = await initializeGlobalConfig();
@@ -57,7 +57,7 @@ console.log('서버 포트:', serverPort);
 ### 2. 커스텀 설정 소스
 
 ```typescript
-import { createConfigManager } from '@company/config';
+import { createConfigManager } from '@repo/config';
 
 const manager = createConfigManager({
   sources: [
@@ -76,7 +76,7 @@ const result = await manager.load();
 ### 3. 설정 변경 감지
 
 ```typescript
-import { getGlobalConfig } from '@company/config';
+import { getGlobalConfig } from '@repo/config';
 
 const manager = getGlobalConfig();
 manager.watch((newConfig) => {
@@ -309,7 +309,7 @@ module.exports = {
 ### 1. 환경별 검증
 
 ```typescript
-import { ConfigValidator } from '@company/config';
+import { ConfigValidator } from '@repo/config';
 
 const validator = new ConfigValidator();
 
@@ -323,7 +323,7 @@ if (result.isFailure) {
 ### 2. 커스텀 로더
 
 ```typescript
-import { ConfigLoader, Result } from '@company/config';
+import { ConfigLoader, Result } from '@repo/config';
 
 class RemoteConfigLoader implements ConfigLoader {
   readonly priority = 50;
@@ -347,7 +347,7 @@ manager.addLoader('remote', new RemoteConfigLoader());
 ### 3. 설정 값 마스킹
 
 ```typescript
-import { maskEnvValue, dumpEnvConfig } from '@company/config';
+import { maskEnvValue, dumpEnvConfig } from '@repo/config';
 
 // 민감한 값 마스킹
 const maskedSecret = maskEnvValue('JWT_SECRET', 'super-secret-key');
@@ -404,11 +404,11 @@ npm run test:coverage
 
 ```typescript
 // 이전 버전
-import config from '@company/config';
+import config from '@repo/config';
 const dbHost = config.database.host;
 
 // 새 버전
-import { getConfig } from '@company/config';
+import { getConfig } from '@repo/config';
 const dbHost = getConfig('database').host;
 ```
 
@@ -444,4 +444,4 @@ MIT License
 
 ---
 
-**🎯 다음 단계**: [@company/database](../database) 모듈과 함께 사용하여 완전한 설정 기반 데이터베이스 연결을 구성하세요!
+**🎯 다음 단계**: [@repo/database](../database) 모듈과 함께 사용하여 완전한 설정 기반 데이터베이스 연결을 구성하세요!

@@ -1,5 +1,5 @@
 /**
- * @company/ui-forms - RadioGroup Component
+ * @repo/ui-forms - RadioGroup Component
  *
  * 라디오 버튼 그룹을 위한 컴포넌트
  */

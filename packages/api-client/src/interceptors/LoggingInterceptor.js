@@ -1,8 +1,8 @@
 /**
- * @company/api-client - 로깅 인터셉터
+ * @repo/api-client - 로깅 인터셉터
  * HTTP 요청/응답 로깅
  */
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 export class LoggingInterceptor {
     constructor(config) {
         this.requestMap = new Map();

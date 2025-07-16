@@ -1,4 +1,4 @@
-import { EventEmitter } from '@company/core';
+import { EventEmitter } from '@repo/core';
 import { PromotionCampaignEntity } from '../entities';
 export class PromotionCampaignService extends EventEmitter {
     constructor(campaignRepository, couponRepository, usageRepository) {

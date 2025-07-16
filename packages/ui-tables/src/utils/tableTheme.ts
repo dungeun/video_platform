@@ -1,5 +1,5 @@
 /**
- * @company/ui-tables - Table Theme Utils
+ * @repo/ui-tables - Table Theme Utils
  * 
  * 테이블 테마 관련 유틸리티
  */

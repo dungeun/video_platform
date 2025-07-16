@@ -1,10 +1,10 @@
 /**
- * @company/api-client - 에러 인터셉터
+ * @repo/api-client - 에러 인터셉터
  * HTTP 에러 처리 및 변환
  */
 
 import { ResponseInterceptor, HttpError, ApiError } from '../types';
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 
 export interface ErrorInterceptorConfig {
   // 에러 변환

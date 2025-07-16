@@ -1,10 +1,10 @@
-# @company/ui-forms
+# @repo/ui-forms
 
 UI Form Components - Ultra-Fine-Grained Module for Forms Only
 
 ## 개요
 
-`@company/ui-forms`는 폼 컴포넌트에만 특화된 초세분화 모듈입니다. 입력 필드, 검증, 폼 상태 관리 등 폼과 관련된 모든 기능을 제공합니다.
+`@repo/ui-forms`는 폼 컴포넌트에만 특화된 초세분화 모듈입니다. 입력 필드, 검증, 폼 상태 관리 등 폼과 관련된 모든 기능을 제공합니다.
 
 ## 주요 기능
 
@@ -38,7 +38,7 @@ UI Form Components - Ultra-Fine-Grained Module for Forms Only
 ## 설치
 
 ```bash
-npm install @company/ui-forms
+npm install @repo/ui-forms
 ```
 
 ## 기본 사용법
@@ -46,7 +46,7 @@ npm install @company/ui-forms
 ### 간단한 폼
 
 ```tsx
-import { Form, Field, TextInput } from '@company/ui-forms';
+import { Form, Field, TextInput } from '@repo/ui-forms';
 
 function ContactForm() {
   const handleSubmit = (values, formState) => {
@@ -76,7 +76,7 @@ function ContactForm() {
 ### 검증이 포함된 폼
 
 ```tsx
-import { Form, Field, TextInput, TextArea } from '@company/ui-forms';
+import { Form, Field, TextInput, TextArea } from '@repo/ui-forms';
 
 function UserForm() {
   const validationRules = {
@@ -115,7 +115,7 @@ function UserForm() {
 ### 커스텀 훅 사용
 
 ```tsx
-import { useForm, TextInput } from '@company/ui-forms';
+import { useForm, TextInput } from '@repo/ui-forms';
 
 function CustomForm() {
   const form = useForm({
@@ -191,7 +191,7 @@ const customRules = {
 ## 테마 커스터마이징
 
 ```tsx
-import { setFormTheme } from '@company/ui-forms';
+import { setFormTheme } from '@repo/ui-forms';
 
 // 커스텀 테마 적용
 setFormTheme({
@@ -220,7 +220,7 @@ import type {
   ValidationRule,
   FieldError,
   UseFormReturn
-} from '@company/ui-forms';
+} from '@repo/ui-forms';
 ```
 
 ## 접근성
@@ -261,4 +261,4 @@ MIT
 
 ---
 
-**@company/ui-forms** - 폼 컴포넌트에만 집중하는 초세분화 모듈
+**@repo/ui-forms** - 폼 컴포넌트에만 집중하는 초세분화 모듈

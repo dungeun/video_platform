@@ -1,5 +1,5 @@
 /**
- * @company/auth - Logout Button Component
+ * @repo/auth - Logout Button Component
  * Simple logout button for authentication
  */
 import React from 'react';

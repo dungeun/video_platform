@@ -1,5 +1,5 @@
 /**
- * @company/ui-navigation Utils
+ * @repo/ui-navigation Utils
  * 
  * 네비게이션 관련 유틸리티 함수들
  */

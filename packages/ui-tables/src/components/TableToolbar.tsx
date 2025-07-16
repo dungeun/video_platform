@@ -1,5 +1,5 @@
 /**
- * @company/ui-tables - TableToolbar Component
+ * @repo/ui-tables - TableToolbar Component
  * 테이블 툴바 컴포넌트 (검색, 필터, 액션 버튼 등)
  */
 

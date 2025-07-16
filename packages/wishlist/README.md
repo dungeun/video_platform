@@ -1,4 +1,4 @@
-# @company/wishlist
+# @repo/wishlist
 
 Comprehensive wishlist management module with favorites tracking, sharing capabilities, stock notifications, price tracking, and collections support.
 
@@ -27,7 +27,7 @@ Comprehensive wishlist management module with favorites tracking, sharing capabi
 ## Installation
 
 ```bash
-npm install @company/wishlist
+npm install @repo/wishlist
 ```
 
 ## Usage
@@ -35,7 +35,7 @@ npm install @company/wishlist
 ### Basic Wishlist Operations
 
 ```typescript
-import { useWishlist } from '@company/wishlist';
+import { useWishlist } from '@repo/wishlist';
 
 function MyWishlists() {
   const {
@@ -88,7 +88,7 @@ function MyWishlists() {
 ### Managing Wishlist Items
 
 ```typescript
-import { useWishlistItems } from '@company/wishlist';
+import { useWishlistItems } from '@repo/wishlist';
 
 function WishlistItems({ wishlistId }: { wishlistId: string }) {
   const {
@@ -157,7 +157,7 @@ function WishlistItems({ wishlistId }: { wishlistId: string }) {
 ### Sharing Wishlists
 
 ```typescript
-import { useWishlistShare } from '@company/wishlist';
+import { useWishlistShare } from '@repo/wishlist';
 
 function ShareWishlist({ wishlistId }: { wishlistId: string }) {
   const {
@@ -198,7 +198,7 @@ function ShareWishlist({ wishlistId }: { wishlistId: string }) {
 ### Managing Notifications
 
 ```typescript
-import { useWishlistNotifications } from '@company/wishlist';
+import { useWishlistNotifications } from '@repo/wishlist';
 
 function Notifications() {
   const {
@@ -230,7 +230,7 @@ function Notifications() {
 ### Working with Collections
 
 ```typescript
-import { useCollections } from '@company/wishlist';
+import { useCollections } from '@repo/wishlist';
 
 function Collections() {
   const {

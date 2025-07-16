@@ -1,5 +1,5 @@
-import { ModuleBase, Logger, ErrorHandler } from '@company/core';
-import { StorageManager } from '@company/storage';
+import { ModuleBase, Logger, ErrorHandler } from '@repo/core';
+import { StorageManager } from '@repo/storage';
 import {
   SearchTrackingData,
   SearchMetrics,

@@ -1,4 +1,4 @@
-# @company/search-advanced
+# @repo/search-advanced
 
 Advanced search module providing comprehensive search capabilities with multi-filter system, faceted search, search suggestions, analytics, and saved searches.
 
@@ -16,7 +16,7 @@ Advanced search module providing comprehensive search capabilities with multi-fi
 ## Installation
 
 ```bash
-pnpm add @company/search-advanced
+pnpm add @repo/search-advanced
 ```
 
 ## Usage
@@ -24,7 +24,7 @@ pnpm add @company/search-advanced
 ### Basic Search
 
 ```typescript
-import { SearchService } from '@company/search-advanced';
+import { SearchService } from '@repo/search-advanced';
 
 const searchService = new SearchService();
 
@@ -41,7 +41,7 @@ const results = await searchService.search({
 ### Faceted Search
 
 ```typescript
-import { FacetedSearchService } from '@company/search-advanced';
+import { FacetedSearchService } from '@repo/search-advanced';
 
 const facetedSearch = new FacetedSearchService();
 
@@ -59,7 +59,7 @@ const results = await facetedSearch.searchWithFacets({
 ### Search Suggestions
 
 ```typescript
-import { SearchSuggestionService } from '@company/search-advanced';
+import { SearchSuggestionService } from '@repo/search-advanced';
 
 const suggestionService = new SearchSuggestionService();
 
@@ -71,7 +71,7 @@ const suggestions = await suggestionService.getSuggestions('lapt');
 ### Saved Searches
 
 ```typescript
-import { SavedSearchService } from '@company/search-advanced';
+import { SavedSearchService } from '@repo/search-advanced';
 
 const savedSearchService = new SavedSearchService();
 
@@ -92,7 +92,7 @@ const savedSearches = await savedSearchService.getSavedSearches();
 ### Search Analytics
 
 ```typescript
-import { SearchAnalyticsService } from '@company/search-advanced';
+import { SearchAnalyticsService } from '@repo/search-advanced';
 
 const analytics = new SearchAnalyticsService();
 
@@ -183,7 +183,7 @@ const popularSearches = await analytics.getPopularSearches({
 ## Configuration
 
 ```typescript
-import { configureSearch } from '@company/search-advanced';
+import { configureSearch } from '@repo/search-advanced';
 
 configureSearch({
   // Search engine configuration

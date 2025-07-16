@@ -1,6 +1,6 @@
-import { ModuleBase, Logger, ErrorHandler } from '@company/core';
-import { CacheManager } from '@company/cache';
-import { StorageManager } from '@company/storage';
+import { ModuleBase, Logger, ErrorHandler } from '@repo/core';
+import { CacheManager } from '@repo/cache';
+import { StorageManager } from '@repo/storage';
 import {
   SuggestionParams,
   SuggestionResult,

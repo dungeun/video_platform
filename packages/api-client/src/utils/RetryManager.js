@@ -1,8 +1,8 @@
 /**
- * @company/api-client - 재시도 관리자
+ * @repo/api-client - 재시도 관리자
  * HTTP 요청 재시도 로직 관리
  */
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 export class RetryManager {
     constructor(config) {
         this.defaultConfig = {

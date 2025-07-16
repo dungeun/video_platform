@@ -1,5 +1,5 @@
 /**
- * @company/ui-buttons - UI Buttons Module
+ * @repo/ui-buttons - UI Buttons Module
  *
  * 초세분화된 버튼 전용 모듈
  * - 버튼 컴포넌트만 담당
@@ -14,7 +14,7 @@ export type { BaseButtonProps, ButtonGroupProps, IconButtonProps, FABProps, Butt
 export { useButtonClasses, useButtonGroupClasses, useFABClasses } from './hooks';
 export { getButtonTheme, getButtonSizeStyle, getButtonVariantStyle, setButtonTheme } from './utils';
 export declare const UI_BUTTONS_MODULE_INFO: {
-    readonly name: "@company/ui-buttons";
+    readonly name: "@repo/ui-buttons";
     readonly version: "1.0.0";
     readonly description: "Ultra-Fine-Grained UI Button Components Module";
     readonly author: "Enterprise AI Team";

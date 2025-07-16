@@ -1,5 +1,5 @@
 /**
- * @company/ui-tables - useColumnManager Hook
+ * @repo/ui-tables - useColumnManager Hook
  * 
  * 테이블 컬럼 관리 훅
  */

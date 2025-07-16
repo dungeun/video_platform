@@ -1,5 +1,5 @@
 /**
- * @company/types - Zod 스키마 테스트
+ * @repo/types - Zod 스키마 테스트
  */
 
 import { describe, it, expect } from 'vitest';

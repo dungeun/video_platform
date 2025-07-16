@@ -1,5 +1,5 @@
 /**
- * @company/ui-modals - UI Modals Module
+ * @repo/ui-modals - UI Modals Module
  * 
  * 초세분화된 모달 전용 모듈
  * - 모달 컴포넌트만 담당
@@ -92,7 +92,7 @@ export {
 
 // ===== 모듈 정보 =====
 export const UI_MODALS_MODULE_INFO = {
-  name: '@company/ui-modals',
+  name: '@repo/ui-modals',
   version: '1.0.0',
   description: 'Ultra-Fine-Grained UI Modal Components Module',
   author: 'Enterprise AI Team',

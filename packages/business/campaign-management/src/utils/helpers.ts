@@ -1,5 +1,5 @@
 /**
- * @company/campaign-management - Helper Utilities
+ * @repo/campaign-management - Helper Utilities
  */
 
 import { format, formatDistanceToNow, addDays, differenceInDays } from 'date-fns';

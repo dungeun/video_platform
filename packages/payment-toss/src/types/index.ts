@@ -1,4 +1,4 @@
-import { Result } from '@company/core'
+import { Result } from '@repo/core'
 
 // 결제 방법 타입
 export type PaymentMethod = 

@@ -1,9 +1,9 @@
 /**
- * @company/auth-core - 인증/인가 타입 정의
+ * @repo/auth-core - 인증/인가 타입 정의
  * Zero Error Architecture 기반
  */
 
-import { Result } from '@company/core';
+import { Result } from '@repo/core';
 
 // ===== 기본 사용자 타입 =====
 

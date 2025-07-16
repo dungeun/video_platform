@@ -1,5 +1,5 @@
 /**
- * @module @company/inventory-tracking/validators
+ * @module @repo/inventory-tracking/validators
  * @description Validation schemas and utilities
  */
 

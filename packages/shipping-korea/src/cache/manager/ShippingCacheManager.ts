@@ -2,8 +2,8 @@
  * Cache manager for shipping data
  */
 
-import { CacheManager } from '@company/cache';
-import { Logger } from '@company/core';
+import { CacheManager } from '@repo/cache';
+import { Logger } from '@repo/core';
 
 export class ShippingCacheManager extends CacheManager {
   private logger: Logger;

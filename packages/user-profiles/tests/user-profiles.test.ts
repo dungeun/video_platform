@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { UserProfileService } from '../src/services/UserProfileService';
 import { UserProfileValidator } from '../src/utils/validation';
-import type { DatabaseManager } from '@company/database';
+import type { DatabaseManager } from '@repo/database';
 import type { CreateUserProfileInput, UpdateUserProfileInput, UserProfile } from '../src/types';
 
 // Mock dependencies
-vi.mock('@company/database');
-vi.mock('@company/core');
+vi.mock('@repo/database');
+vi.mock('@repo/core');
 
 describe('UserProfileService', () => {
   let service: UserProfileService;

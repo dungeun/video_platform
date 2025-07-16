@@ -18,10 +18,10 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@company/types': path.resolve(__dirname, '../types/src'),
-      '@company/core': path.resolve(__dirname, '../core/src'),
-      '@company/storage': path.resolve(__dirname, '../storage/src'),
-      '@company/utils': path.resolve(__dirname, '../utils/src'),
+      '@repo/types': path.resolve(__dirname, '../types/src'),
+      '@repo/core': path.resolve(__dirname, '../core/src'),
+      '@repo/storage': path.resolve(__dirname, '../storage/src'),
+      '@repo/utils': path.resolve(__dirname, '../utils/src'),
     },
   },
 });

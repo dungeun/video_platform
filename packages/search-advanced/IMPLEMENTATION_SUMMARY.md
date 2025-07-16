@@ -1,7 +1,7 @@
-# @company/search-advanced Implementation Summary
+# @repo/search-advanced Implementation Summary
 
 ## Overview
-The `@company/search-advanced` module has been successfully created with comprehensive advanced search capabilities including multi-filter system, faceted search, search suggestions, analytics, and saved searches.
+The `@repo/search-advanced` module has been successfully created with comprehensive advanced search capabilities including multi-filter system, faceted search, search suggestions, analytics, and saved searches.
 
 ## Module Structure
 
@@ -105,12 +105,12 @@ search-advanced/
 ## Dependencies
 
 ### Core Dependencies
-- `@company/core`: Base module system, logging, events
-- `@company/types`: Shared type definitions
-- `@company/utils`: Utility functions
-- `@company/cache`: Caching functionality
-- `@company/storage`: Data persistence
-- `@company/api-client`: HTTP client for backend integration
+- `@repo/core`: Base module system, logging, events
+- `@repo/types`: Shared type definitions
+- `@repo/utils`: Utility functions
+- `@repo/cache`: Caching functionality
+- `@repo/storage`: Data persistence
+- `@repo/api-client`: HTTP client for backend integration
 
 ### External Dependencies
 - `fuse.js`: Fuzzy search capabilities
@@ -128,7 +128,7 @@ search-advanced/
 
 ### Basic Search
 ```typescript
-import { SearchService } from '@company/search-advanced';
+import { SearchService } from '@repo/search-advanced';
 
 const searchService = new SearchService(config);
 const results = await searchService.search({
@@ -139,7 +139,7 @@ const results = await searchService.search({
 
 ### React Integration
 ```tsx
-import { SearchBox, SearchResults, useSearch } from '@company/search-advanced';
+import { SearchBox, SearchResults, useSearch } from '@repo/search-advanced';
 
 function SearchPage() {
   const { result, loading, search } = useSearch({ searchService });
@@ -155,7 +155,7 @@ function SearchPage() {
 
 ### Faceted Search
 ```typescript
-import { FacetedSearchService } from '@company/search-advanced';
+import { FacetedSearchService } from '@repo/search-advanced';
 
 const facetedSearch = new FacetedSearchService(searchService);
 const results = await facetedSearch.searchWithFacets({
@@ -166,7 +166,7 @@ const results = await facetedSearch.searchWithFacets({
 
 ### Filter Builder
 ```typescript
-import { FilterBuilder } from '@company/search-advanced';
+import { FilterBuilder } from '@repo/search-advanced';
 
 const filters = new FilterBuilder()
   .addTextFilter('title', 'Title')
@@ -178,7 +178,7 @@ const filters = new FilterBuilder()
 ## Configuration
 
 ```typescript
-import { configureSearch } from '@company/search-advanced';
+import { configureSearch } from '@repo/search-advanced';
 
 configureSearch({
   engine: {

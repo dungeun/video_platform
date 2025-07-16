@@ -2,7 +2,7 @@
  * Error handler for shipping module
  */
 
-import { ErrorHandler } from '@company/core';
+import { ErrorHandler } from '@repo/core';
 import { ApiError } from '../../types';
 
 export class ShippingErrorHandler extends ErrorHandler {

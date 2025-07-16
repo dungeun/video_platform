@@ -1,9 +1,9 @@
 /**
- * @module @company/inventory-tracking/types
+ * @module @repo/inventory-tracking/types
  * @description Type definitions for inventory tracking module
  */
 
-import { UUID, Timestamp } from '@company/types';
+import { UUID, Timestamp } from '@repo/types';
 
 /**
  * Stock status enumeration

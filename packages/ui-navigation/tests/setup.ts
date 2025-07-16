@@ -1,5 +1,5 @@
 /**
- * Test Setup for @company/ui-navigation
+ * Test Setup for @repo/ui-navigation
  */
 
 import { beforeAll, afterAll, beforeEach, afterEach } from 'vitest';

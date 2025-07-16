@@ -1,5 +1,5 @@
 /**
- * @company/ui-forms - Form Component
+ * @repo/ui-forms - Form Component
  * 
  * 폼 제출과 검증을 관리하는 메인 폼 컴포넌트
  */

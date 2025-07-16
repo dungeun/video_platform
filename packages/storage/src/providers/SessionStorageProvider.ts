@@ -1,11 +1,11 @@
 /**
- * @company/storage - SessionStorage 프로바이더
+ * @repo/storage - SessionStorage 프로바이더
  * 브라우저 SessionStorage 기반 스토리지
  */
 
 import { LocalStorageProvider } from './LocalStorageProvider';
 import { StorageType, SessionStorageConfig, StorageValue } from '../types';
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 
 export class SessionStorageProvider extends LocalStorageProvider {
   public override readonly name = 'SessionStorage';
@@ -37,7 +37,7 @@ export class SessionStorageProvider extends LocalStorageProvider {
   /**
    * 값 조회 - sessionStorage 사용
    */
-  public override async get<T>(key: string): Promise<import('@company/core').Result<T | null>> {
+  public override async get<T>(key: string): Promise<import('@repo/core').Result<T | null>> {
     try {
       if (!this.isAvailable) {
         return { success: false, error: new Error('SessionStorage를 사용할 수 없습니다') };
@@ -69,7 +69,7 @@ export class SessionStorageProvider extends LocalStorageProvider {
   /**
    * 값 저장 - sessionStorage 사용
    */
-  public override async set<T>(key: string, value: T, options?: import('../types').StorageOptions): Promise<import('@company/core').Result<void>> {
+  public override async set<T>(key: string, value: T, options?: import('../types').StorageOptions): Promise<import('@repo/core').Result<void>> {
     try {
       if (!this.isAvailable) {
         return { success: false, error: new Error('SessionStorage를 사용할 수 없습니다') };
@@ -117,7 +117,7 @@ export class SessionStorageProvider extends LocalStorageProvider {
   /**
    * 값 삭제 - sessionStorage 사용
    */
-  public override async delete(key: string): Promise<import('@company/core').Result<void>> {
+  public override async delete(key: string): Promise<import('@repo/core').Result<void>> {
     try {
       if (!this.isAvailable) {
         return { success: false, error: new Error('SessionStorage를 사용할 수 없습니다') };
@@ -137,7 +137,7 @@ export class SessionStorageProvider extends LocalStorageProvider {
   /**
    * 키 존재 여부 확인 - sessionStorage 사용
    */
-  public override async exists(key: string): Promise<import('@company/core').Result<boolean>> {
+  public override async exists(key: string): Promise<import('@repo/core').Result<boolean>> {
     try {
       if (!this.isAvailable) {
         return { success: false, error: new Error('SessionStorage를 사용할 수 없습니다') };
@@ -157,7 +157,7 @@ export class SessionStorageProvider extends LocalStorageProvider {
   /**
    * 키 목록 조회 - sessionStorage 사용
    */
-  public override async keys(query?: import('../types').StorageQuery): Promise<import('@company/core').Result<string[]>> {
+  public override async keys(query?: import('../types').StorageQuery): Promise<import('@repo/core').Result<string[]>> {
     try {
       if (!this.isAvailable) {
         return { success: false, error: new Error('SessionStorage를 사용할 수 없습니다') };
@@ -199,7 +199,7 @@ export class SessionStorageProvider extends LocalStorageProvider {
   /**
    * 스토리지 초기화 - sessionStorage 사용
    */
-  public override async clear(namespace?: string): Promise<import('@company/core').Result<void>> {
+  public override async clear(namespace?: string): Promise<import('@repo/core').Result<void>> {
     try {
       if (!this.isAvailable) {
         return { success: false, error: new Error('SessionStorage를 사용할 수 없습니다') };
@@ -237,7 +237,7 @@ export class SessionStorageProvider extends LocalStorageProvider {
   /**
    * 스토리지 크기 조회 - sessionStorage 사용
    */
-  public override async size(namespace?: string): Promise<import('@company/core').Result<number>> {
+  public override async size(namespace?: string): Promise<import('@repo/core').Result<number>> {
     try {
       if (!this.isAvailable) {
         return { success: false, error: new Error('SessionStorage를 사용할 수 없습니다') };

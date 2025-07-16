@@ -1,5 +1,5 @@
 /**
- * @company/ui-tables - Types
+ * @repo/ui-tables - Types
  * 
  * 테이블 컴포넌트 전용 타입 정의
  */

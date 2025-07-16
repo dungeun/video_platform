@@ -1,4 +1,4 @@
-import { type Result } from '@company/core'
+import { type Result } from '@repo/core'
 import { TossPaymentService } from '../services/TossPaymentService'
 import { WebhookEvent, Payment } from '../types'
 

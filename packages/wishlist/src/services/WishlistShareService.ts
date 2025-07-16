@@ -1,4 +1,4 @@
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 import { 
   IWishlistRepository,
   IWishlistShareRepository,

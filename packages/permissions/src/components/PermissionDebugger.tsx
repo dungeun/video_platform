@@ -1,5 +1,5 @@
 /**
- * @company/permissions - 권한 디버거
+ * @repo/permissions - 권한 디버거
  * Development component for debugging permissions
  */
 

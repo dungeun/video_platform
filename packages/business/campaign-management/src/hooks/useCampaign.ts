@@ -1,5 +1,5 @@
 /**
- * @company/campaign-management - React Hooks
+ * @repo/campaign-management - React Hooks
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';

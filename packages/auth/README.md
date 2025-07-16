@@ -1,8 +1,8 @@
-# @company/auth
+# @repo/auth
 
 **순수 인증 모듈 - 로그인/로그아웃 기능만 제공**
 
-Ultra-Fine-Grained Module로 설계된 초세분화 인증 모듈입니다. 복잡한 `@company/auth-core`에서 핵심 로그인/로그아웃 기능만을 분리하여 순수한 인증 기능만을 제공합니다.
+Ultra-Fine-Grained Module로 설계된 초세분화 인증 모듈입니다. 복잡한 `@repo/auth-core`에서 핵심 로그인/로그아웃 기능만을 분리하여 순수한 인증 기능만을 제공합니다.
 
 ## 🎯 모듈 목적
 
@@ -14,7 +14,7 @@ Ultra-Fine-Grained Module로 설계된 초세분화 인증 모듈입니다. 복�
 ## 📦 설치
 
 ```bash
-pnpm add @company/auth
+pnpm add @repo/auth
 ```
 
 ## 🚀 기본 사용법
@@ -23,7 +23,7 @@ pnpm add @company/auth
 
 ```tsx
 import React from 'react';
-import { AuthProvider } from '@company/auth';
+import { AuthProvider } from '@repo/auth';
 
 // 간단한 설정
 function App() {
@@ -56,7 +56,7 @@ function App() {
 
 ```tsx
 import React from 'react';
-import { useAuth } from '@company/auth';
+import { useAuth } from '@repo/auth';
 
 function LoginPage() {
   const { login, logout, user, isAuthenticated, isLoading, error } = useAuth();
@@ -93,7 +93,7 @@ function LoginPage() {
 
 ```tsx
 import React from 'react';
-import { LoginForm, LogoutButton, AuthStatus } from '@company/auth';
+import { LoginForm, LogoutButton, AuthStatus } from '@repo/auth';
 
 function AuthPage() {
   return (
@@ -168,7 +168,7 @@ const loading = useAuthLoading();
 Zustand 기반의 상태 관리를 제공합니다.
 
 ```typescript
-import { useAuthStore, authActions } from '@company/auth';
+import { useAuthStore, authActions } from '@repo/auth';
 
 // 스토어 직접 사용
 const { user, status, session } = useAuthStore();
@@ -267,10 +267,10 @@ enum AuthStatus {
 
 ## 🔄 다른 모듈과의 관계
 
-- **@company/auth-core**: 복합 인증 기능 (권한, 2FA, 소셜 로그인 포함)
-- **@company/permissions**: 권한 관리 전용 모듈
-- **@company/api-client**: HTTP 클라이언트 모듈
-- **@company/core**: 기본 모듈 시스템
+- **@repo/auth-core**: 복합 인증 기능 (권한, 2FA, 소셜 로그인 포함)
+- **@repo/permissions**: 권한 관리 전용 모듈
+- **@repo/api-client**: HTTP 클라이언트 모듈
+- **@repo/core**: 기본 모듈 시스템
 
 ## 📈 성능
 
@@ -298,4 +298,4 @@ MIT
 
 ---
 
-**@company/auth** - 순수하고 경량화된 인증 모듈 🔐
+**@repo/auth** - 순수하고 경량화된 인증 모듈 🔐

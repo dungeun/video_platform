@@ -1,5 +1,5 @@
 /**
- * @company/auth-core - 인증 프로바이더
+ * @repo/auth-core - 인증 프로바이더
  * React Context를 통한 인증 상태 제공
  */
 

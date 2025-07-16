@@ -1,9 +1,9 @@
 /**
- * @company/permissions - 권한 캐시 서비스
+ * @repo/permissions - 권한 캐시 서비스
  * High-performance caching for permission evaluations
  */
 
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 import {
   PermissionCache as ICacheEntry,
   PermissionContext,

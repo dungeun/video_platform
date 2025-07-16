@@ -1,5 +1,5 @@
 /**
- * @company/core - 이벤트 에미터
+ * @repo/core - 이벤트 에미터
  * 모듈 간 이벤트 기반 통신을 위한 핵심 클래스
  */
 import { EventHandler, EventSubscription } from '../types';

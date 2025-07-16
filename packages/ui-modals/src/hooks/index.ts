@@ -1,5 +1,5 @@
 /**
- * @company/ui-modals - Hooks Export
+ * @repo/ui-modals - Hooks Export
  */
 
 export { useFocusTrap } from './useFocusTrap';

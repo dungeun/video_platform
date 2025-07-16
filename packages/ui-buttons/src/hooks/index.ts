@@ -1,5 +1,5 @@
 /**
- * @company/ui-buttons - Hooks Export
+ * @repo/ui-buttons - Hooks Export
  * 모든 훅 내보내기
  */
 

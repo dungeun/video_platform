@@ -1,8 +1,8 @@
 /**
- * @company/storage - Memory 스토리지 프로바이더
+ * @repo/storage - Memory 스토리지 프로바이더
  * 메모리 기반 임시 스토리지
  */
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 import { StorageType, EvictionPolicy } from '../types';
 export class MemoryStorageProvider {
     constructor(config) {

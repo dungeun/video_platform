@@ -2,8 +2,8 @@
  * Webhook handler for delivery status updates
  */
 
-import { Logger, EventEmitter } from '@company/core';
-import { HttpClient } from '@company/api-client';
+import { Logger, EventEmitter } from '@repo/core';
+import { HttpClient } from '@repo/api-client';
 import pRetry from 'p-retry';
 import { WebhookEvent, WebhookEventType, CarrierCode } from '../../types';
 

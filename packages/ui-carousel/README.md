@@ -1,4 +1,4 @@
-# @company/ui-carousel
+# @repo/ui-carousel
 
 A comprehensive carousel component library with hero slider, product carousel, auto-play, touch/swipe support, navigation dots, and responsive design.
 
@@ -17,13 +17,13 @@ A comprehensive carousel component library with hero slider, product carousel, a
 ## Installation
 
 ```bash
-npm install @company/ui-carousel
+npm install @repo/ui-carousel
 ```
 
 ## Basic Usage
 
 ```tsx
-import { Carousel } from '@company/ui-carousel';
+import { Carousel } from '@repo/ui-carousel';
 
 const items = [
   { id: '1', content: 'Slide 1' },
@@ -46,7 +46,7 @@ function App() {
 ## Hero Slider
 
 ```tsx
-import { HeroSlider } from '@company/ui-carousel';
+import { HeroSlider } from '@repo/ui-carousel';
 
 const heroItems = [
   {
@@ -82,7 +82,7 @@ function HeroSection() {
 ## Product Carousel
 
 ```tsx
-import { ProductCarousel } from '@company/ui-carousel';
+import { ProductCarousel } from '@repo/ui-carousel';
 
 const products = [
   {
@@ -116,7 +116,7 @@ function ProductSection() {
 ### Responsive Design
 
 ```tsx
-import { Carousel } from '@company/ui-carousel';
+import { Carousel } from '@repo/ui-carousel';
 
 const responsiveOptions = [
   {
@@ -150,7 +150,7 @@ function ResponsiveCarousel() {
 ### Custom Hooks
 
 ```tsx
-import { useCarousel, useAutoPlay } from '@company/ui-carousel';
+import { useCarousel, useAutoPlay } from '@repo/ui-carousel';
 
 function CustomCarousel() {
   const {
@@ -223,7 +223,7 @@ The carousel components use Tailwind CSS classes that can be customized through 
 ### Custom Theme
 
 ```tsx
-import { carouselTheme } from '@company/ui-carousel';
+import { carouselTheme } from '@repo/ui-carousel';
 
 // Extend or override theme
 const customTheme = {

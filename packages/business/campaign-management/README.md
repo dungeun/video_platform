@@ -1,4 +1,4 @@
-# @company/campaign-management
+# @repo/campaign-management
 
 Complete campaign lifecycle management module for influencer marketing platforms.
 
@@ -15,17 +15,17 @@ Complete campaign lifecycle management module for influencer marketing platforms
 ## Installation
 
 ```bash
-npm install @company/campaign-management
+npm install @repo/campaign-management
 # or
-yarn add @company/campaign-management
+yarn add @repo/campaign-management
 # or
-pnpm add @company/campaign-management
+pnpm add @repo/campaign-management
 ```
 
 ## Quick Start
 
 ```typescript
-import { createCampaignManager, useCampaign } from '@company/campaign-management';
+import { createCampaignManager, useCampaign } from '@repo/campaign-management';
 
 // Initialize the module
 const campaignManager = createCampaignManager({
@@ -218,8 +218,8 @@ const campaignManager = createCampaignManager({
 ### Event Handling
 
 ```typescript
-import { EventBus } from '@company/core';
-import { CampaignEventType } from '@company/campaign-management';
+import { EventBus } from '@repo/core';
+import { CampaignEventType } from '@repo/campaign-management';
 
 const eventBus = EventBus.getInstance();
 
@@ -275,7 +275,7 @@ import type {
   CampaignStatus,
   Participant,
   CreateCampaignRequest
-} from '@company/campaign-management';
+} from '@repo/campaign-management';
 ```
 
 ## Contributing

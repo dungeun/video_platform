@@ -1,5 +1,5 @@
 /**
- * @company/ui-buttons - FAB Classes Hook
+ * @repo/ui-buttons - FAB Classes Hook
  * 플로팅 액션 버튼 스타일 클래스를 생성하는 훅
  */
 import { useMemo } from 'react';

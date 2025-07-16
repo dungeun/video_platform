@@ -1,4 +1,4 @@
-import { Result } from '@company/core';
+import { Result } from '@repo/core';
 
 export interface CompressionOptions {
   algorithm?: 'gzip' | 'deflate' | 'brotli' | 'lz4';

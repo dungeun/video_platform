@@ -1,4 +1,4 @@
-# @company/cache
+# @repo/cache
 
 엔터프라이즈급 캐시 관리 모듈
 
@@ -13,13 +13,13 @@
 ## 설치
 
 ```bash
-pnpm add @company/cache
+pnpm add @repo/cache
 ```
 
 ## 기본 사용법
 
 ```typescript
-import { createCacheManager } from '@company/cache';
+import { createCacheManager } from '@repo/cache';
 
 // 캐시 매니저 생성
 const cache = createCacheManager({

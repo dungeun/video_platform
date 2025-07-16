@@ -1,11 +1,11 @@
 /**
- * @company/database - MySQL Provider
+ * @repo/database - MySQL Provider
  * 
  * MySQL 데이터베이스 전용 프로바이더
  * Zero Error Architecture 기반으로 설계됨
  */
 
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 import type { DatabaseConfig, DatabaseResult, QueryResult } from '../types';
 
 export class MySQLProvider {

@@ -1,5 +1,5 @@
 /**
- * @company/auth - Pure Authentication Module
+ * @repo/auth - Pure Authentication Module
  *
  * 초세분화 모듈 - 순수 로그인/로그아웃 기능만 제공
  * Ultra-Fine-Grained Module - Login/Logout Functionality Only
@@ -22,12 +22,12 @@ export { useAuthStore, subscribeToAuthChanges, subscribeToUser, subscribeToStatu
 export { AuthStatus, AuthEventType, AuthErrorCode } from './types';
 // ===== 모듈 정보 =====
 export const AUTH_MODULE_INFO = {
-    name: '@company/auth',
+    name: '@repo/auth',
     version: '1.0.0',
     description: 'Pure Authentication Module - Login/Logout Only',
     author: 'Enterprise AI Team',
     license: 'MIT',
-    dependencies: ['@company/core', '@company/types', '@company/utils', '@company/api-client'],
+    dependencies: ['@repo/core', '@repo/types', '@repo/utils', '@repo/api-client'],
     features: ['login', 'logout', 'session-management', 'token-management']
 };
 export const DEFAULT_AUTH_CONFIG = {

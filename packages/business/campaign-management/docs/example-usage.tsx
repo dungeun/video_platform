@@ -1,5 +1,5 @@
 /**
- * @company/campaign-management - Example Usage
+ * @repo/campaign-management - Example Usage
  * 
  * This file demonstrates how to use the campaign management module
  * in a real-world application.
@@ -21,7 +21,7 @@ import {
   formatMoney,
   formatCampaignDate,
   getTimeRemaining
-} from '@company/campaign-management';
+} from '@repo/campaign-management';
 
 // 1. Initialize the service (do this once in your app)
 initializeCampaignService({
@@ -345,4 +345,4 @@ export function CreateCampaignExample() {
 }
 
 // Import helper function
-import { formatBudgetUtilization } from '@company/campaign-management';
+import { formatBudgetUtilization } from '@repo/campaign-management';

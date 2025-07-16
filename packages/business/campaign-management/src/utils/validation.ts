@@ -1,5 +1,5 @@
 /**
- * @company/campaign-management - Validation Utilities
+ * @repo/campaign-management - Validation Utilities
  */
 
 import { z } from 'zod';

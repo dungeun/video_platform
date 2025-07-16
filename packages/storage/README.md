@@ -1,4 +1,4 @@
-# @company/storage
+# @repo/storage
 
 엔터프라이즈급 스토리지 관리 모듈
 
@@ -14,13 +14,13 @@
 ## 설치
 
 ```bash
-pnpm add @company/storage
+pnpm add @repo/storage
 ```
 
 ## 기본 사용법
 
 ```typescript
-import { createStorageManager } from '@company/storage';
+import { createStorageManager } from '@repo/storage';
 
 // 스토리지 매니저 생성
 const storage = createStorageManager({
@@ -162,7 +162,7 @@ const size = await storage.size();
 console.log(`Total size: ${size} bytes`);
 
 // 브라우저 스토리지 할당량
-import { estimateStorageQuota } from '@company/storage';
+import { estimateStorageQuota } from '@repo/storage';
 
 const quota = await estimateStorageQuota();
 if (quota) {
@@ -173,7 +173,7 @@ if (quota) {
 ## 메모리 스토리지 설정
 
 ```typescript
-import { createStorageManager, EvictionPolicy } from '@company/storage';
+import { createStorageManager, EvictionPolicy } from '@repo/storage';
 
 const storage = createStorageManager({
   providers: {
@@ -189,7 +189,7 @@ const storage = createStorageManager({
 ## 시리얼라이저
 
 ```typescript
-import { StorageSerializer } from '@company/storage';
+import { StorageSerializer } from '@repo/storage';
 
 const serializer = new StorageSerializer();
 
@@ -212,7 +212,7 @@ const deserialized = serializer.deserialize(serialized);
 ## 스토리지 지속성
 
 ```typescript
-import { requestPersistentStorage, isStoragePersistent } from '@company/storage';
+import { requestPersistentStorage, isStoragePersistent } from '@repo/storage';
 
 // 지속성 요청
 const granted = await requestPersistentStorage();

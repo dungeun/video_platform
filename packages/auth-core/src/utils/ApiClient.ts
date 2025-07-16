@@ -1,9 +1,9 @@
 /**
- * @company/auth-core - API 클라이언트
+ * @repo/auth-core - API 클라이언트
  * 인증 관련 HTTP 요청 처리
  */
 
-import { Logger, Result } from '@company/core';
+import { Logger, Result } from '@repo/core';
 
 export interface ApiResponse<T = any> {
   success: boolean;

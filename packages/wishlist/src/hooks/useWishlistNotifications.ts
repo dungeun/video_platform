@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useAuth } from '@company/auth-core';
+import { useAuth } from '@repo/auth-core';
 import { WishlistNotificationService } from '../services';
 import { NotificationListResponse } from '../types';
 import { WishlistNotification, NotificationType } from '../entities';

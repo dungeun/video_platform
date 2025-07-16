@@ -1,9 +1,9 @@
 /**
- * @company/api-client - 타입 정의
+ * @repo/api-client - 타입 정의
  * HTTP 클라이언트 관련 타입 시스템
  */
 
-import { Result } from '@company/core';
+import { Result } from '@repo/core';
 
 // ===== 기본 타입 =====
 

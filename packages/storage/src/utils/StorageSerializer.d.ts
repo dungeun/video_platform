@@ -1,5 +1,5 @@
 /**
- * @company/storage - 스토리지 시리얼라이저
+ * @repo/storage - 스토리지 시리얼라이저
  * 데이터 직렬화/역직렬화 유틸리티
  */
 import { StorageSerializer as IStorageSerializer } from '../types';

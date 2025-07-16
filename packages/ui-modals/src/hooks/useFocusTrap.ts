@@ -1,5 +1,5 @@
 /**
- * @company/ui-modals - Focus Trap Hook
+ * @repo/ui-modals - Focus Trap Hook
  * 
  * 모달 내 포커스 가두기 기능
  */

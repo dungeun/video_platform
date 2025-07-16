@@ -1,10 +1,10 @@
 /**
- * @module @company/inventory-tracking/services/InventoryService
+ * @module @repo/inventory-tracking/services/InventoryService
  * @description Core inventory management service
  */
 
-import { ModuleBase } from '@company/core';
-import { CacheManager } from '@company/cache';
+import { ModuleBase } from '@repo/core';
+import { CacheManager } from '@repo/cache';
 import type {
   ProductInventory,
   StockAdjustment,

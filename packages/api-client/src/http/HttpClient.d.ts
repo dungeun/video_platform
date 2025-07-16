@@ -1,8 +1,8 @@
 /**
- * @company/api-client - HTTP 클라이언트
+ * @repo/api-client - HTTP 클라이언트
  * Zero Error Architecture 기반 HTTP 통신 모듈
  */
-import { ModuleBase, Result } from '@company/core';
+import { ModuleBase, Result } from '@repo/core';
 import { HttpRequestConfig, HttpResponse, ApiClientConfig, RequestInterceptor, ResponseInterceptor } from '../types';
 export declare class HttpClient extends ModuleBase {
     private axiosInstance;

@@ -1,16 +1,16 @@
 /**
- * @company/api-client - HTTP 클라이언트
+ * @repo/api-client - HTTP 클라이언트
  * Zero Error Architecture 기반 HTTP 통신 모듈
  */
 import axios from 'axios';
-import { ModuleBase } from '@company/core';
+import { ModuleBase } from '@repo/core';
 import { RetryManager } from '../utils/RetryManager';
 import { CacheManager } from '../utils/CacheManager';
 import { RequestBuilder } from '../utils/RequestBuilder';
 export class HttpClient extends ModuleBase {
     constructor(config) {
         super({
-            name: '@company/api-client',
+            name: '@repo/api-client',
             version: '1.0.0',
             description: 'Enterprise HTTP Client'
         });

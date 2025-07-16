@@ -1,5 +1,5 @@
 /**
- * @company/ui-buttons - Button Theme
+ * @repo/ui-buttons - Button Theme
  * 버튼 테마 설정 및 스타일 유틸리티
  */
 

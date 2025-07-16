@@ -1,5 +1,5 @@
 /**
- * @company/ui-buttons - Icon Button Component
+ * @repo/ui-buttons - Icon Button Component
  * 아이콘 전용 버튼 컴포넌트
  */
 import React from 'react';

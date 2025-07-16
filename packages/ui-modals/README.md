@@ -1,4 +1,4 @@
-# @company/ui-modals
+# @repo/ui-modals
 
 초세분화된 모달 전용 UI 모듈입니다.
 
@@ -18,7 +18,7 @@
 ## 설치
 
 ```bash
-npm install @company/ui-modals
+npm install @repo/ui-modals
 ```
 
 ## 사용법
@@ -26,7 +26,7 @@ npm install @company/ui-modals
 ### 기본 설정
 
 ```tsx
-import { ModalProvider } from '@company/ui-modals';
+import { ModalProvider } from '@repo/ui-modals';
 
 function App() {
   return (
@@ -40,7 +40,7 @@ function App() {
 ### 기본 모달
 
 ```tsx
-import { Modal, useModal } from '@company/ui-modals';
+import { Modal, useModal } from '@repo/ui-modals';
 
 function MyComponent() {
   const { isOpen, open, close } = useModal();
@@ -66,7 +66,7 @@ function MyComponent() {
 ### Alert 모달
 
 ```tsx
-import { AlertModal, useAlertModal } from '@company/ui-modals';
+import { AlertModal, useAlertModal } from '@repo/ui-modals';
 
 function MyComponent() {
   const { alertState, showSuccess, showError, hideAlert } = useAlertModal();
@@ -94,7 +94,7 @@ function MyComponent() {
 ### Confirm 모달
 
 ```tsx
-import { ConfirmModal, useConfirmModal } from '@company/ui-modals';
+import { ConfirmModal, useConfirmModal } from '@repo/ui-modals';
 
 function MyComponent() {
   const { confirmState, showConfirm, hideConfirm, handleConfirm } = useConfirmModal();
@@ -129,7 +129,7 @@ function MyComponent() {
 ### Drawer 모달
 
 ```tsx
-import { DrawerModal } from '@company/ui-modals';
+import { DrawerModal } from '@repo/ui-modals';
 
 function MyComponent() {
   const [isOpen, setIsOpen] = useState(false);

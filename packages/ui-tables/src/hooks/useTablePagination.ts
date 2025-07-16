@@ -1,5 +1,5 @@
 /**
- * @company/ui-tables - useTablePagination Hook
+ * @repo/ui-tables - useTablePagination Hook
  * 
  * 테이블 페이지네이션 관리 훅
  */

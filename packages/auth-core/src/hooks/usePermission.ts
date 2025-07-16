@@ -1,5 +1,5 @@
 /**
- * @company/auth-core - usePermission 훅
+ * @repo/auth-core - usePermission 훅
  * 권한 확인을 위한 React 훅
  */
 

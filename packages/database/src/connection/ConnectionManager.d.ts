@@ -1,5 +1,5 @@
 /**
- * @company/database - Connection Manager
+ * @repo/database - Connection Manager
  *
  * 데이터베이스 연결을 관리하는 핵심 클래스
  * Zero Error Architecture 기반으로 설계됨

@@ -1,5 +1,5 @@
 /**
- * @company/ui-navigation - UI Navigation Module
+ * @repo/ui-navigation - UI Navigation Module
  *
  * 초세분화된 네비게이션 전용 모듈
  * - 네비게이션 컴포넌트만 담당
@@ -13,7 +13,7 @@ export type { BaseNavigationProps, NavigationItem, NavigationPosition, Navigatio
 export { useNavigation, useMegaMenu, useSlideMenu, useMobileNavigation, useBreadcrumbs, useSearchBar, useUserMenu, useKeyboardNavigation, useNavigationTheme } from './hooks';
 export { isNavigationItemActive, findActiveNavigationItem, flattenNavigationItems, generateBreadcrumbs, filterNavigationItems, getNavigationDepth, normalizeUrl, validateNavigationItem, groupNavigationItems, calculateNavigationPath, isMobileDevice, isTouchDevice, NAVIGATION_KEYS, isNavigationKey, isArrowKey, isVerticalArrowKey, isHorizontalArrowKey, isActivationKey, getFocusableElements, getNextFocusableElement, getFirstFocusableElement, getLastFocusableElement, navigateCircular, navigateGrid, createFocusTrap, ARIA_ROLES, manageFocus, getScreenReaderOnlyStyles, isHighContrastMode, isPrefersReducedMotion, getNavigationTheme, setNavigationTheme, enableDarkTheme, enableLightTheme, defaultNavigationTheme, darkNavigationTheme, getThemeStyles, applyThemeVariables } from './utils';
 export declare const UI_NAVIGATION_MODULE_INFO: {
-    readonly name: "@company/ui-navigation";
+    readonly name: "@repo/ui-navigation";
     readonly version: "1.0.0";
     readonly description: "Ultra-Fine-Grained UI Navigation Components Module";
     readonly author: "Enterprise AI Team";

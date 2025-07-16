@@ -1,8 +1,8 @@
 /**
- * @company/api-client - 캐시 관리자
+ * @repo/api-client - 캐시 관리자
  * HTTP 응답 캐싱 관리
  */
-import { Logger } from '@company/core';
+import { Logger } from '@repo/core';
 export class CacheManager {
     constructor(config) {
         this.defaultTTL = 5 * 60 * 1000; // 5분

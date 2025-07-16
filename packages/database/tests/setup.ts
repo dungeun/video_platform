@@ -1,5 +1,5 @@
 /**
- * @company/database - Test Setup
+ * @repo/database - Test Setup
  * 
  * 데이터베이스 모듈 테스트 환경 설정
  */

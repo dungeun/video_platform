@@ -1,5 +1,5 @@
 /**
- * @company/ui-modals - Keyboard Navigation Hook
+ * @repo/ui-modals - Keyboard Navigation Hook
  * 
  * 모달 키보드 네비게이션 지원
  */

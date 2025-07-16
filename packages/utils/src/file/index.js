@@ -1,5 +1,5 @@
 /**
- * @company/utils - 파일 처리 유틸리티
+ * @repo/utils - 파일 처리 유틸리티
  */
 import * as fs from 'fs/promises';
 import * as path from 'path';

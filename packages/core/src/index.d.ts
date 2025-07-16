@@ -1,5 +1,5 @@
 /**
- * @company/core - Enterprise AI Module System Core
+ * @repo/core - Enterprise AI Module System Core
  *
  * 모든 엔터프라이즈 모듈의 기반이 되는 핵심 라이브러리
  * Zero Error Architecture 기반으로 설계됨
@@ -76,7 +76,7 @@ export declare function compact<T extends Record<string, any>>(obj: T): Partial<
  */
 export declare function shallowEqual(obj1: any, obj2: any): boolean;
 export declare const CORE_MODULE_INFO: {
-    readonly name: "@company/core";
+    readonly name: "@repo/core";
     readonly version: "1.0.0";
     readonly description: "Enterprise AI Module System - Core Foundation";
     readonly author: "Enterprise AI Team";

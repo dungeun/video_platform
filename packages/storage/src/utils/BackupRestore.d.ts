@@ -1,4 +1,4 @@
-import { Result } from '@company/core';
+import { Result } from '@repo/core';
 import { StorageProvider } from '../types';
 export interface BackupConfig {
     format?: 'json' | 'binary' | 'compressed';

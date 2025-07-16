@@ -1,9 +1,9 @@
 /**
- * @company/auth - Pure Authentication Types
+ * @repo/auth - Pure Authentication Types
  * Ultra-Fine-Grained Module - Login/Logout Only
  */
 
-// import { Result } from '@company/core';
+// import { Result } from '@repo/core';
 
 // Temporary type definition for building
 interface Result<T, E = string> {

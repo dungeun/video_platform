@@ -1,4 +1,4 @@
-# @company/ui-tables
+# @repo/ui-tables
 
 Ultra-fine-grained UI module for table components only.
 
@@ -21,7 +21,7 @@ Ultra-fine-grained UI module for table components only.
 ## Installation
 
 ```bash
-npm install @company/ui-tables
+npm install @repo/ui-tables
 ```
 
 ## Basic Usage
@@ -29,7 +29,7 @@ npm install @company/ui-tables
 ### Simple Table
 
 ```tsx
-import { Table } from '@company/ui-tables';
+import { Table } from '@repo/ui-tables';
 
 const data = [
   { id: 1, name: 'John Doe', email: 'john@example.com' },
@@ -56,7 +56,7 @@ function BasicExample() {
 ### DataTable with All Features
 
 ```tsx
-import { DataTable } from '@company/ui-tables';
+import { DataTable } from '@repo/ui-tables';
 
 function AdvancedExample() {
   return (

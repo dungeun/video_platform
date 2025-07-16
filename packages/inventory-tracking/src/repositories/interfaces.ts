@@ -1,5 +1,5 @@
 /**
- * @module @company/inventory-tracking/repositories/interfaces
+ * @module @repo/inventory-tracking/repositories/interfaces
  * @description Repository interfaces for inventory tracking
  */
 

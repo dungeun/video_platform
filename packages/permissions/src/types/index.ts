@@ -1,5 +1,5 @@
 /**
- * @company/permissions - 권한 관리 타입 정의
+ * @repo/permissions - 권한 관리 타입 정의
  * Ultra-fine-grained permission management types
  */
 

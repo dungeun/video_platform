@@ -1,5 +1,5 @@
 /**
- * @company/api-client - 재시도 관리자
+ * @repo/api-client - 재시도 관리자
  * HTTP 요청 재시도 로직 관리
  */
 import { RetryConfig } from '../types';

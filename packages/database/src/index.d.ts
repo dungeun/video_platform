@@ -1,5 +1,5 @@
 /**
- * @company/database - Enterprise Database Module
+ * @repo/database - Enterprise Database Module
  *
  * 데이터베이스 연결, 쿼리 빌더, 마이그레이션, 트랜잭션을 통합 지원하는 엔터프라이즈 모듈
  * Zero Error Architecture 기반으로 설계됨
@@ -94,7 +94,7 @@ export declare const DATABASE_DEFAULTS: {
 };
 export declare const SUPPORTED_PROVIDERS: readonly ["postgresql", "mysql", "sqlite"];
 export declare const DATABASE_MODULE_INFO: {
-    readonly name: "@company/database";
+    readonly name: "@repo/database";
     readonly version: "1.0.0";
     readonly description: "Enterprise Database Module with Multiple Providers and Query Builder";
     readonly author: "Enterprise AI Team";

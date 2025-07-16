@@ -1,5 +1,5 @@
 /**
- * @company/database - PostgreSQL Provider
+ * @repo/database - PostgreSQL Provider
  *
  * PostgreSQL 데이터베이스 전용 프로바이더
  * Zero Error Architecture 기반으로 설계됨

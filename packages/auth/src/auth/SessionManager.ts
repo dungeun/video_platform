@@ -1,9 +1,9 @@
 /**
- * @company/auth - Session Manager
+ * @repo/auth - Session Manager
  * Pure session management for authentication
  */
 
-// import { Result } from '@company/core';
+// import { Result } from '@repo/core';
 
 // Temporary type definition for building
 interface Result<T, E = string> {

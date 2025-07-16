@@ -1,5 +1,5 @@
 /**
- * @module @company/inventory-tracking/entities
+ * @module @repo/inventory-tracking/entities
  * @description Export all entity classes
  */
 

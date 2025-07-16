@@ -1,5 +1,5 @@
 /**
- * @company/auth - Authentication Provider
+ * @repo/auth - Authentication Provider
  * React Context provider for pure authentication
  */
 import React, { ReactNode } from 'react';

@@ -1,5 +1,5 @@
 /**
- * @company/auth-core - Enterprise Authentication Core Module
+ * @repo/auth-core - Enterprise Authentication Core Module
  * 
  * 엔터프라이즈급 인증/인가 시스템
  * Zero Error Architecture 기반으로 설계됨
@@ -102,7 +102,7 @@ export {
 
 // ===== 모듈 정보 =====
 export const AUTH_MODULE_INFO = {
-  name: '@company/auth-core',
+  name: '@repo/auth-core',
   version: '1.0.0',
   description: 'Enterprise Authentication Core Module - Zero Error Architecture',
   author: 'Enterprise AI Team',
