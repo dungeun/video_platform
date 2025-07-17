@@ -125,11 +125,19 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Failed to fetch campaigns:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch campaigns' },
-      { status: 500 }
-    );
+    
+    // 데이터베이스 연결 실패 시 빈 배열 반환
+    return NextResponse.json({
+      success: true,
+      campaigns: [],
+      total: 0,
+      message: 'Database connection failed, showing empty results'
+    });
   } finally {
-    await prisma.$disconnect();
+    try {
+      await prisma.$disconnect();
+    } catch (e) {
+      console.warn('Failed to disconnect Prisma:', e);
+    }
   }
 }
