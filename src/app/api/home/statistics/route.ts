@@ -60,16 +60,16 @@ export async function GET(request: NextRequest) {
         }
       },
       select: {
-        followerCount: true,
-        followerCount: true,
-        followerCount: true
+        instagramFollowers: true,
+        youtubeSubscribers: true,
+        tiktokFollowers: true
       }
     });
 
     const monthlyReach = influencerProfiles.reduce((total, profile) => {
-      const instagram = profile.followerCount || 0;
-      const youtube = profile.followerCount || 0;
-      const tiktok = profile.followerCount || 0;
+      const instagram = profile.instagramFollowers || 0;
+      const youtube = profile.youtubeSubscribers || 0;
+      const tiktok = profile.tiktokFollowers || 0;
       return total + instagram + youtube + tiktok;
     }, 0);
 
@@ -148,7 +148,5 @@ export async function GET(request: NextRequest) {
       success: true,
       statistics: defaultStatistics
     });
-  } finally {
-    await prisma.$disconnect();
   }
 }
