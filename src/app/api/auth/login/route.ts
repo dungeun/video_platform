@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
     // 쿠키 설정
     response.cookies.set('auth-token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // HTTP 환경에서도 작동하도록 수정
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7일
       path: '/'
