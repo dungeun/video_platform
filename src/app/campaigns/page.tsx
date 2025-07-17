@@ -457,7 +457,7 @@ export default function CampaignsPage() {
                     
                     {/* 플랫폼 아이콘 */}
                     <div className="flex gap-1 mb-2">
-                      {(campaign as any).category.map((platform: string) => (
+                      {campaign.platforms?.map((platform: string) => (
                         <span key={platform} className="text-lg">
                           {getPlatformIcon(platform)}
                         </span>
