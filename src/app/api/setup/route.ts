@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/db/prisma'
 import bcrypt from 'bcryptjs'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-const prisma = new PrismaClient()
 
 export async function GET(request: NextRequest) {
   // Check for setup key
@@ -163,7 +162,5 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('❌ Error setting up database:', error)
     return NextResponse.json({ error: 'Failed to setup database', details: error }, { status: 500 })
-  } finally {
-    await prisma.$disconnect()
   }
 }

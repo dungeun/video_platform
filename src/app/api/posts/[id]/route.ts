@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/db/prisma'
 import { AuthService } from '@/lib/auth'
 
-const prisma = new PrismaClient()
 
 // GET /api/posts/[id] - 게시글 상세 조회
 export async function GET(

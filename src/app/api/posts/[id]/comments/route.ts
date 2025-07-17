@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/db/prisma'
 import { AuthService } from '@/lib/auth'
 
-const prisma = new PrismaClient()
 
 // POST /api/posts/[id]/comments - 댓글 작성
 export async function POST(
