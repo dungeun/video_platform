@@ -1,5 +1,6 @@
 // Edge Runtime 호환 JWT 함수들
 import { UserType } from '@prisma/client';
+import { jwtVerify } from 'jose';
 
 interface JWTPayload {
   id: string;
@@ -11,26 +12,17 @@ interface RefreshPayload {
   id: string;
 }
 
-// Edge Runtime에서는 jose 라이브러리를 사용해야 함
+// Edge Runtime에서 jose 라이브러리를 사용한 실제 JWT 검증
 export async function verifyJWTEdge<T extends JWTPayload | RefreshPayload>(
   token: string,
   isRefreshToken = false
 ): Promise<T | null> {
   try {
-    // Edge Runtime에서는 간단한 검증만 수행
-    // 실제 JWT 검증은 API 라우트에서 수행
-    const parts = token.split('.');
-    if (parts.length !== 3) {
-      return null;
-    }
+    const secret = process.env.JWT_SECRET || 'your-secret-key';
+    const encoder = new TextEncoder();
+    const secretKey = encoder.encode(secret);
     
-    // Base64 디코딩
-    const payload = JSON.parse(atob(parts[1]));
-    
-    // 만료 시간 체크
-    if (payload.exp && payload.exp < Date.now() / 1000) {
-      return null;
-    }
+    const { payload } = await jwtVerify(token, secretKey);
     
     return payload as T;
   } catch (error) {
