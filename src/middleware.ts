@@ -46,9 +46,7 @@ const protectedPagePaths = [
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // 임시로 모든 경로 허용 (디버깅용)
   console.log('[Middleware] Request to:', pathname);
-  return NextResponse.next();
 
   // Public 페이지는 인증 체크 스킵
   if (publicPagePaths.some(path => pathname === path || pathname.startsWith(path + '/'))) {
