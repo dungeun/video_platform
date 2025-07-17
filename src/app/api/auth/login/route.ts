@@ -11,7 +11,17 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    let body;
+    try {
+      body = await request.json()
+    } catch (parseError) {
+      console.error('JSON parsing error:', parseError)
+      return NextResponse.json(
+        { error: 'Invalid JSON format' },
+        { status: 400 }
+      )
+    }
+    
     const { email, password } = body
     
     console.log('Login attempt for:', email)
