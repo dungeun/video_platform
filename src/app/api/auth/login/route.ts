@@ -27,7 +27,6 @@ export async function POST(request: NextRequest) {
     const user = await prisma.user.findUnique({
       where: { email },
       include: {
-        profile: true,
         profile: true
       }
     })
@@ -82,7 +81,6 @@ export async function POST(request: NextRequest) {
         name: user.name,
         type: user.type,
         verified: (user as any).emailVerified,
-        profile: user.profile,
         profile: user.profile
       },
       token
