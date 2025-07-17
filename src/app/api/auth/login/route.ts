@@ -11,9 +11,15 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('Request headers:', Object.fromEntries(request.headers.entries()))
+    console.log('Request method:', request.method)
+    console.log('Request URL:', request.url)
+    
     let body;
     try {
-      body = await request.json()
+      const textBody = await request.text()
+      console.log('Raw request body:', textBody)
+      body = JSON.parse(textBody)
     } catch (parseError) {
       console.error('JSON parsing error:', parseError)
       return NextResponse.json(
