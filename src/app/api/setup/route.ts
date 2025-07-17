@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     console.log('✅ Admin user created:', admin.email)
 
     // Create test business user
-    const businessPassword = await bcrypt.hash('business123!', 10)
+    const businessPassword = await bcrypt.hash('business123', 10)
     const businessUser = await prisma.user.upsert({
       where: { email: 'business@company.com' },
       update: {},
@@ -40,21 +40,20 @@ export async function GET(request: NextRequest) {
         password: businessPassword,
         name: '테스트 기업',
         type: 'BUSINESS',
-        profile: {
+        businessProfile: {
           create: {
             companyName: '테스트 주식회사',
             businessNumber: '123-45-67890',
             representativeName: '김대표',
             businessAddress: '서울특별시 강남구 테헤란로 123',
             businessCategory: '이커머스',
-            avatar: true,
           }
         }
       }
     })
 
     // Create test influencer user
-    const influencerPassword = await bcrypt.hash('influencer123!', 10)
+    const influencerPassword = await bcrypt.hash('user123', 10)
     const influencerUser = await prisma.user.upsert({
       where: { email: 'user@example.com' },
       update: {},
@@ -67,11 +66,10 @@ export async function GET(request: NextRequest) {
           create: {
             bio: '패션과 라이프스타일을 공유하는 인플루언서입니다.',
             instagram: '@test_influencer',
-            followerCount: 50000,
+            instagramFollowers: 50000,
             youtube: 'TestInfluencer',
-            followerCount: 30000,
+            youtubeSubscribers: 30000,
             categories: JSON.stringify(['패션', '라이프스타일']),
-            avatar: true,
           }
         }
       }
