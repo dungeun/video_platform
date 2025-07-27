@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import PageLayout from '@/components/layouts/PageLayout'
+import { AuthService } from '@/lib/auth'
 
 interface Campaign {
   id: string;
@@ -106,18 +107,68 @@ export default function CampaignsPage() {
     }
   }
 
+  // 사용자가 좋아요한 캠페인 목록 가져오기
+  const fetchLikedCampaigns = async () => {
+    const user = AuthService.getCurrentUser()
+    if (!user) return
+
+    try {
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('auth-token')
+      const response = await fetch('/api/mypage/liked-campaigns', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        const likedCampaignIds = data.campaigns.map((c: any) => c.id)
+        setFavorites(likedCampaignIds)
+      }
+    } catch (error) {
+      console.error('Error fetching liked campaigns:', error)
+    }
+  }
+
   // 페이지 로드 시 및 필터 변경 시 데이터 가져오기
   useEffect(() => {
     fetchCampaigns()
+    fetchLikedCampaigns()
   }, [pagination.page, selectedCategory, selectedPlatform])
 
   // 즐겨찾기 토글 함수
-  const toggleFavorite = (campaignId: string) => {
-    setFavorites(prev => 
-      prev.includes(campaignId) 
-        ? prev.filter(id => id !== campaignId)
-        : [...prev, campaignId]
-    )
+  const toggleFavorite = async (campaignId: string) => {
+    const user = AuthService.getCurrentUser()
+    if (!user) {
+      alert('로그인이 필요합니다.')
+      return
+    }
+
+    try {
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('auth-token')
+      const response = await fetch(`/api/campaigns/${campaignId}/like`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.liked) {
+          setFavorites(prev => [...prev, campaignId])
+        } else {
+          setFavorites(prev => prev.filter(id => id !== campaignId))
+        }
+      } else {
+        const error = await response.json()
+        console.error('Like error:', error)
+        alert('좋아요 처리 중 오류가 발생했습니다.')
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error)
+      alert('좋아요 처리 중 오류가 발생했습니다.')
+    }
   }
 
   // 플랫폼 아이콘 함수

@@ -130,14 +130,14 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
     }
   }
   
-  // 관심 캠페인 목록 가져오기
+  // 관심 캠페인 목록 가져오기 (좋아요한 캠페인)
   const fetchSavedCampaigns = async () => {
     try {
       setLoadingSavedCampaigns(true)
-      const response = await apiGet('/api/influencer/saved-campaigns')
+      const response = await apiGet('/api/mypage/liked-campaigns')
       if (response.ok) {
         const data = await response.json()
-        setSavedCampaigns(data.savedCampaigns || [])
+        setSavedCampaigns(data.campaigns || [])
       }
     } catch (error) {
       console.error('관심 캠페인 조회 오류:', error)
@@ -334,12 +334,6 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{user.name}</h1>
             <p className="text-gray-600">인플루언서</p>
-            <div className="flex items-center space-x-4 mt-2">
-              <span className="text-sm text-gray-500">팔로워 {stats.followers.toLocaleString()}</span>
-              <span className="text-sm text-gray-500">•</span>
-              <span className="text-sm text-gray-500">평점 ⭐ {stats.averageRating}</span>
-              <span className="text-sm text-gray-400">({stats.totalCampaigns}개 리뷰)</span>
-            </div>
           </div>
           <button
             onClick={() => setShowEditModal(true)}
@@ -779,10 +773,11 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                             onClick={async () => {
                               if (confirm('관심 목록에서 제거하시겠습니까?')) {
                                 try {
-                                  const response = await fetch(`/api/campaigns/${campaign.id}/save`, {
-                                    method: 'DELETE',
+                                  const token = localStorage.getItem('accessToken') || localStorage.getItem('auth-token')
+                                  const response = await fetch(`/api/campaigns/${campaign.id}/like`, {
+                                    method: 'POST',
                                     headers: {
-                                      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                                      'Authorization': `Bearer ${token}`
                                     }
                                   })
                                   if (response.ok) {

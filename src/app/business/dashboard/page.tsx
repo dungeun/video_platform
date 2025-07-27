@@ -113,6 +113,13 @@ export default function BusinessDashboard() {
       {/* 서브 히어로 섹션 */}
       <section className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white">
         <div className="container mx-auto px-6 py-12">
+          <div className="mb-6">
+            <Link href="/">
+              <h1 className="text-5xl font-black text-white inline-block hover:opacity-80 transition-opacity cursor-pointer">
+                LinkPick
+              </h1>
+            </Link>
+          </div>
           <div className="max-w-4xl">
             <h1 className="text-3xl md:text-4xl font-bold mb-4">
               안녕하세요, {user.name}님! 👋

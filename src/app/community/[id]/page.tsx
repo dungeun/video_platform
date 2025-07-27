@@ -56,10 +56,18 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
   const fetchPost = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/posts/${params.id}`)
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('auth-token')
+      const headers: HeadersInit = {}
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+      
+      const response = await fetch(`/api/posts/${params.id}`, { headers })
       if (response.ok) {
         const data = await response.json()
         setPost(data)
+        setLiked(data.isLiked || false)
       } else if (response.status === 404) {
         router.push('/community')
       }
@@ -116,6 +124,33 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
     }
   }
 
+  const handleDelete = async () => {
+    if (!confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
+      return
+    }
+
+    try {
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('auth-token')
+      const response = await fetch(`/api/posts/${params.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        alert('게시글이 삭제되었습니다.')
+        router.push('/community')
+      } else {
+        const error = await response.json()
+        alert(`삭제 중 오류가 발생했습니다: ${error.error || '알 수 없는 오류'}`)
+      }
+    } catch (error) {
+      console.error('Error deleting post:', error)
+      alert('삭제 중 오류가 발생했습니다.')
+    }
+  }
+
   const handleLike = async () => {
     if (!user) {
       alert('로그인이 필요합니다.')
@@ -135,10 +170,22 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
       if (response.ok) {
         const data = await response.json()
         setLiked(data.liked)
-        fetchPost() // 좋아요 수 업데이트
+        // 좋아요 수 즉시 업데이트
+        if (post) {
+          setPost({
+            ...post,
+            likes: data.likeCount
+          })
+        }
+      } else {
+        const error = await response.json()
+        console.error('Like error:', error)
+        console.error('Response status:', response.status)
+        alert(`좋아요 처리 중 오류가 발생했습니다: ${error.error || '알 수 없는 오류'}`)
       }
     } catch (error) {
       console.error('Error toggling like:', error)
+      alert('좋아요 처리 중 오류가 발생했습니다.')
     }
   }
 
@@ -231,7 +278,25 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
                 </span>
               </div>
               
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">{post.title}</h1>
+              <div className="flex items-center justify-between mb-4">
+                <h1 className="text-3xl font-bold text-gray-900">{post.title}</h1>
+                {user && user.id === post.author.id && (
+                  <div className="flex items-center space-x-2">
+                    <Link
+                      href={`/community/${post.id}/edit`}
+                      className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                    >
+                      수정
+                    </Link>
+                    <button
+                      onClick={handleDelete}
+                      className="px-3 py-1 text-sm bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors"
+                    >
+                      삭제
+                    </button>
+                  </div>
+                )}
+              </div>
               
               <div className="flex items-center justify-between text-sm text-gray-600">
                 <div className="flex items-center space-x-4">

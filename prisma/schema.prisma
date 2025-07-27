@@ -65,6 +65,7 @@ model User {
   profile              Profile?
   savedCampaigns       SavedCampaign[]
   settlements          Settlement[]
+  campaignLikes        CampaignLike[]
 
   @@map("users")
 }
@@ -164,6 +165,7 @@ model Campaign {
   business             User                  @relation(fields: [businessId], references: [id], onDelete: Cascade)
   payments             Payment[]
   savedByUsers         SavedCampaign[]
+  campaignLikes        CampaignLike[]
 
   @@map("campaigns")
 }
@@ -437,4 +439,15 @@ model CampaignTemplate {
 
   @@index([businessId])
   @@map("campaign_templates")
+}
+
+model CampaignLike {
+  id         String   @id @default(cuid())
+  campaignId String
+  userId     String
+  createdAt  DateTime @default(now())
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([campaignId, userId])
+  @@map("campaign_likes")
 }

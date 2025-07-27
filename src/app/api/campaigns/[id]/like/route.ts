@@ -2,18 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 import { verifyJWT } from '@/lib/auth/jwt'
 
-
-// POST /api/posts/[id]/like - 게시글 좋아요/취소
+// POST /api/campaigns/[id]/like - 캠페인 좋아요/취소
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    console.log('Like API called for post:', params.id)
-    
     const token = request.headers.get('Authorization')?.replace('Bearer ', '')
-    console.log('Token exists:', !!token)
-    
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -21,9 +16,7 @@ export async function POST(
     let user
     try {
       user = await verifyJWT(token)
-      console.log('Verified user:', user)
     } catch (error) {
-      console.error('Token verification error:', error)
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
     
@@ -32,44 +25,50 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
-    // 게시글 존재 확인
-    console.log('Checking post existence...')
-    const post = await prisma.post.findUnique({
-      where: { id: params.id, status: 'PUBLISHED' }
+    // 캠페인 존재 확인
+    console.log('Checking campaign:', params.id)
+    const campaign = await prisma.campaign.findUnique({
+      where: { id: params.id }
     })
+    console.log('Campaign found:', campaign)
 
-    if (!post) {
-      console.log('Post not found:', params.id)
-      return NextResponse.json({ error: 'Post not found' }, { status: 404 })
+    if (!campaign) {
+      return NextResponse.json({ error: 'Campaign not found' }, { status: 404 })
     }
-    console.log('Post found:', post.id)
+
+    // 캠페인 상태 확인 (ACTIVE가 아닌 다른 상태일 수 있음)
+    if (campaign.status !== 'ACTIVE' && campaign.status !== 'APPROVED' && campaign.status !== 'PENDING') {
+      console.log('Campaign status:', campaign.status)
+      return NextResponse.json({ error: 'Campaign is not available for likes' }, { status: 400 })
+    }
 
     // 기존 좋아요 확인
     console.log('Checking existing like for user:', userId)
-    const existingLike = await prisma.postLike.findUnique({
+    
+    const existingLike = await prisma.campaignLike.findUnique({
       where: {
-        postId_userId: {
-          postId: params.id,
+        campaignId_userId: {
+          campaignId: params.id,
           userId: userId
         }
       }
     })
-    console.log('Existing like:', !!existingLike)
+    console.log('Existing like:', existingLike)
 
     let liked = false
     let likeCount = 0
 
     if (existingLike) {
       // 좋아요 취소
-      await prisma.postLike.delete({
+      await prisma.campaignLike.delete({
         where: { id: existingLike.id }
       })
       liked = false
     } else {
       // 좋아요 추가
-      await prisma.postLike.create({
+      await prisma.campaignLike.create({
         data: {
-          postId: params.id,
+          campaignId: params.id,
           userId: userId
         }
       })
@@ -77,8 +76,8 @@ export async function POST(
     }
 
     // 총 좋아요 수 조회
-    likeCount = await prisma.postLike.count({
-      where: { postId: params.id }
+    likeCount = await prisma.campaignLike.count({
+      where: { campaignId: params.id }
     })
 
     return NextResponse.json({
@@ -86,7 +85,7 @@ export async function POST(
       likeCount
     })
   } catch (error) {
-    console.error('Error toggling like:', error)
+    console.error('Error toggling campaign like:', error)
     return NextResponse.json({ 
       error: 'Internal server error',
       details: error instanceof Error ? error.message : 'Unknown error'

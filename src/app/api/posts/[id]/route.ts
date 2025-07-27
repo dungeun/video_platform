@@ -9,6 +9,20 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    // 사용자 인증 확인 (선택적)
+    let userId: string | null = null
+    const token = request.headers.get('Authorization')?.replace('Bearer ', '')
+    if (token) {
+      try {
+        const user = await verifyJWT(token)
+        if (user) {
+          userId = user.userId || user.id
+        }
+      } catch (error) {
+        // 토큰이 잘못되어도 게시글은 볼 수 있음
+        console.log('Token validation error:', error)
+      }
+    }
     const post = await prisma.post.findUnique({
       where: {
         id: params.id,
@@ -81,6 +95,20 @@ export async function GET(
       data: { views: { increment: 1 } }
     })
 
+    // 사용자가 로그인한 경우 좋아요 상태 확인
+    let isLiked = false
+    if (userId) {
+      const userLike = await prisma.postLike.findUnique({
+        where: {
+          postId_userId: {
+            postId: params.id,
+            userId: userId
+          }
+        }
+      })
+      isLiked = !!userLike
+    }
+
     return NextResponse.json({
       id: post.id,
       title: post.title,
@@ -88,6 +116,7 @@ export async function GET(
       category: post.category,
       views: post.views + 1,
       likes: post._count.postLikes,
+      isLiked: isLiked,
       isPinned: post.isPinned,
       createdAt: post.createdAt,
       updatedAt: post.updatedAt,
