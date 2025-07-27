@@ -17,7 +17,6 @@ export default function Header({ variant = 'default' }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [showDropdown, setShowDropdown] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('')
   const [profileImage, setProfileImage] = useState<string | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const { config, loadSettingsFromAPI } = useUIConfigStore()
@@ -90,12 +89,6 @@ export default function Header({ variant = 'default' }: HeaderProps) {
 
   const isActive = (path: string) => pathname === path
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (searchTerm.trim()) {
-      router.push(`/campaigns?search=${encodeURIComponent(searchTerm)}`)
-    }
-  }
 
   // 사용자 타입별 대시보드 링크
   const dashboardLink = isAdmin ? '/admin' : isBusiness ? '/business/dashboard' : '/mypage'
@@ -128,23 +121,6 @@ export default function Header({ variant = 'default' }: HeaderProps) {
             </nav>
           </div>
           
-          {/* 검색바 - 가운데 정렬 */}
-          <form onSubmit={handleSearch} className="flex-1 max-w-lg mx-4">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="검색어를 입력하세요"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-white/10 backdrop-blur border border-white/20 rounded-full px-4 py-2 pr-10 text-white placeholder-white/70 focus:outline-none focus:bg-white/20 transition text-sm"
-              />
-              <button type="submit" className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 bg-white/20 rounded-full hover:bg-white/30 transition">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </button>
-            </div>
-          </form>
 
           {/* 사용자 메뉴와 권한별 메뉴 */}
           <nav className="flex items-center gap-6 flex-1 justify-end">

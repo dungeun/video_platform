@@ -191,13 +191,21 @@ export default function BusinessCampaignsPage() {
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="text-lg font-semibold text-gray-900">{campaign.title}</h3>
                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          campaign.status === 'active' 
+                          campaign.status === 'draft' && !campaign.isPaid
+                            ? 'bg-red-100 text-red-700'
+                            : campaign.status === 'active' 
                             ? 'bg-green-100 text-green-700'
                             : campaign.status === 'pending'
                             ? 'bg-yellow-100 text-yellow-700'
                             : 'bg-gray-100 text-gray-700'
                         }`}>
-                          {campaign.status === 'active' ? '진행중' : campaign.status === 'pending' ? '대기중' : '완료'}
+                          {campaign.status === 'draft' && !campaign.isPaid 
+                            ? '결제 대기' 
+                            : campaign.status === 'active' 
+                            ? '진행중' 
+                            : campaign.status === 'pending' 
+                            ? '대기중' 
+                            : '완료'}
                         </span>
                       </div>
                       <p className="text-gray-600 mb-4">{(campaign as any).description}</p>
@@ -222,20 +230,31 @@ export default function BusinessCampaignsPage() {
                       </div>
                       
                       <div className="flex items-center gap-3">
-                        <Link 
-                          href={`/business/campaigns/${campaign.id}`}
-                          className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors"
-                        >
-                          상세보기
-                          <ChevronRight className="w-4 h-4 ml-1" />
-                        </Link>
-                        <Link 
-                          href={`/business/campaigns/${campaign.id}/applicants`}
-                          className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors"
-                        >
-                          <Users className="w-4 h-4 mr-1.5" />
-                          지원자 관리
-                        </Link>
+                        {campaign.status === 'draft' && !campaign.isPaid ? (
+                          <Link 
+                            href={`/business/campaigns/${campaign.id}/payment`}
+                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+                          >
+                            결제하기
+                          </Link>
+                        ) : (
+                          <>
+                            <Link 
+                              href={`/business/campaigns/${campaign.id}`}
+                              className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors"
+                            >
+                              상세보기
+                              <ChevronRight className="w-4 h-4 ml-1" />
+                            </Link>
+                            <Link 
+                              href={`/business/campaigns/${campaign.id}/applicants`}
+                              className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors"
+                            >
+                              <Users className="w-4 h-4 mr-1.5" />
+                              지원자 관리
+                            </Link>
+                          </>
+                        )}
                         <Link 
                           href={`/business/campaigns/${campaign.id}/edit`}
                           className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"

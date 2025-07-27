@@ -78,6 +78,8 @@ model Profile {
   profileImage          String?
   profileImageId        String?
   phone                 String?
+  birthYear             Int?
+  gender                String?
   instagram             String?
   instagramFollowers    Int?
   youtube               String?
@@ -147,8 +149,11 @@ model Campaign {
   endDate              DateTime
   requirements         String?
   hashtags             String?
-  imageUrl             String?
+  imageUrl             String?               // 기존 필드 (호환성 유지)
   imageId              String?
+  headerImageUrl       String?               // 상세페이지 헤더 배경 이미지
+  thumbnailImageUrl    String?               // 썸네일 이미지
+  announcementDate     DateTime?             // 지원자 발표일
   status               String                @default("DRAFT")
   isPaid               Boolean               @default(false)
   reviewFeedback       String?
@@ -165,6 +170,7 @@ model Campaign {
   detailImages         String?
   platforms            String?
   rewardAmount         Float                 @default(0)
+  questions            Json?                 // 동적 질문 데이터
   applications         CampaignApplication[]
   business             User                  @relation(fields: [businessId], references: [id], onDelete: Cascade)
   payments             Payment[]

@@ -1,18 +1,22 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import Image from 'next/image'
 import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Progress } from '@/components/ui/progress'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
-import { Upload, X, Youtube, Save, FolderOpen } from 'lucide-react'
+import { Save, Trash2, Youtube } from 'lucide-react'
+
+// Component imports
+import StepBasicInfo from '@/components/business/campaign-form/StepBasicInfo'
+import StepDetails from '@/components/business/campaign-form/StepDetails'
+import StepMedia from '@/components/business/campaign-form/StepMedia'
+import StepPayment from '@/components/business/campaign-form/StepPayment'
+import TemplateModal from '@/components/business/campaign-form/TemplateModal'
+import QuestionPreview from '@/components/business/campaign-form/QuestionPreview'
+import QuestionEditorModal from '@/components/business/campaign-form/QuestionEditorModal'
+import { DynamicQuestion } from '@/components/business/campaign-form/DynamicQuestions'
 
 // 플랫폼 아이콘 컴포넌트들
 const InstagramIcon = () => (
@@ -33,25 +37,18 @@ const BlogIcon = () => (
   </svg>
 )
 
-interface CampaignFormData {
-  title: string
-  description: string
-  platform: string
-  budget: string
-  targetFollowers: string
-  startDate: string
-  endDate: string
-  requirements: string
-  hashtags: string
-  imageUrl: string
-  youtubeUrl: string
+const platformIcons = {
+  INSTAGRAM: <InstagramIcon />,
+  YOUTUBE: <Youtube className="w-6 h-6" />,
+  TIKTOK: <TikTokIcon />,
+  BLOG: <BlogIcon />
 }
 
 interface CampaignTemplate {
   id: string
   name: string
   description?: string
-  data: Partial<CampaignFormData>
+  data: any
   isDefault?: boolean
   createdAt?: string
   updatedAt?: string
@@ -59,559 +56,319 @@ interface CampaignTemplate {
 
 export default function NewCampaignPage() {
   const router = useRouter()
+  const { toast } = useToast()
   const [currentStep, setCurrentStep] = useState(1)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  
+  // Form data
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    platforms: [],
+    platform: '',
     budget: '',
     targetFollowers: '',
     startDate: '',
     endDate: '',
+    announcementDate: '',
     requirements: '',
     hashtags: '',
-    imageUrl: '',
+    headerImageUrl: '',  // 상세페이지 헤더 배경 이미지
+    thumbnailImageUrl: '',  // 썸네일 이미지
     youtubeUrl: '',
     maxApplicants: ''
   })
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const { toast } = useToast()
-  const [paymentInfo, setPaymentInfo] = useState({
-    campaignBudget: 0,
-    platformFee: 0,
-    vat: 0,
-    totalAmount: 0
-  })
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('CARD')
-  const [createdCampaignId, setCreatedCampaignId] = useState<string | null>(null)
   
-  // 오늘 날짜 (YYYY-MM-DD 형식)
-  const today = new Date().toISOString().split('T')[0]
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null)
-  const [imageUploading, setImageUploading] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  // Product images (상품소개 이미지 3장)
+  const [productImages, setProductImages] = useState<string[]>(['', '', ''])
   
-  // 상세 이미지 관련 상태
-  const [detailImages, setDetailImages] = useState<string[]>([])
-  const [detailImageUploading, setDetailImageUploading] = useState(false)
-  const detailFileInputRef = useRef<HTMLInputElement>(null)
+  // Dynamic questions
+  const defaultQuestions: DynamicQuestion[] = [
+    {
+      id: 'camera',
+      type: 'select',
+      question: '어떤 카메라를 사용하시나요?',
+      options: ['휴대폰 카메라', '미러리스', 'DSLR', '기타'],
+      required: true,
+      enabled: true
+    },
+    {
+      id: 'face_exposure',
+      type: 'select',
+      question: '포스팅 작성 시, 얼굴 노출이 가능한가요?',
+      options: ['노출', '비노출'],
+      required: true,
+      enabled: true
+    },
+    {
+      id: 'job',
+      type: 'text',
+      question: '어떤 직업을 갖고 계시나요?',
+      required: true,
+      enabled: true
+    },
+    {
+      id: 'address',
+      type: 'address' as const,
+      question: '상품을 배송 받을 주소를 입력해 주세요.',
+      required: true,
+      useDefaultAddress: true,
+      enabled: true
+    }
+  ]
   
-  // 템플릿 관련 상태
+  const [dynamicQuestions, setDynamicQuestions] = useState<DynamicQuestion[]>(defaultQuestions)
+  
+  // Template states
   const [templates, setTemplates] = useState<CampaignTemplate[]>([])
   const [showTemplateModal, setShowTemplateModal] = useState(false)
   const [templateName, setTemplateName] = useState('')
   const [templateDescription, setTemplateDescription] = useState('')
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   const [loadingTemplates, setLoadingTemplates] = useState(false)
-
-  // DB에서 템플릿 불러오기
+  
+  // Question editor state
+  const [showQuestionEditor, setShowQuestionEditor] = useState(false)
+  
+  // Payment info
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('CARD')
+  const platformFee = formData.budget ? Number(formData.budget) * 0.1 : 0
+  
+  // Load templates on mount
   useEffect(() => {
     loadTemplatesFromDB()
   }, [])
   
-  // 비용 계산
-  useEffect(() => {
-    if (formData.budget) {
-      const budget = Number(formData.budget)
-      
-      // 신용카드는 부가세 포함, 계좌이체/현금은 부가세 별도
-      let vat = 0
-      let total = budget
-      
-      if (selectedPaymentMethod !== 'CARD') {
-        vat = budget * 0.1  // VAT 10%
-        total = budget + vat
-      }
-      
-      setPaymentInfo({
-        campaignBudget: budget,
-        platformFee: 0,  // 플랫폼 수수료 제거
-        vat: vat,
-        totalAmount: total
-      })
-    }
-  }, [formData.budget, selectedPaymentMethod])
-
   const loadTemplatesFromDB = async () => {
     setLoadingTemplates(true)
     try {
       const response = await fetch('/api/business/campaign-templates', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken') || localStorage.getItem('auth-token') || ''}`
+          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
         }
       })
       
       if (response.ok) {
         const data = await response.json()
-        setTemplates(data.templates)
-      } else {
-        const errorData = await response.json()
-        console.error('Failed to load templates:', errorData)
-        if (errorData.details) {
-          console.error('Error details:', errorData.details)
-        }
-        if (errorData.stack) {
-          console.error('Stack trace:', errorData.stack)
-        }
+        setTemplates(data.templates || [])
       }
     } catch (error) {
-      console.error('Error loading templates:', error)
+      console.error('Failed to load templates:', error)
     } finally {
       setLoadingTemplates(false)
     }
   }
-
-  // 템플릿 저장
+  
   const saveTemplate = async () => {
-    if (!templateName.trim()) {
+    if (!templateName) {
       toast({
-        title: '오류',
-        description: '템플릿 이름을 입력해주세요.',
+        title: '템플릿 이름을 입력해주세요.',
         variant: 'destructive'
       })
       return
     }
-
-    setLoading(true)
+    
     try {
       const response = await fetch('/api/business/campaign-templates', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken') || localStorage.getItem('auth-token') || ''}`
+          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
         },
         body: JSON.stringify({
           name: templateName,
           description: templateDescription,
-          data: formData,
-          isDefault: false
+          data: formData
         })
       })
-
+      
       if (response.ok) {
-        const data = await response.json()
-        await loadTemplatesFromDB() // 템플릿 목록 새로고침
-        
+        toast({
+          title: '템플릿이 저장되었습니다.',
+        })
+        setShowTemplateModal(false)
         setTemplateName('')
         setTemplateDescription('')
-        setShowTemplateModal(false)
-        toast({
-          title: '성공',
-          description: '템플릿이 저장되었습니다.'
-        })
-      } else {
-        throw new Error('Failed to save template')
+        loadTemplatesFromDB()
       }
     } catch (error) {
-      console.error('Error saving template:', error)
+      console.error('Failed to save template:', error)
       toast({
-        title: '오류',
-        description: '템플릿 저장에 실패했습니다.',
+        title: '템플릿 저장에 실패했습니다.',
         variant: 'destructive'
       })
-    } finally {
-      setLoading(false)
     }
   }
-
-  // 템플릿 불러오기
-  const loadTemplate = async (templateId: string) => {
-    setLoading(true)
+  
+  const loadTemplate = (templateId: string) => {
+    const template = templates.find(t => t.id === templateId)
+    if (template && template.data) {
+      setFormData({ ...formData, ...template.data })
+      setSelectedTemplate(templateId)
+      toast({
+        title: '템플릿을 불러왔습니다.',
+      })
+    }
+  }
+  
+  const deleteTemplate = async (templateId: string) => {
+    if (!confirm('정말 이 템플릿을 삭제하시겠습니까?')) return
+    
     try {
       const response = await fetch(`/api/business/campaign-templates/${templateId}`, {
+        method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken') || localStorage.getItem('auth-token') || ''}`
+          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
         }
       })
-
+      
       if (response.ok) {
-        const data = await response.json()
-        const templateData = data.template.data as CampaignFormData
-        // Handle backward compatibility for platform field
-        if ((templateData as any).platform && !(templateData as any).platforms) {
-          (templateData as any).platforms = [(templateData as any).platform]
-        }
-        setFormData({ ...formData, ...templateData })
-        setSelectedTemplate(null)
         toast({
-          title: '성공',
-          description: '템플릿이 적용되었습니다.'
+          title: '템플릿이 삭제되었습니다.',
         })
-      } else {
-        throw new Error('Failed to load template')
+        loadTemplatesFromDB()
       }
     } catch (error) {
-      console.error('Error loading template:', error)
+      console.error('Failed to delete template:', error)
       toast({
-        title: '오류',
-        description: '템플릿 불러오기에 실패했습니다.',
+        title: '템플릿 삭제에 실패했습니다.',
         variant: 'destructive'
       })
-    } finally {
-      setLoading(false)
     }
   }
-
-  // 템플릿 삭제
-  const deleteTemplate = async (templateId: string) => {
-    if (confirm('이 템플릿을 삭제하시겠습니까?')) {
-      setLoading(true)
-      try {
-        const response = await fetch(`/api/business/campaign-templates?id=${templateId}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken') || localStorage.getItem('auth-token') || ''}`
-          }
-        })
-
-        if (response.ok) {
-          await loadTemplatesFromDB() // 템플릿 목록 새로고침
-          toast({
-            title: '성공',
-            description: '템플릿이 삭제되었습니다.'
-          })
-        } else {
-          throw new Error('Failed to delete template')
-        }
-      } catch (error) {
-        console.error('Error deleting template:', error)
-        toast({
-          title: '오류',
-          description: '템플릿 삭제에 실패했습니다.',
-          variant: 'destructive'
-        })
-      } finally {
-        setLoading(false)
-      }
-    }
-  }
-
-  // 스텝 검증
-  const validateStep = (step: number): boolean => {
+  
+  const validateStep = (step: number) => {
     switch (step) {
       case 1:
-        if (!formData.title) {
-          setError('캠페인 제목을 입력해주세요.')
+        if (!formData.title || !formData.description || !formData.platform) {
+          setError('모든 필수 정보를 입력해주세요.')
           return false
         }
-        if (!(formData as any).description) {
-          setError('캠페인 설명을 입력해주세요.')
-          return false
-        }
-        if (!formData.platforms || formData.platforms.length === 0) {
-          setError('최소 하나의 플랫폼을 선택해주세요.')
-          return false
-        }
-        return true
+        break
       case 2:
-        if (!formData.budget) {
-          setError('예산을 입력해주세요.')
+        if (!formData.budget || !formData.targetFollowers || !formData.startDate || !formData.endDate || !formData.announcementDate) {
+          setError('모든 필수 정보를 입력해주세요.')
           return false
         }
-        if (!formData.targetFollowers) {
-          setError('최소 팔로워 수를 입력해주세요.')
-          return false
-        }
-        if (!formData.maxApplicants) {
-          setError('모집 인원수를 입력해주세요.')
-          return false
-        }
-        if (!formData.startDate) {
-          setError('시작일을 선택해주세요.')
-          return false
-        }
-        if (!formData.endDate) {
-          setError('지원 마감일을 선택해주세요.')
-          return false
-        }
-        
-        // 날짜 유효성 검사
-        const startDate = new Date(formData.startDate)
-        const endDate = new Date(formData.endDate)
-        const todayDate = new Date()
-        todayDate.setHours(0, 0, 0, 0)
-        
-        if (startDate < todayDate) {
-          setError('시작일은 오늘 날짜 이후여야 합니다.')
-          return false
-        }
-        
-        if (endDate <= startDate) {
+        if (new Date(formData.startDate) > new Date(formData.endDate)) {
           setError('종료일은 시작일 이후여야 합니다.')
           return false
         }
-        
-        return true
+        if (new Date(formData.announcementDate) > new Date(formData.startDate)) {
+          setError('발표일은 캠페인 시작일 이전이어야 합니다.')
+          return false
+        }
+        break
       case 3:
-        return true // 선택 사항
-      default:
-        return false
+        if (!formData.headerImageUrl || !formData.thumbnailImageUrl) {
+          setError('헤더 배경 이미지와 썸네일 이미지를 모두 업로드해주세요.')
+          return false
+        }
+        const emptyProductImages = productImages.filter(img => !img).length
+        if (emptyProductImages === 3) {
+          setError('최소 1개 이상의 상품 이미지를 업로드해주세요.')
+          return false
+        }
+        break
     }
+    setError('')
+    return true
   }
-
-  const nextStep = () => {
+  
+  const handleNext = () => {
     if (validateStep(currentStep)) {
       setCurrentStep(currentStep + 1)
-      setError('')
-    } else {
-      setError('필수 항목을 모두 입력해주세요.')
     }
   }
-
-  const prevStep = () => {
+  
+  const handlePrev = () => {
     setCurrentStep(currentStep - 1)
-    setError('')
   }
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    // 파일 타입 검증
-    if (!file.type.startsWith('image/')) {
-      setError('이미지 파일만 업로드 가능합니다.')
-      return
-    }
-
-    // 파일 크기 검증 (15MB)
-    if (file.size > 15 * 1024 * 1024) {
-      setError('파일 크기는 15MB 이하여야 합니다.')
-      return
-    }
-
-    setImageUploading(true)
-    setError('')
-
-    try {
-      // 이미지 리사이즈
-      const resizedImage = await resizeImage(file, 800, 600)
-      setUploadedImage(resizedImage)
-      setFormData({ ...formData, imageUrl: resizedImage })
-    } catch (err) {
-      setError('이미지 업로드에 실패했습니다.')
-    } finally {
-      setImageUploading(false)
-    }
-  }
-
-  const resizeImage = (file: File, maxWidth: number, maxHeight: number): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        const img = new window.Image()
-        img.onload = () => {
-          const canvas = document.createElement('canvas')
-          let width = img.width
-          let height = img.height
-
-          // 비율 유지하며 리사이즈
-          if (width > height) {
-            if (width > maxWidth) {
-              height = height * (maxWidth / width)
-              width = maxWidth
-            }
-          } else {
-            if (height > maxHeight) {
-              width = width * (maxHeight / height)
-              height = maxHeight
-            }
-          }
-
-          canvas.width = width
-          canvas.height = height
-
-          const ctx = canvas.getContext('2d')
-          ctx?.drawImage(img, 0, 0, width, height)
-
-          resolve(canvas.toDataURL('image/jpeg', 0.8))
-        }
-        img.onerror = reject
-        img.src = e.target?.result as string
-      }
-      reader.onerror = reject
-      reader.readAsDataURL(file)
-    })
-  }
-
-  const handleDetailImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    // 이미 2개의 상세 이미지가 있는 경우
-    if (detailImages.length >= 2) {
-      setError('상세 이미지는 최대 2개까지 업로드 가능합니다.')
-      return
-    }
-
-    // 파일 타입 검증
-    if (!file.type.startsWith('image/')) {
-      setError('이미지 파일만 업로드 가능합니다.')
-      return
-    }
-
-    // 파일 크기 검증 (15MB)
-    if (file.size > 15 * 1024 * 1024) {
-      setError('파일 크기는 15MB 이하여야 합니다.')
-      return
-    }
-
-    setDetailImageUploading(true)
-    setError('')
-
-    try {
-      // 이미지 리사이즈
-      const resizedImage = await resizeImage(file, 1200, 1200)
-      setDetailImages([...detailImages, resizedImage])
-    } catch (err) {
-      setError('이미지 업로드에 실패했습니다.')
-    } finally {
-      setDetailImageUploading(false)
-    }
-  }
-
-  const removeDetailImage = (index: number) => {
-    setDetailImages(detailImages.filter((_, i) => i !== index))
-  }
-
-  const extractYoutubeVideoId = (url: string) => {
-    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/)
-    return match ? match[1] : null
-  }
-
-  const handleSubmit = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault()
-    
-    // 4단계가 아니면 제출하지 않음
-    if (currentStep !== 4) {
-      return
-    }
+  
+  const handleSubmit = async () => {
+    if (!validateStep(currentStep)) return
     
     setLoading(true)
     setError('')
-
+    
     try {
-      // 1. 먼저 캠페인 생성 (결제 전 상태로)
-      const campaignResponse = await fetch('/api/business/campaigns', {
-        method: 'POST',
-        credentials: 'include', // 쿠키 포함
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken') || localStorage.getItem('auth-token') || ''}`
-        },
-        body: JSON.stringify({
-          ...formData,
-          budget: parseInt(formData.budget),
-          targetFollowers: parseInt(formData.targetFollowers),
-          maxApplicants: parseInt(formData.maxApplicants),
-          rewardAmount: Math.floor(parseInt(formData.budget) * 0.8 / parseInt(formData.maxApplicants)), // 수수료 20% 제외하고 인원수로 나눔
-          hashtags: formData.hashtags.split(',').map(tag => tag.trim()).filter(Boolean),
-          imageUrl: uploadedImage || formData.imageUrl,
-          detailImages: detailImages,
-          youtubeUrl: formData.youtubeUrl,
-          platform: formData.platforms[0] || 'INSTAGRAM', // For backward compatibility
-          platforms: formData.platforms,
-          isPaid: false // 결제 전 상태
-        }),
-      })
-
-      if (!campaignResponse.ok) {
-        const data = await campaignResponse.json()
-        throw new Error(data.error || '캠페인 생성에 실패했습니다.')
+      // Create campaign
+      const campaignData = {
+        ...formData,
+        budget: Number(formData.budget),
+        targetFollowers: Number(formData.targetFollowers),
+        maxApplicants: Number(formData.maxApplicants) || 100,
+        productImages: productImages.filter(img => img !== ''),  // 빈 문자열 제거
+        questions: dynamicQuestions.filter(q => q.enabled !== false)
       }
-
-      const campaignData = await campaignResponse.json()
-      const campaignId = campaignData.campaign.id
-      setCreatedCampaignId(campaignId)
       
-      // 2. 결제 요청 생성
-      
-      // 토큰 확인
-      const accessToken = localStorage.getItem('accessToken') || localStorage.getItem('auth-token') || ''
-      console.log('Current token:', accessToken ? 'Token exists' : 'No token')
-      
-      const paymentResponse = await fetch('/api/payments', {
+      const response = await fetch('/api/business/campaigns', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`
+          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
         },
-        body: JSON.stringify({
-          campaignId: campaignId,
-          amount: paymentInfo.totalAmount,
-          paymentMethod: selectedPaymentMethod
-        })
+        body: JSON.stringify(campaignData)
+      })
+      
+      if (!response.ok) {
+        const error = await response.json()
+        // 구체적인 에러 메시지 표시
+        if (error.missingFields) {
+          throw new Error(error.message || error.error || '캠페인 생성 실패')
+        }
+        throw new Error(error.error || '캠페인 생성 실패')
+      }
+      
+      const data = await response.json()
+      const createdCampaignId = data.campaign.id
+      
+      // Initialize payment
+      const paymentData = {
+        orderId: `campaign_${createdCampaignId}_${Date.now()}`,
+        amount: Number(formData.budget) + platformFee,
+        orderName: `캠페인: ${formData.title}`,
+        customerName: '비즈니스',
+        successUrl: `${window.location.origin}/business/campaigns/${createdCampaignId}/payment/success`,
+        failUrl: `${window.location.origin}/business/campaigns/${createdCampaignId}/payment/fail`,
+        method: selectedPaymentMethod
+      }
+      
+      const paymentResponse = await fetch('/api/payments/prepare', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
+        },
+        body: JSON.stringify(paymentData)
       })
       
       if (!paymentResponse.ok) {
-        const error = await paymentResponse.json()
-        throw new Error(error.error || '결제 요청 생성에 실패했습니다.')
+        throw new Error('결제 준비 실패')
       }
       
-      const paymentData = await paymentResponse.json()
-      console.log('Payment data:', paymentData)
+      const paymentResult = await paymentResponse.json()
       
-      // 3. 현금 결제인 경우 바로 완료 처리
-      if (selectedPaymentMethod === 'CASH') {
-        // 테스트 결제 완료 처리
-        const completeResponse = await fetch('/api/payments/test-complete', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('accessToken') || localStorage.getItem('auth-token') || ''}`
-          },
-          body: JSON.stringify({
-            orderId: paymentData.payment.orderId,
-            paymentKey: 'TEST_' + Date.now(),
-            amount: paymentInfo.totalAmount
-          })
-        })
+      // Redirect to payment page
+      if (paymentResult.paymentUrl) {
+        window.location.href = paymentResult.paymentUrl
+      } else {
+        // For Toss Payments widget integration
+        const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY
+        if (!clientKey) throw new Error('토스페이먼츠 클라이언트 키가 설정되지 않았습니다.')
         
-        if (!completeResponse.ok) {
-          const error = await completeResponse.json()
-          throw new Error(error.error || '결제 완료 처리에 실패했습니다.')
-        }
-        
-        // 성공 페이지로 리다이렉트
-        toast({
-          title: '결제 완료',
-          description: '캠페인이 성공적으로 생성되었습니다.',
-        })
-        
-        router.push(`/business/campaigns/${campaignId}`)
-        return
-      }
-      
-      // 4. 토스페이먼츠 결제창 호출 (카드/계좌이체)
-      if (!paymentData.clientKey) {
-        console.error('Payment data:', paymentData)
-        throw new Error('토스페이먼츠 클라이언트 키가 없습니다.')
-      }
-      
-      try {
         const { loadTossPayments } = await import('@tosspayments/payment-sdk')
-        const tossPayments = await loadTossPayments(paymentData.clientKey)
+        const tossPayments = await loadTossPayments(clientKey)
         
-        if (!tossPayments || !tossPayments.requestPayment) {
-          throw new Error('토스페이먼츠 SDK 로드 실패')
-        }
-        
-        // 결제 요청
-        const paymentResult = await tossPayments.requestPayment(selectedPaymentMethod === 'CARD' ? '카드' : '계좌이체', {
-          amount: paymentData.paymentRequest.amount,
-          orderId: paymentData.paymentRequest.orderId,
-          orderName: paymentData.paymentRequest.orderName,
-          customerName: paymentData.paymentRequest.customerName || '고객',
-          successUrl: paymentData.paymentRequest.successUrl,
-          failUrl: paymentData.paymentRequest.failUrl
+        await tossPayments.requestPayment(selectedPaymentMethod, {
+          amount: paymentData.amount,
+          orderId: paymentData.orderId,
+          orderName: paymentData.orderName,
+          customerName: paymentData.customerName,
+          successUrl: paymentData.successUrl,
+          failUrl: paymentData.failUrl
         })
-        
-        console.log('Payment result:', paymentResult)
-      } catch (tossError) {
-        console.error('TossPayments error:', tossError)
-        throw new Error(`토스페이먼츠 결제 오류: ${tossError instanceof Error ? tossError.message : '알 수 없는 오류'}`)
       }
-      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '오류가 발생했습니다.'
       setError(errorMessage)
@@ -620,28 +377,22 @@ export default function NewCampaignPage() {
         description: errorMessage,
         variant: 'destructive'
       })
-      
-      // 결제 실패 시 생성된 캠페인 삭제 (선택사항)
-      if (createdCampaignId) {
-        try {
-          await fetch(`/api/business/campaigns/${createdCampaignId}`, {
-            method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('accessToken') || localStorage.getItem('auth-token') || ''}`
-            }
-          })
-        } catch (deleteError) {
-          console.error('캠페인 삭제 실패:', deleteError)
-        }
-      }
     } finally {
       setLoading(false)
     }
   }
-
+  
+  const steps = [
+    { number: 1, title: '기본 정보' },
+    { number: 2, title: '상세 정보' },
+    { number: 3, title: '이미지 업로드' },
+    { number: 4, title: '결제' }
+  ]
+  
+  const progress = (currentStep / steps.length) * 100
+  
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 메인 컨텐츠 */}
       <main className="container mx-auto px-6 py-8 max-w-4xl">
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -650,7 +401,7 @@ export default function NewCampaignPage() {
               <p className="text-gray-600 mt-2">캠페인 정보를 입력하여 인플루언서를 모집하세요.</p>
             </div>
             
-            {/* 템플릿 버튼 */}
+            {/* Template buttons */}
             <div className="flex gap-2">
               <Button
                 type="button"
@@ -676,24 +427,20 @@ export default function NewCampaignPage() {
                           <div className="pr-8">
                             <div className="font-medium">{template.name}</div>
                             {template.description && (
-                              <div className="text-xs text-gray-500">{template.description}</div>
-                            )}
-                            {template.isDefault && (
-                              <span className="text-xs text-blue-600 ml-2">기본</span>
+                              <div className="text-sm text-gray-500">{template.description}</div>
                             )}
                           </div>
                         </SelectItem>
                         <Button
-                          type="button"
                           variant="ghost"
                           size="icon"
+                          className="absolute right-1 top-1 opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={(e) => {
                             e.stopPropagation()
                             deleteTemplate(template.id)
                           }}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 opacity-0 group-hover:opacity-100"
                         >
-                          <X className="h-3 w-3" />
+                          <Trash2 className="w-4 h-4 text-red-500" />
                         </Button>
                       </div>
                     ))
@@ -703,632 +450,238 @@ export default function NewCampaignPage() {
             </div>
           </div>
         </div>
-
-        {/* 스텝 표시 */}
+        
+        {/* Progress bar */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">캠페인 생성 - {currentStep}/4단계</h2>
-            <div className="text-sm text-gray-500">
-              {currentStep === 1 && '기본 정보'}
-              {currentStep === 2 && '캠페인 조건'}
-              {currentStep === 3 && '추가 정보'}
-              {currentStep === 4 && '결제 정보'}
-            </div>
+          <Progress value={progress} className="h-2" />
+          <div className="flex justify-between mt-4">
+            {steps.map((step) => (
+              <div
+                key={step.number}
+                className={`flex flex-col items-center ${
+                  currentStep >= step.number ? 'text-indigo-600' : 'text-gray-400'
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  currentStep >= step.number ? 'bg-indigo-600 text-white' : 'bg-gray-200'
+                }`}>
+                  {step.number}
+                </div>
+                <span className="text-sm mt-2">{step.title}</span>
+              </div>
+            ))}
           </div>
-          <Progress value={(currentStep / 4) * 100} className="w-full" />
         </div>
-
-        {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} onKeyDown={(e) => {
-          if (e.key === 'Enter' && currentStep !== 4) {
-            e.preventDefault()
-            nextStep()
-          }
-        }} className="bg-white rounded-xl shadow-sm p-8">
-          <div className="space-y-6">
-            {/* 스텝 1: 기본 정보 */}
-            {currentStep === 1 && (
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">기본 정보</h2>
-                
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="title">캠페인 제목 *</Label>
-                    <Input
-                      id="title"
-                      type="text"
-                      value={formData.title}
-                      onChange={(e) => setFormData({...formData, title: e.target.value})}
-                      placeholder="예: 2025 신제품 런칭 캠페인"
-                      className="mt-2"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="description">캠페인 설명 *</Label>
-                    <Textarea
-                      id="description"
-                      rows={4}
-                      value={(formData as any).description}
-                      onChange={(e) => setFormData({...formData, description: e.target.value})}
-                      placeholder="캠페인의 목적과 내용을 상세히 설명해주세요."
-                      className="mt-2"
-                    />
-                  </div>
-
-                  <div>
-                    <Label>플랫폼 * (복수 선택 가능)</Label>
-                    <div className="grid grid-cols-4 gap-3 mt-2">
-                      <Button
-                        type="button"
-                        variant={formData.platforms.includes('INSTAGRAM') ? 'default' : 'outline'}
-                        onClick={() => {
-                          if (formData.platforms.includes('INSTAGRAM')) {
-                            setFormData({...formData, platforms: formData.platforms.filter(p => p !== 'INSTAGRAM')})
-                          } else {
-                            setFormData({...formData, platforms: [...formData.platforms, 'INSTAGRAM']})
-                          }
-                        }}
-                        className="h-16 flex flex-col items-center justify-center gap-2"
-                      >
-                        <InstagramIcon />
-                        <span className="text-sm font-medium">Instagram</span>
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={formData.platforms.includes('YOUTUBE') ? 'default' : 'outline'}
-                        onClick={() => {
-                          if (formData.platforms.includes('YOUTUBE')) {
-                            setFormData({...formData, platforms: formData.platforms.filter(p => p !== 'YOUTUBE')})
-                          } else {
-                            setFormData({...formData, platforms: [...formData.platforms, 'YOUTUBE']})
-                          }
-                        }}
-                        className="h-16 flex flex-col items-center justify-center gap-2"
-                      >
-                        <Youtube className="w-6 h-6" />
-                        <span className="text-sm font-medium">YouTube</span>
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={formData.platforms.includes('TIKTOK') ? 'default' : 'outline'}
-                        onClick={() => {
-                          if (formData.platforms.includes('TIKTOK')) {
-                            setFormData({...formData, platforms: formData.platforms.filter(p => p !== 'TIKTOK')})
-                          } else {
-                            setFormData({...formData, platforms: [...formData.platforms, 'TIKTOK']})
-                          }
-                        }}
-                        className="h-16 flex flex-col items-center justify-center gap-2"
-                      >
-                        <TikTokIcon />
-                        <span className="text-sm font-medium">TikTok</span>
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={formData.platforms.includes('BLOG') ? 'default' : 'outline'}
-                        onClick={() => {
-                          if (formData.platforms.includes('BLOG')) {
-                            setFormData({...formData, platforms: formData.platforms.filter(p => p !== 'BLOG')})
-                          } else {
-                            setFormData({...formData, platforms: [...formData.platforms, 'BLOG']})
-                          }
-                        }}
-                        className="h-16 flex flex-col items-center justify-center gap-2"
-                      >
-                        <BlogIcon />
-                        <span className="text-sm font-medium">Blog</span>
-                      </Button>
-                    </div>
-                    {formData.platforms.length === 0 && (
-                      <p className="text-sm text-red-600 mt-2">최소 하나의 플랫폼을 선택해주세요.</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* 스텝 2: 캠페인 조건 */}
-            {currentStep === 2 && (
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">캠페인 조건</h2>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="budget">예산 (원) *</Label>
-                  <Input
-                    id="budget"
-                    type="number"
-                    required
-                    min="100000"
-                    value={formData.budget}
-                    onChange={(e) => setFormData({...formData, budget: e.target.value})}
-                    placeholder="1000000"
-                    className="mt-2"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">전체 캠페인 예산을 입력하세요</p>
-                </div>
-
-
-                <div>
-                  <Label htmlFor="targetFollowers">최소 팔로워 수 *</Label>
-                  <Input
-                    id="targetFollowers"
-                    type="number"
-                    required
-                    min="1000"
-                    value={formData.targetFollowers}
-                    onChange={(e) => setFormData({...formData, targetFollowers: e.target.value})}
-                    placeholder="10000"
-                    className="mt-2"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="maxApplicants">모집 인원수 *</Label>
-                  <Input
-                    id="maxApplicants"
-                    type="number"
-                    required
-                    min="1"
-                    max="1000"
-                    value={formData.maxApplicants}
-                    onChange={(e) => setFormData({...formData, maxApplicants: e.target.value})}
-                    placeholder="10"
-                    className="mt-2"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">최대 모집할 인플루언서 수</p>
-                </div>
-
-                <div>
-                  <Label htmlFor="startDate">시작일 *</Label>
-                  <Input
-                    id="startDate"
-                    type="date"
-                    required
-                    min={today}
-                    value={formData.startDate}
-                    onChange={(e) => setFormData({...formData, startDate: e.target.value})}
-                    className="mt-2"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="endDate">지원 마감일 *</Label>
-                  <Input
-                    id="endDate"
-                    type="date"
-                    required
-                    min={formData.startDate || today}
-                    value={formData.endDate}
-                    onChange={(e) => setFormData({...formData, endDate: e.target.value})}
-                    className="mt-2"
-                  />
-                </div>
-              </div>
-              
-              {/* 예상 비용 계산 */}
-              {formData.budget && formData.maxApplicants && (
-                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                  <h3 className="font-medium text-sm text-blue-900 mb-2">예상 비용 계산</h3>
-                  <div className="space-y-1 text-sm text-blue-700">
-                    <div className="flex justify-between">
-                      <span>전체 예산</span>
-                      <span>₩{Number(formData.budget).toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>플랫폼 수수료 (20%)</span>
-                      <span>₩{Math.floor(Number(formData.budget) * 0.2).toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>인플루언서 지원금 총액</span>
-                      <span>₩{Math.floor(Number(formData.budget) * 0.8).toLocaleString()}</span>
-                    </div>
-                    <div className="border-t pt-2 mt-2">
-                      <div className="flex justify-between font-medium text-blue-900">
-                        <span>인플루언서 1명당 지원금</span>
-                        <span>₩{Math.floor(Number(formData.budget) * 0.8 / Number(formData.maxApplicants)).toLocaleString()}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+        
+        {/* Form content */}
+        <div className="bg-white rounded-lg shadow-sm p-8">
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600">{error}</p>
             </div>
-            )}
-
-            {/* 스텝 3: 추가 정보 */}
-            {currentStep === 3 && (
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">추가 정보</h2>
+          )}
+          
+          {currentStep === 1 && (
+            <StepBasicInfo
+              formData={formData}
+              setFormData={setFormData}
+              platformIcons={platformIcons}
+            />
+          )}
+          
+          {currentStep === 2 && (
+            <>
+              <StepDetails
+                formData={formData}
+                setFormData={setFormData}
+              />
+              <QuestionPreview
+                questions={dynamicQuestions}
+                onEditClick={() => setShowQuestionEditor(true)}
+                onQuestionToggle={(questionId, enabled) => {
+                  setDynamicQuestions(
+                    dynamicQuestions.map(q => 
+                      q.id === questionId ? { ...q, enabled } : q
+                    )
+                  )
+                }}
+              />
+            </>
+          )}
+          
+          {currentStep === 3 && (
+            <StepMedia
+              formData={formData}
+              setFormData={setFormData}
+              productImages={productImages}
+              setProductImages={setProductImages}
+            />
+          )}
+          
+          {currentStep === 4 && (
+            <>
+              <StepPayment
+                budget={Number(formData.budget)}
+                platformFee={platformFee}
+              />
               
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="requirements">상세 요구사항</Label>
-                  <Textarea
-                    id="requirements"
-                    rows={3}
-                    value={formData.requirements}
-                    onChange={(e) => setFormData({...formData, requirements: e.target.value})}
-                    placeholder="인플루언서에게 요구하는 사항을 자세히 작성해주세요."
-                    className="mt-2"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="hashtags">해시태그 (쉼표로 구분)</Label>
-                  <Input
-                    id="hashtags"
-                    type="text"
-                    value={formData.hashtags}
-                    onChange={(e) => setFormData({...formData, hashtags: e.target.value})}
-                    placeholder="#신제품, #런칭이벤트, #뷰티"
-                    className="mt-2"
-                  />
-                </div>
-
-                <div>
-                  <Label>대표 이미지</Label>
-                  <div className="space-y-4 mt-2">
-                    {/* 이미지 업로드 영역 */}
-                    <div 
-                      onClick={() => fileInputRef.current?.click()}
-                      className="relative border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-indigo-500 cursor-pointer transition-colors"
-                    >
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                      />
-                      
-                      {uploadedImage ? (
-                        <div className="relative">
-                          <img 
-                            src={uploadedImage} 
-                            alt="캠페인 대표 이미지" 
-                            className="w-full h-48 object-cover rounded-lg"
-                          />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="icon"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setUploadedImage(null)
-                              setFormData({...formData, imageUrl: ''})
-                            }}
-                            className="absolute top-2 right-2 h-8 w-8"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="text-center">
-                          {imageUploading ? (
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-                          ) : (
-                            <>
-                              <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                              <p className="mt-2 text-sm text-gray-600">
-                                클릭하여 이미지 업로드
-                              </p>
-                              <p className="text-xs text-gray-500 mt-1">
-                                JPG, PNG, GIF (최대 15MB)
-                              </p>
-                            </>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* URL 입력 옵션 */}
-                    <div className="relative">
-                      <Input
-                        type="url"
-                        value={!uploadedImage ? formData.imageUrl : ''}
-                        onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
-                        disabled={!!uploadedImage}
-                        placeholder="또는 이미지 URL을 입력하세요"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <Label>상세 이미지 (최대 2개)</Label>
-                  <div className="space-y-4 mt-2">
-                    {/* 상세 이미지 그리드 */}
-                    <div className="grid grid-cols-2 gap-4">
-                      {/* 업로드된 이미지들 */}
-                      {detailImages.map((image, index) => (
-                        <div key={index} className="relative group">
-                          <img 
-                            src={image} 
-                            alt={`상세 이미지 ${index + 1}`} 
-                            className="w-full h-48 object-cover rounded-lg border-2 border-gray-200"
-                          />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="icon"
-                            onClick={() => removeDetailImage(index)}
-                            className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                      
-                      {/* 업로드 버튼 (최대 2개) */}
-                      {detailImages.length < 2 && (
-                        <div 
-                          onClick={() => detailFileInputRef.current?.click()}
-                          className="relative border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-indigo-500 cursor-pointer transition-colors h-48 flex items-center justify-center"
-                        >
-                          <input
-                            ref={detailFileInputRef}
-                            type="file"
-                            accept="image/*"
-                            onChange={handleDetailImageUpload}
-                            className="hidden"
-                          />
-                          
-                          <div className="text-center">
-                            {detailImageUploading ? (
-                              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-                            ) : (
-                              <>
-                                <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                                <p className="mt-2 text-sm text-gray-600">
-                                  상세 이미지 추가
-                                </p>
-                                <p className="text-xs text-gray-500 mt-1">
-                                  JPG, PNG, GIF (최대 15MB)
-                                </p>
-                              </>
-                            )}
+              <div className="mt-6">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3">결제 방법 선택</h3>
+                <div className="grid grid-cols-3 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPaymentMethod('CARD')}
+                    className={`p-3 rounded-lg border-2 transition-all ${
+                      selectedPaymentMethod === 'CARD'
+                        ? 'border-indigo-600 bg-indigo-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="flex items-center justify-center mb-2">
+                        <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
+                      </div>
+                      <div className="font-medium text-sm">신용카드</div>
+                      <p className="text-xs text-gray-600 mt-1">
+                        모든 카드 결제 가능
+                      </p>
+                      {selectedPaymentMethod === 'CARD' && (
+                        <div className="mt-2 flex justify-center">
+                          <div className="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
                           </div>
                         </div>
                       )}
                     </div>
-                    
-                    <p className="text-sm text-gray-500">
-                      상세 이미지는 캠페인의 제품이나 서비스를 자세히 보여주는 이미지를 업로드해주세요.
-                    </p>
-                  </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPaymentMethod('TRANSFER')}
+                    className={`p-3 rounded-lg border-2 transition-all ${
+                      selectedPaymentMethod === 'TRANSFER'
+                        ? 'border-indigo-600 bg-indigo-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="flex items-center justify-center mb-2">
+                        <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                        </svg>
+                      </div>
+                      <div className="font-medium text-sm">계좌이체</div>
+                      <p className="text-xs text-gray-600 mt-1">
+                        실시간 계좌이체
+                      </p>
+                      {selectedPaymentMethod === 'TRANSFER' && (
+                        <div className="mt-2 flex justify-center">
+                          <div className="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPaymentMethod('MOBILE')}
+                    className={`p-3 rounded-lg border-2 transition-all ${
+                      selectedPaymentMethod === 'MOBILE'
+                        ? 'border-indigo-600 bg-indigo-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="flex items-center justify-center mb-2">
+                        <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <div className="font-medium text-sm">휴대폰 결제</div>
+                      <p className="text-xs text-gray-600 mt-1">
+                        휴대폰 요금 합산
+                      </p>
+                      {selectedPaymentMethod === 'MOBILE' && (
+                        <div className="mt-2 flex justify-center">
+                          <div className="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </button>
                 </div>
 
-                <div>
-                  <Label htmlFor="youtubeUrl">유튜브 동영상 URL</Label>
-                  <div className="space-y-4 mt-2">
-                    <div className="relative">
-                      <Youtube className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="youtubeUrl"
-                        type="url"
-                        value={formData.youtubeUrl}
-                        onChange={(e) => setFormData({...formData, youtubeUrl: e.target.value})}
-                        placeholder="https://www.youtube.com/watch?v=..."
-                        className="pl-10"
-                      />
-                    </div>
-                    
-                    {/* 유튜브 미리보기 */}
-                    {formData.youtubeUrl && extractYoutubeVideoId(formData.youtubeUrl) && (
-                      <div className="relative aspect-video rounded-lg overflow-hidden bg-black">
-                        <iframe
-                          src={`https://www.youtube.com/embed/${extractYoutubeVideoId(formData.youtubeUrl)}?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&modestbranding=1&playsinline=1`}
-                          className="absolute inset-0 w-full h-full"
-                          frameBorder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
-                      </div>
-                    )}
-                  </div>
+                {/* 부가세 안내 */}
+                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-700">
+                    <span className="font-medium">부가세 안내:</span> 표시된 금액은 부가세 포함 금액입니다.
+                  </p>
                 </div>
               </div>
-            </div>
-            )}
-            
-            {/* 스텝 4: 결제 정보 */}
-            {currentStep === 4 && (
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">결제 정보</h2>
-                
-                <div className="bg-gray-50 rounded-lg p-6 mb-6">
-                  <h3 className="font-semibold text-lg mb-4">캠페인 비용 상세</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">캠페인 예산</span>
-                      <span className="font-medium">₩{paymentInfo.campaignBudget.toLocaleString()}</span>
-                    </div>
-                    {selectedPaymentMethod !== 'CARD' && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">부가세 (VAT 10%)</span>
-                        <span className="font-medium">₩{paymentInfo.vat.toLocaleString()}</span>
-                      </div>
-                    )}
-                    <div className="border-t pt-3 flex justify-between items-center">
-                      <span className="font-semibold text-lg">
-                        총 결제 금액
-                        {selectedPaymentMethod === 'CARD' && <span className="text-sm font-normal text-gray-600 ml-2">(부가세 포함)</span>}
-                      </span>
-                      <span className="font-bold text-xl text-indigo-600">₩{paymentInfo.totalAmount.toLocaleString()}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                  <div className="flex">
-                    <svg className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div className="text-sm text-blue-800">
-                      <p className="font-semibold mb-1">결제 안내</p>
-                      <ul className="list-disc list-inside space-y-1">
-                        <li>결제 완료 후 캠페인이 검토 및 승인됩니다.</li>
-                        <li>캠페인 승인 후 인플루언서 모집이 시작됩니다.</li>
-                        <li>캠페인 취소 시 수수료를 제외한 금액이 환불됩니다.</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div>
-                    <Label>결제 방법</Label>
-                    <div className="grid grid-cols-3 gap-4 mt-2">
-                      <label className="relative flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input 
-                          type="radio" 
-                          name="paymentMethod" 
-                          value="CARD" 
-                          checked={selectedPaymentMethod === 'CARD'}
-                          onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-                          className="mr-3" 
-                        />
-                        <div>
-                          <p className="font-medium">신용/체크카드</p>
-                          <p className="text-sm text-gray-500">부가세 포함</p>
-                        </div>
-                      </label>
-                      <label className="relative flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input 
-                          type="radio" 
-                          name="paymentMethod" 
-                          value="BANK_TRANSFER" 
-                          checked={selectedPaymentMethod === 'BANK_TRANSFER'}
-                          onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-                          className="mr-3" 
-                        />
-                        <div>
-                          <p className="font-medium">계좌이체</p>
-                          <p className="text-sm text-gray-500">부가세 별도</p>
-                        </div>
-                      </label>
-                      <label className="relative flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input 
-                          type="radio" 
-                          name="paymentMethod" 
-                          value="CASH" 
-                          checked={selectedPaymentMethod === 'CASH'}
-                          onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-                          className="mr-3" 
-                        />
-                        <div>
-                          <p className="font-medium">현금 결제</p>
-                          <p className="text-sm text-gray-500">부가세 별도</p>
-                        </div>
-                      </label>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="flex items-start">
-                      <input type="checkbox" className="mt-1 mr-2" required />
-                      <span className="text-sm text-gray-600">
-                        결제 진행에 동의하며, <a href="/terms" className="text-indigo-600 hover:underline">이용약관</a> 및{' '}
-                        <a href="/refund-policy" className="text-indigo-600 hover:underline">환불정책</a>을 확인하였습니다.
-                      </span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 버튼 */}
-          <div className="flex justify-between mt-8 pt-6 border-t">
-            <div>
-              {currentStep > 1 && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={prevStep}
-                >
-                  이전
-                </Button>
-              )}
-            </div>
-            
-            <div className="flex space-x-4">
-              <Button asChild variant="outline">
-                <Link href="/business/dashboard">
-                  취소
-                </Link>
-              </Button>
-              
-              {currentStep < 4 ? (
-                <Button
-                  type="button"
-                  onClick={nextStep}
-                >
-                  다음
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  onClick={() => handleSubmit()}
-                  disabled={loading}
-                >
-                  {loading ? '결제하기' : '결제하기'}
-                </Button>
-              )}
-            </div>
-          </div>
-        </form>
-      </main>
-
-      {/* 템플릿 저장 모달 */}
-      <Dialog open={showTemplateModal} onOpenChange={setShowTemplateModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>템플릿 저장</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="templateName">템플릿 이름</Label>
-              <Input
-                id="templateName"
-                type="text"
-                value={templateName}
-                onChange={(e) => setTemplateName(e.target.value)}
-                placeholder="템플릿 이름을 입력하세요"
-                className="mt-2"
-              />
-            </div>
-            <div>
-              <Label htmlFor="templateDescription">설명 (선택사항)</Label>
-              <Textarea
-                id="templateDescription"
-                value={templateDescription}
-                onChange={(e) => setTemplateDescription(e.target.value)}
-                placeholder="템플릿에 대한 설명을 입력하세요"
-                className="mt-2"
-                rows={3}
-              />
-            </div>
-          </div>
-          <DialogFooter>
+            </>
+          )}
+          
+          {/* Navigation buttons */}
+          <div className="flex justify-between mt-8">
             <Button
+              type="button"
               variant="outline"
-              onClick={() => setShowTemplateModal(false)}
+              onClick={currentStep === 1 ? () => router.back() : handlePrev}
+              disabled={loading}
             >
-              취소
+              {currentStep === 1 ? '취소' : '이전'}
             </Button>
-            <Button onClick={saveTemplate}>
-              저장
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            
+            {currentStep < 4 ? (
+              <Button
+                type="button"
+                onClick={handleNext}
+                disabled={loading}
+              >
+                다음
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                onClick={handleSubmit}
+                disabled={loading}
+              >
+                {loading ? '처리 중...' : '결제하고 캠페인 생성'}
+              </Button>
+            )}
+          </div>
+        </div>
+      </main>
+      
+      {/* Template save modal */}
+      <TemplateModal
+        open={showTemplateModal}
+        onOpenChange={setShowTemplateModal}
+        templateName={templateName}
+        setTemplateName={setTemplateName}
+        templateDescription={templateDescription}
+        setTemplateDescription={setTemplateDescription}
+        onSave={saveTemplate}
+      />
+      
+      {/* Question Editor Modal */}
+      <QuestionEditorModal
+        open={showQuestionEditor}
+        onOpenChange={setShowQuestionEditor}
+        questions={dynamicQuestions}
+        onSave={setDynamicQuestions}
+      />
     </div>
   )
 }

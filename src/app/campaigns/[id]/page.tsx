@@ -10,6 +10,25 @@ import { Progress } from '@/components/ui/progress'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/useAuth'
 import PageLayout from '@/components/layouts/PageLayout'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { 
   Calendar, 
   MapPin, 
@@ -90,10 +109,149 @@ export default function CampaignDetailPage() {
   const [isLiked, setIsLiked] = useState(false)
   const [likeCount, setLikeCount] = useState(0)
   const [applying, setApplying] = useState(false)
+  const [showApplyModal, setShowApplyModal] = useState(false)
+  const [applyForm, setApplyForm] = useState({
+    message: '',
+    name: '',
+    birthYear: '',
+    gender: '',
+    phone: '',
+    address: ''
+  })
+  const [useProfileInfo, setUseProfileInfo] = useState(false)
+  const [profileData, setProfileData] = useState<any>(null)
+  const [templates, setTemplates] = useState<Array<{
+    id: string
+    name: string
+    content: string
+    isPublic: boolean
+    user?: { id: string, name: string | null }
+  }>>([])
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('')
+  const [showSaveTemplate, setShowSaveTemplate] = useState(false)
+  const [templateName, setTemplateName] = useState('')
 
   useEffect(() => {
     fetchCampaign()
   }, [params.id])
+
+  useEffect(() => {
+    if (user && user.type === 'INFLUENCER') {
+      fetchTemplates()
+      fetchProfile()
+    }
+  }, [user])
+
+  const fetchProfile = async () => {
+    try {
+      const response = await fetch('/api/influencer/profile', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setProfileData(data)
+        // 초기값 설정
+        setApplyForm(prev => ({
+          ...prev,
+          name: data.name || '',
+          birthYear: data.profile?.birthYear || '',
+          gender: data.profile?.gender || '',
+          phone: data.profile?.phone || '',
+          address: data.profile?.address || ''
+        }))
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+    }
+  }
+
+  const fetchTemplates = async () => {
+    try {
+      const response = await fetch('/api/application-templates', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setTemplates(data.templates)
+      }
+    } catch (error) {
+      console.error('Error fetching templates:', error)
+    }
+  }
+
+  const handleSaveTemplate = async () => {
+    if (!templateName.trim() || !applyForm.message.trim()) return
+
+    try {
+      const response = await fetch('/api/application-templates', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: templateName,
+          content: applyForm.message,
+          isPublic: false,
+          category: 'general'
+        })
+      })
+
+      if (response.ok) {
+        toast({
+          title: '템플릿 저장 완료',
+          description: '템플릿이 성공적으로 저장되었습니다.'
+        })
+        setShowSaveTemplate(false)
+        setTemplateName('')
+        fetchTemplates()
+      }
+    } catch (error) {
+      console.error('Error saving template:', error)
+      toast({
+        title: '오류',
+        description: '템플릿 저장 중 문제가 발생했습니다.',
+        variant: 'destructive'
+      })
+    }
+  }
+
+  const handleTemplateSelect = (templateId: string) => {
+    const template = templates.find(t => t.id === templateId)
+    if (template) {
+      setApplyForm(prev => ({ ...prev, message: template.content }))
+      setSelectedTemplate(templateId)
+    }
+  }
+
+  const handleUseProfileInfo = (checked: boolean) => {
+    setUseProfileInfo(checked)
+    if (checked && profileData) {
+      setApplyForm(prev => ({
+        ...prev,
+        name: profileData.name || '',
+        birthYear: profileData.profile?.birthYear || '',
+        gender: profileData.profile?.gender || '',
+        phone: profileData.profile?.phone || '',
+        address: profileData.profile?.address || ''
+      }))
+    } else if (!checked) {
+      setApplyForm(prev => ({
+        ...prev,
+        name: '',
+        birthYear: '',
+        gender: '',
+        phone: '',
+        address: ''
+      }))
+    }
+  }
 
   const fetchCampaign = async () => {
     try {
@@ -185,8 +343,17 @@ export default function CampaignDetailPage() {
       const response = await fetch(`/api/campaigns/${params.id}/apply`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
-        }
+          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: applyForm.message,
+          name: applyForm.name,
+          birthYear: applyForm.birthYear ? parseInt(applyForm.birthYear) : undefined,
+          gender: applyForm.gender,
+          phone: applyForm.phone,
+          address: applyForm.address
+        })
       })
 
       if (!response.ok) {
@@ -200,6 +367,18 @@ export default function CampaignDetailPage() {
         title: '지원 완료',
         description: '캠페인 지원이 완료되었습니다.'
       })
+      
+      setShowApplyModal(false)
+      setApplyForm({
+        message: '',
+        name: profileData?.name || '',
+        birthYear: profileData?.profile?.birthYear || '',
+        gender: profileData?.profile?.gender || '',
+        phone: profileData?.profile?.phone || '',
+        address: profileData?.profile?.address || ''
+      })
+      setSelectedTemplate('')
+      setUseProfileInfo(false)
       
       // 페이지 새로고침 또는 지원 상태 업데이트
       fetchCampaign()
@@ -525,7 +704,7 @@ export default function CampaignDetailPage() {
 
               {/* 지원 버튼 */}
               <div className="mt-6 space-y-3">
-                {user?.role === 'INFLUENCER' && (
+                {user?.type === 'INFLUENCER' && (
                   <>
                     {campaign.hasApplied ? (
                       <div className="text-center">
@@ -539,16 +718,16 @@ export default function CampaignDetailPage() {
                       <Button 
                         className="w-full" 
                         size="lg"
-                        onClick={handleApply}
-                        disabled={applying || campaign.status !== 'ACTIVE' || daysLeft === 0}
+                        onClick={() => setShowApplyModal(true)}
+                        disabled={campaign.status !== 'ACTIVE' || daysLeft === 0}
                       >
-                        {applying ? '지원 중...' : '캠페인 지원하기'}
+                        캠페인 지원하기
                       </Button>
                     )}
                   </>
                 )}
                 
-                {user?.role === 'BUSINESS' && user?.id === campaign.business.id && (
+                {user?.type === 'BUSINESS' && user?.id === campaign.business.id && (
                   <>
                     <Link
                       href={`/business/campaigns/${campaign.id}/edit`}
@@ -571,7 +750,7 @@ export default function CampaignDetailPage() {
                   </>
                 )}
                 
-                {user?.role === 'INFLUENCER' && (
+                {user?.type === 'INFLUENCER' && (
                   <Button 
                     variant="outline" 
                     className="w-full"
@@ -602,6 +781,243 @@ export default function CampaignDetailPage() {
         </div>
       </div>
     </div>
+
+    {/* 지원 모달 */}
+    <Dialog open={showApplyModal} onOpenChange={setShowApplyModal}>
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>캠페인 지원하기</DialogTitle>
+          <DialogDescription>
+            지원자 정보와 지원 메시지를 작성해주세요.
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="space-y-6 py-4">
+          {/* 기본 정보 섹션 */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold">기본 정보</h3>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="useProfile"
+                  checked={useProfileInfo}
+                  onCheckedChange={handleUseProfileInfo}
+                />
+                <Label 
+                  htmlFor="useProfile" 
+                  className="text-sm font-normal cursor-pointer"
+                >
+                  프로필 정보 사용
+                </Label>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">이름*</Label>
+                <Input
+                  id="name"
+                  placeholder="이름을 입력하세요"
+                  value={applyForm.name}
+                  onChange={(e) => setApplyForm(prev => ({ ...prev, name: e.target.value }))}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="birthYear">출생연도*</Label>
+                <Select
+                  value={applyForm.birthYear}
+                  onValueChange={(value) => setApplyForm(prev => ({ ...prev, birthYear: value }))}
+                >
+                  <SelectTrigger id="birthYear">
+                    <SelectValue placeholder="선택해 주세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 50 }, (_, i) => new Date().getFullYear() - 18 - i).map(year => (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}년
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="gender">성별*</Label>
+                <Select
+                  value={applyForm.gender}
+                  onValueChange={(value) => setApplyForm(prev => ({ ...prev, gender: value }))}
+                >
+                  <SelectTrigger id="gender">
+                    <SelectValue placeholder="선택해 주세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="male">남자</SelectItem>
+                    <SelectItem value="female">여자</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="phone">연락처*</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="010-0000-0000"
+                  value={applyForm.phone}
+                  onChange={(e) => setApplyForm(prev => ({ ...prev, phone: e.target.value }))}
+                  required
+                />
+              </div>
+              
+              <div className="col-span-2 space-y-2">
+                <Label htmlFor="address">주소</Label>
+                <Input
+                  id="address"
+                  placeholder="주소를 입력하세요"
+                  value={applyForm.address}
+                  onChange={(e) => setApplyForm(prev => ({ ...prev, address: e.target.value }))}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t pt-4" />
+
+          {/* 템플릿 선택 */}
+          <div className="space-y-2">
+            <Label>템플릿 선택</Label>
+            <select
+              className="w-full p-2 border rounded-md"
+              value={selectedTemplate}
+              onChange={(e) => handleTemplateSelect(e.target.value)}
+            >
+              <option value="">직접 작성</option>
+              <optgroup label="기본 템플릿">
+                {templates.filter(t => t.isPublic && (!t.user || t.user.name === 'LinkPick System')).map(template => (
+                  <option key={template.id} value={template.id}>
+                    {template.name}
+                  </option>
+                ))}
+              </optgroup>
+              {templates.filter(t => !t.isPublic || (t.user && t.user.name !== 'LinkPick System')).length > 0 && (
+                <optgroup label="내 템플릿">
+                  {templates.filter(t => !t.isPublic || (t.user && t.user.name !== 'LinkPick System')).map(template => (
+                    <option key={template.id} value={template.id}>
+                      {template.name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+            </select>
+          </div>
+
+          {/* 지원 메시지 */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="message">지원 메시지*</Label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowSaveTemplate(true)}
+                disabled={!applyForm.message.trim()}
+              >
+                템플릿으로 저장
+              </Button>
+            </div>
+            <Textarea
+              id="message"
+              placeholder="왜 이 캠페인에 적합한지, 어떤 콘텐츠를 만들 계획인지 등을 자유롭게 작성해주세요."
+              className="h-32"
+              value={applyForm.message}
+              onChange={(e) => {
+                setApplyForm(prev => ({ ...prev, message: e.target.value }))
+                setSelectedTemplate('')
+              }}
+              required
+            />
+            <p className="text-sm text-gray-500">
+              캠페인 예산: ₩{campaign?.budget.toLocaleString()}
+            </p>
+          </div>
+        </div>
+        
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              setShowApplyModal(false)
+              setApplyForm({
+                message: '',
+                name: profileData?.name || '',
+                birthYear: profileData?.profile?.birthYear || '',
+                gender: profileData?.profile?.gender || '',
+                phone: profileData?.profile?.phone || '',
+                address: profileData?.profile?.address || ''
+              })
+              setSelectedTemplate('')
+              setUseProfileInfo(false)
+            }}
+          >
+            취소
+          </Button>
+          <Button
+            type="button"
+            onClick={handleApply}
+            disabled={applying || !applyForm.message.trim() || !applyForm.name || !applyForm.birthYear || !applyForm.gender || !applyForm.phone}
+          >
+            {applying ? '지원 중...' : '지원하기'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    {/* 템플릿 저장 모달 */}
+    <Dialog open={showSaveTemplate} onOpenChange={setShowSaveTemplate}>
+      <DialogContent className="sm:max-w-[400px]">
+        <DialogHeader>
+          <DialogTitle>템플릿 저장</DialogTitle>
+          <DialogDescription>
+            현재 작성한 메시지를 템플릿으로 저장합니다.
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="templateName">템플릿 이름</Label>
+            <Input
+              id="templateName"
+              placeholder="예: 뷰티 캠페인용 템플릿"
+              value={templateName}
+              onChange={(e) => setTemplateName(e.target.value)}
+            />
+          </div>
+        </div>
+        
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              setShowSaveTemplate(false)
+              setTemplateName('')
+            }}
+          >
+            취소
+          </Button>
+          <Button
+            type="button"
+            onClick={handleSaveTemplate}
+            disabled={!templateName.trim()}
+          >
+            저장
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
     </PageLayout>
   )
 }
