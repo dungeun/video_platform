@@ -51,10 +51,10 @@ class MockRedis {
   }
 }
 
-// Disable Redis in production if REDIS_URL is not provided
+// Create Redis client with fallback to mock
 const createRedisClient = () => {
-  // Disable Redis if explicitly disabled or in development without URL
-  if (process.env.DISABLE_REDIS === 'true' || (!process.env.REDIS_URL && process.env.NODE_ENV !== 'production')) {
+  // Disable Redis if explicitly disabled
+  if (process.env.DISABLE_REDIS === 'true') {
     console.log('Redis is disabled - using mock Redis client');
     return new MockRedis() as any;
   }
@@ -70,17 +70,18 @@ const createRedisClient = () => {
           port: parseInt(process.env.REDIS_PORT || '6379'),
           password: process.env.REDIS_PASSWORD,
           db: parseInt(process.env.REDIS_DB || '0'),
-          maxRetriesPerRequest: 3,
+          maxRetriesPerRequest: 1,
           retryStrategy(times) {
-            if (times > 3) {
-              // Stop retrying after 3 attempts
-              console.log('Redis connection failed after 3 attempts - falling back to mock Redis');
+            if (times > 1) {
+              // Stop retrying after 1 attempt in production
+              console.log('Redis connection failed - using application without Redis cache');
               return null;
             }
-            const delay = Math.min(times * 50, 2000);
+            const delay = Math.min(times * 50, 500);
             return delay;
           },
           lazyConnect: true,
+          enableOfflineQueue: false,
         });
 
     client.on('error', (err) => {

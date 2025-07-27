@@ -3,7 +3,6 @@ import { prisma } from '@/lib/db';
 import { requireAuth, createAuthResponse, createErrorResponse } from '@/lib/auth-middleware';
 import { validateRequest, paginationSchema, formatValidationErrors } from '@/lib/validation';
 import { z } from 'zod';
-import { CAMPAIGN_FIELD_DEFAULTS } from '@/lib/db/campaign-fields';
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -75,9 +74,8 @@ export async function GET(request: NextRequest) {
         imageId: true,
         status: true,
         isPaid: true,
-        // Temporarily exclude missing fields
-        // maxApplicants: true,
-        // rewardAmount: true,
+        maxApplicants: true,
+        rewardAmount: true,
         createdAt: true,
         updatedAt: true,
         business: {
@@ -128,8 +126,8 @@ export async function GET(request: NextRequest) {
       location: '전국',
       view_count: 0,
       applicant_count: campaign._count.applications,
-      maxApplicants: CAMPAIGN_FIELD_DEFAULTS.maxApplicants,
-      rewardAmount: CAMPAIGN_FIELD_DEFAULTS.rewardAmount,
+      maxApplicants: campaign.maxApplicants,
+      rewardAmount: campaign.rewardAmount,
       image_url: campaign.imageUrl || '/images/campaigns/default.jpg',
       tags: (() => {
         if (!campaign.hashtags) return [];
