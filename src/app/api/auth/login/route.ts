@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     
     const { email, password } = body
     
-    console.log('Login attempt for:', email)
+    console.log('Login attempt for:', email, 'Password length:', password?.length)
 
     if (!email || !password) {
       return NextResponse.json(
@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (!user) {
+      console.log('User not found for email:', email)
       return NextResponse.json(
         { error: '이메일 또는 비밀번호가 올바르지 않습니다.' },
         { status: 401 }
@@ -55,7 +56,9 @@ export async function POST(request: NextRequest) {
     }
 
     // 비밀번호 확인
+    console.log('User found:', user.email, 'Type:', user.type, 'Status:', user.status)
     const isValidPassword = await bcrypt.compare(password, user.password)
+    console.log('Password validation result:', isValidPassword)
     if (!isValidPassword) {
       return NextResponse.json(
         { error: '이메일 또는 비밀번호가 올바르지 않습니다.' },
@@ -99,7 +102,8 @@ export async function POST(request: NextRequest) {
         verified: (user as any).emailVerified,
         profile: user.profile
       },
-      token
+      token,
+      accessToken: token // Add this for backward compatibility with useAuth hook
     })
 
     // 쿠키 설정

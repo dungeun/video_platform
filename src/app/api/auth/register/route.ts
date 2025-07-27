@@ -7,7 +7,7 @@ export const runtime = 'nodejs'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, password, name, role } = body
+    const { email, password, name, role, phone, address } = body
 
     if (!email || !password || !name || !role) {
       return NextResponse.json(
@@ -28,7 +28,9 @@ export async function POST(request: NextRequest) {
       email, 
       password, 
       name,
-      type: role
+      type: role,
+      phone,
+      address
     })
 
     // Set cookies

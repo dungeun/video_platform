@@ -1,20 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
+import { verifyJWT } from '@/lib/auth/jwt'
+import { cookies } from 'next/headers'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export async function GET(request: NextRequest) {
   try {
-    // 미들웨어에서 설정한 헤더에서 사용자 정보 가져오기
-    const userType = request.headers.get('x-user-type')
-    const userId = request.headers.get('x-user-id')
+    // Authorization 헤더 또는 쿠키에서 토큰 가져오기
+    const authHeader = request.headers.get('authorization')
+    let token = null
     
-    if (!userType || !userId) {
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7)
+    }
+    
+    if (!token) {
+      const cookieStore = cookies()
+      token = cookieStore.get('auth-token')?.value || cookieStore.get('accessToken')?.value
+    }
+
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    if (userType !== 'ADMIN') {
+    // JWT 토큰 검증
+    const user = await verifyJWT(token)
+    if (!user) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+    }
+
+    if (user.type !== 'ADMIN') {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
     }
 
@@ -86,18 +103,23 @@ export async function GET(request: NextRequest) {
     // 응답 데이터 포맷팅
     const formattedContents = contents.map(content => ({
       id: content.id,
+      title: content.application?.campaign?.title || '제목 없음',
+      type: 'post', // 기본값으로 post 타입 설정
       status: content.status,
       createdAt: content.createdAt.toISOString().split('T')[0],
       reviewedAt: content.reviewedAt?.toISOString().split('T')[0],
-      url: content.url,
-      description: content.caption,
+      url: content.contentUrl,
+      description: content.description,
       platform: content.platform,
       feedback: content.feedback,
       applicationId: content.applicationId,
       campaignId: content.application?.campaign?.id,
       campaignTitle: content.application?.campaign?.title,
       influencerName: content.application?.influencer?.name,
-      campaignPlatform: content.platform
+      campaignPlatform: content.platform,
+      views: 0, // 기본값
+      likes: 0, // 기본값
+      comments: 0 // 기본값
     }))
 
     return NextResponse.json({

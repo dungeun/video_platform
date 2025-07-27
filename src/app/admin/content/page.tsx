@@ -23,15 +23,29 @@ interface Content {
   thumbnailUrl?: string
 }
 
+interface Post {
+  id: string
+  title: string
+  category: string
+  authorName: string
+  views: number
+  comments: number
+  createdAt: string
+  status: string
+}
+
 export default function AdminContentPage() {
   const [contents, setContents] = useState<Content[]>([])
+  const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
+  const [activeTab, setActiveTab] = useState<'content' | 'community'>('content')
 
   useEffect(() => {
     fetchContents()
+    fetchPosts()
   }, [])
 
   const fetchContents = async () => {
@@ -62,12 +76,31 @@ export default function AdminContentPage() {
     }
   }
 
+  const fetchPosts = async () => {
+    try {
+      const response = await fetch('/api/posts?limit=100', {
+        credentials: 'include'
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setPosts(data.posts || [])
+      } else {
+        setPosts([])
+      }
+    } catch (error) {
+      console.error('게시글 데이터 로드 실패:', error)
+      setPosts([])
+    }
+  }
+
   const filteredContents = contents.filter(content => {
     const matchesFilter = filter === 'all' || content.status === filter
     const matchesType = typeFilter === 'all' || content.type === typeFilter
-    const matchesSearch = content.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         content.influencerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         content.campaignTitle.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = (content.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (content.influencerName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (content.campaignTitle || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (content.description || '').toLowerCase().includes(searchTerm.toLowerCase())
     return matchesFilter && matchesType && matchesSearch
   })
 
@@ -156,9 +189,37 @@ export default function AdminContentPage() {
         {/* 헤더 */}
         <div>
           <h1 className="text-2xl font-bold text-gray-900">콘텐츠 관리</h1>
-          <p className="text-gray-600 mt-1">인플루언서가 생성한 콘텐츠를 검토하고 관리합니다</p>
+          <p className="text-gray-600 mt-1">인플루언서가 생성한 콘텐츠와 커뮤니티 게시글을 관리합니다</p>
         </div>
 
+        {/* 탭 */}
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setActiveTab('content')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'content'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              캠페인 콘텐츠
+            </button>
+            <button
+              onClick={() => setActiveTab('community')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'community'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              커뮤니티 게시판
+            </button>
+          </nav>
+        </div>
+
+        {activeTab === 'content' ? (
+          <>
         {/* 통계 카드 */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="bg-white p-6 rounded-lg shadow">
@@ -385,6 +446,127 @@ export default function AdminContentPage() {
             <div className="text-gray-400 text-4xl mb-4">📄</div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">콘텐츠가 없습니다</h3>
             <p className="text-gray-600">검색 조건에 맞는 콘텐츠가 없습니다.</p>
+          </div>
+        )}
+          </>
+        ) : (
+          /* 커뮤니티 게시판 목록 */
+          <div className="bg-white rounded-lg shadow">
+            <div className="p-6">
+              <h2 className="text-lg font-semibold mb-4">커뮤니티 게시글 목록</h2>
+              
+              {/* 카테고리 필터 */}
+              <div className="mb-4 flex gap-2">
+                <span className="text-sm text-gray-600">
+                  전체 게시글: {posts.length}개
+                </span>
+              </div>
+              
+              {/* 게시글 테이블 */}
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        카테고리
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        제목
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        작성자
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        조회수
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        댓글
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        작성일
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        액션
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {posts.map((post) => {
+                      const getCategoryStyle = (category: string) => {
+                        switch (category) {
+                          case 'notice': return 'bg-red-100 text-red-700'
+                          case 'tips': return 'bg-yellow-100 text-yellow-700'
+                          case 'review': return 'bg-green-100 text-green-700'
+                          case 'question': return 'bg-blue-100 text-blue-700'
+                          case 'free': return 'bg-purple-100 text-purple-700'
+                          default: return 'bg-gray-100 text-gray-700'
+                        }
+                      }
+                      
+                      const getCategoryName = (category: string) => {
+                        switch (category) {
+                          case 'notice': return '공지사항'
+                          case 'tips': return '캠페인 팁'
+                          case 'review': return '후기'
+                          case 'question': return '질문'
+                          case 'free': return '자유게시판'
+                          default: return '기타'
+                        }
+                      }
+                      
+                      return (
+                        <tr key={post.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-3">
+                            <span className={`px-2 py-1 text-xs rounded ${getCategoryStyle(post.category)}`}>
+                              {getCategoryName(post.category)}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="text-sm font-medium text-gray-900">
+                              {post.title}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="text-sm text-gray-900">
+                              {post.authorName}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <div className="text-sm text-gray-900">
+                              {post.views}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <div className="text-sm text-gray-900">
+                              {post.comments}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <div className="text-sm text-gray-900">
+                              {new Date(post.createdAt).toLocaleDateString('ko-KR')}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <button
+                              onClick={() => window.open(`/community/${post.id}`, '_blank')}
+                              className="text-blue-600 hover:text-blue-900 text-sm font-medium"
+                            >
+                              보기
+                            </button>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              
+              {posts.length === 0 && (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">게시글이 없습니다.</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

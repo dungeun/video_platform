@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
+import { cacheService, cacheKeys, CACHE_TTL } from '@/lib/cache/cache-service';
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -9,6 +10,19 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const filter = searchParams.get('filter') || 'all';
     const limit = parseInt(searchParams.get('limit') || '10');
+    
+    // 캐시 키 생성
+    const cacheKey = cacheKeys.homeCampaigns(filter);
+    
+    // 캐시된 데이터 확인
+    const cached = await cacheService.get(cacheKey);
+    if (cached) {
+      return NextResponse.json({
+        success: true,
+        campaigns: cached,
+        cached: true
+      });
+    }
 
     // 캠페인 조회 쿼리 기본 설정
     const baseQuery = {
@@ -21,7 +35,8 @@ export async function GET(request: NextRequest) {
             businessProfile: {
               select: {
                 companyName: true,
-                businessNumber: true
+                businessNumber: true,
+                businessCategory: true
               }
             }
           }
@@ -41,6 +56,9 @@ export async function GET(request: NextRequest) {
       case 'popular':
         campaigns = await prisma.campaign.findMany({
           ...baseQuery,
+          where: {
+            status: 'ACTIVE' // 승인된 캠페인만
+          },
           orderBy: {
             applications: {
               _count: 'desc'
@@ -55,6 +73,7 @@ export async function GET(request: NextRequest) {
         campaigns = await prisma.campaign.findMany({
           ...baseQuery,
           where: {
+            status: 'ACTIVE', // 승인된 캠페인만
             endDate: {
               gte: new Date() // 아직 마감되지 않은 캠페인만
             }
@@ -70,6 +89,9 @@ export async function GET(request: NextRequest) {
         // 신규 캠페인 (최근 등록순)
         campaigns = await prisma.campaign.findMany({
           ...baseQuery,
+          where: {
+            status: 'ACTIVE' // 승인된 캠페인만
+          },
           orderBy: {
             createdAt: 'desc'
           },
@@ -81,6 +103,9 @@ export async function GET(request: NextRequest) {
         // 전체 (인기도와 최신순을 조합)
         campaigns = await prisma.campaign.findMany({
           ...baseQuery,
+          where: {
+            status: 'ACTIVE' // 승인된 캠페인만
+          },
           orderBy: [
             {
               applications: {
@@ -107,15 +132,19 @@ export async function GET(request: NextRequest) {
         title: campaign.title,
         brand: campaign.business.businessProfile?.companyName || campaign.business.name || campaign.business.email,
         applicants: campaign._count.applications,
-        maxApplicants: campaign.targetReach || 100, // 목표 지원자 수
+        maxApplicants: campaign.maxApplicants || 100, // 목표 지원자 수
         deadline: daysLeft,
-        category: (campaign as any).category || '기타',
-        platforms: (campaign as any).categorys || ['Instagram', 'YouTube'],
-        description: (campaign as any).description,
+        category: campaign.business.businessProfile?.businessCategory || '기타',
+        platforms: [campaign.platform.toLowerCase()],
+        description: campaign.description || '',
         createdAt: campaign.createdAt,
-        budget: campaign.budget
+        budget: `${campaign.budget.toLocaleString()}원`,
+        imageUrl: campaign.imageUrl
       };
     });
+    
+    // 캐시에 저장 (5분 TTL)
+    await cacheService.set(cacheKey, formattedCampaigns, CACHE_TTL.MEDIUM);
 
     return NextResponse.json({
       success: true,

@@ -1,35 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
-import jwt from 'jsonwebtoken';
-import { cookies } from 'next/headers';
+import { verifyJWT } from '@/lib/auth/jwt';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-
-// 인증 미들웨어
-async function authenticate(request: NextRequest) {
-  const cookieStore = cookies();
-  const token = cookieStore.get('auth-token')?.value;
-
-  if (!token) {
-    return null;
-  }
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
-    return decoded;
-  } catch (error) {
-    return null;
-  }
-}
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 // GET /api/influencer/stats - 인플루언서 통계 조회
 export async function GET(request: NextRequest) {
   try {
-    const user = await authenticate(request);
-    if (!user || user.type !== 'influencer') {
+    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
+    }
+
+    const user = await verifyJWT(token);
+    if (user.type?.toUpperCase() !== 'INFLUENCER') {
       return NextResponse.json(
-        { error: '인증이 필요합니다.' },
-        { status: 401 }
+        { error: '인플루언서만 접근 가능합니다.' },
+        { status: 403 }
       );
     }
 
@@ -38,13 +26,13 @@ export async function GET(request: NextRequest) {
       where: { id: user.id },
       include: {
         profile: true,
-        campaignApplications: {
+        applications: {
           include: {
             campaign: {
               include: {
                 business: {
                   include: {
-                    profile: true
+                    businessProfile: true
                   }
                 }
               }
@@ -62,15 +50,25 @@ export async function GET(request: NextRequest) {
     }
 
     // 통계 계산
-    const applications = influencer.campaignApplications || [];
-    const completedCampaigns = applications.filter(app => app.status === 'COMPLETED');
+    const applications = influencer.applications || [];
+    
+    // 승인된 콘텐츠가 있는 캠페인들 (수익 발생)
+    const completedCampaigns = applications.filter(app => 
+      app.status === 'APPROVED' && 
+      app.contents && 
+      app.contents.some((content: any) => content.status === 'APPROVED')
+    );
+    
+    // 진행 중인 캠페인들
     const activeCampaigns = applications.filter(app => 
-      app.status === 'ACCEPTED' || app.status === 'IN_PROGRESS'
+      app.status === 'APPROVED' && 
+      (!app.contents || app.contents.length === 0 || 
+       app.contents.some((content: any) => content.status === 'PENDING_REVIEW'))
     );
 
-    // 총 수익 계산
+    // 총 수익 계산 (승인된 콘텐츠의 캠페인 예산의 80%)
     const totalEarnings = completedCampaigns.reduce((sum, app) => {
-      return sum + (app.campaign?.budget || 0);
+      return sum + (app.campaign?.budget || 0) * 0.8; // 인플루언서는 80% 수령
     }, 0);
 
     // 평균 평점 계산 (실제로는 리뷰 테이블에서 계산)
@@ -83,24 +81,41 @@ export async function GET(request: NextRequest) {
     const followers = influencer.profile?.followerCount || 0;
 
     // 활동 중인 캠페인 데이터
-    const activeCampaignData = activeCampaigns.map(app => ({
-      id: app.campaign.id,
-      title: app.campaign.title,
-      brand: app.campaign.business.profile?.companyName || app.campaign.business.name,
-      deadline: app.campaign.endDate,
-      reward: app.campaign.budget,
-      progress: Math.floor(Math.random() * 100), // TODO: 실제 진행률 계산
-      status: app.status === 'ACCEPTED' ? 'pending' : 'in_progress'
-    }));
+    const activeCampaignData = activeCampaigns.map(app => {
+      const hasSubmittedContent = app.contents && app.contents.length > 0;
+      const hasPendingContent = app.contents?.some((content: any) => content.status === 'PENDING_REVIEW');
+      
+      let campaignStatus = 'pending';
+      if (hasSubmittedContent && hasPendingContent) {
+        campaignStatus = 'submitted'; // 콘텐츠 제출 후 검토 대기
+      } else if (hasSubmittedContent) {
+        campaignStatus = 'in_progress';
+      }
+      
+      return {
+        id: app.campaign.id,
+        title: app.campaign.title,
+        brand: app.campaign.business.businessProfile?.companyName || app.campaign.business.name,
+        deadline: app.campaign.endDate,
+        reward: app.campaign.budget * 0.8, // 인플루언서 수령 예정 금액
+        progress: hasSubmittedContent ? 80 : 20, // 콘텐츠 제출했으면 80%, 아니면 20%
+        status: campaignStatus
+      };
+    });
 
     // 최근 수익 내역
-    const recentEarnings = completedCampaigns.slice(0, 5).map(app => ({
-      id: app.id,
-      campaignTitle: app.campaign.title,
-      amount: app.campaign.budget,
-      date: app.updatedAt.toISOString().split('T')[0],
-      status: 'paid'
-    }));
+    const recentEarnings = completedCampaigns.slice(0, 5).map(app => {
+      const approvedContent = app.contents?.find((content: any) => content.status === 'APPROVED');
+      return {
+        id: app.id,
+        campaignTitle: app.campaign.title,
+        amount: app.campaign.budget * 0.8, // 인플루언서는 80% 수령
+        date: approvedContent?.reviewedAt ? 
+          new Date(approvedContent.reviewedAt).toISOString().split('T')[0] :
+          app.updatedAt.toISOString().split('T')[0],
+        status: 'paid'
+      };
+    });
 
     return NextResponse.json({
       stats: {

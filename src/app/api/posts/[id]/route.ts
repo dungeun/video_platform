@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
-import { AuthService } from '@/lib/auth'
+import { verifyJWT } from '@/lib/auth/jwt'
 
 
 // GET /api/posts/[id] - 게시글 상세 조회
@@ -21,7 +21,7 @@ export async function GET(
             name: true,
             profile: {
               select: {
-                avatar: true
+                profileImage: true
               }
             }
           }
@@ -38,7 +38,7 @@ export async function GET(
                 name: true,
                 profile: {
                   select: {
-                    avatar: true
+                    profileImage: true
                   }
                 }
               }
@@ -52,7 +52,7 @@ export async function GET(
                     name: true,
                     profile: {
                       select: {
-                        avatar: true
+                        profileImage: true
                       }
                     }
                   }
@@ -94,7 +94,7 @@ export async function GET(
       author: {
         id: post.author.id,
         name: post.author.name,
-        avatar: post.author.profile?.avatar
+        avatar: post.author.profile?.profileImage
       },
       comments: post.comments.map(comment => ({
         id: comment.id,
@@ -103,7 +103,7 @@ export async function GET(
         author: {
           id: comment.author.id,
           name: comment.author.name,
-          avatar: comment.author.profile?.avatar
+          avatar: comment.author.profile?.profileImage
         },
         replies: comment.replies.map(reply => ({
           id: reply.id,
@@ -112,7 +112,7 @@ export async function GET(
           author: {
             id: reply.author.id,
             name: reply.author.name,
-            avatar: reply.author.profile?.avatar
+            avatar: reply.author.profile?.profileImage
           }
         }))
       }))
@@ -134,8 +134,14 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const user = AuthService.verifyToken(token)
-    if (!user) {
+    let user
+    try {
+      user = await verifyJWT(token)
+    } catch (error) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+    }
+    
+    if (!user || !user.id) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
@@ -173,7 +179,7 @@ export async function PUT(
             name: true,
             profile: {
               select: {
-                avatar: true
+                profileImage: true
               }
             }
           }
@@ -203,7 +209,7 @@ export async function PUT(
       author: {
         id: updatedPost.author.id,
         name: updatedPost.author.name,
-        avatar: updatedPost.author.profile?.avatar
+        avatar: updatedPost.author.profile?.profileImage
       }
     })
   } catch (error) {
@@ -223,8 +229,14 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const user = AuthService.verifyToken(token)
-    if (!user) {
+    let user
+    try {
+      user = await verifyJWT(token)
+    } catch (error) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+    }
+    
+    if (!user || !user.id) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 

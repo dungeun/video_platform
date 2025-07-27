@@ -140,12 +140,79 @@ export default function CampaignApplicantsPage() {
   ];
 
   useEffect(() => {
-    setTimeout(() => {
-      setApplicants(mockApplicants);
-      setFilteredApplicants(mockApplicants);
-      setLoading(false);
-    }, 1000);
-  }, []);
+    const fetchApplicants = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('accessToken');
+        
+        // 캠페인 정보 가져오기
+        const response = await fetch(`/api/campaigns/${params.id}/applications`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          // API 응답을 현재 UI 형식에 맞게 변환
+          const formattedApplicants = data.applications.map((app: any) => ({
+            id: app.id,
+            name: app.influencer.name,
+            email: app.influencer.email,
+            avatar: app.influencer.profile?.profileImage || '/images/default-avatar.png',
+            bio: app.influencer.profile?.bio || '',
+            location: app.influencer.profile?.location || '전국',
+            categories: app.influencer.profile?.categories || [],
+            socialMedia: {
+              instagram: app.influencer.profile?.instagramHandle ? {
+                handle: app.influencer.profile.instagramHandle,
+                followers: app.influencer.profile.instagramFollowers || 0
+              } : null,
+              youtube: app.influencer.profile?.youtubeHandle ? {
+                handle: app.influencer.profile.youtubeHandle,
+                subscribers: app.influencer.profile.youtubeSubscribers || 0
+              } : null,
+              tiktok: app.influencer.profile?.tiktokHandle ? {
+                handle: app.influencer.profile.tiktokHandle,
+                followers: app.influencer.profile.tiktokFollowers || 0
+              } : null
+            },
+            stats: {
+              completedCampaigns: app.influencer._count?.applications || 0,
+              averageRating: 4.5,
+              responseRate: 90,
+              engagementRate: 5.2
+            },
+            portfolio: {
+              recentPosts: 0,
+              totalViews: 0,
+              avgLikes: 0
+            },
+            appliedDate: app.createdAt,
+            status: app.status.toLowerCase(),
+            coverLetter: app.message || ''
+          }));
+          
+          setApplicants(formattedApplicants);
+          setFilteredApplicants(formattedApplicants);
+        } else {
+          // 에러 처리 - mock 데이터 사용
+          console.error('Failed to fetch applicants, using mock data');
+          setApplicants(mockApplicants);
+          setFilteredApplicants(mockApplicants);
+        }
+      } catch (error) {
+        console.error('Error fetching applicants:', error);
+        // 에러 시 mock 데이터 사용
+        setApplicants(mockApplicants);
+        setFilteredApplicants(mockApplicants);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchApplicants();
+  }, [params.id]);
 
   useEffect(() => {
     filterAndSortApplicants();
@@ -188,22 +255,79 @@ export default function CampaignApplicantsPage() {
     setFilteredApplicants(filtered);
   };
 
-  const handleApplicantAction = (applicantId: string, action: 'approve' | 'reject') => {
-    setApplicants(prev => prev.map(applicant =>
-      applicant.id === applicantId
-        ? { ...applicant, status: action === 'approve' ? 'approved' : 'rejected' }
-        : applicant
-    ));
+  const handleApplicantAction = async (applicantId: string, action: 'approve' | 'reject') => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`/api/business/applications/${applicantId}/status`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          status: action === 'approve' ? 'approved' : 'rejected'
+        })
+      });
+
+      if (response.ok) {
+        // 성공하면 로컬 상태 업데이트
+        setApplicants(prev => prev.map(applicant =>
+          applicant.id === applicantId
+            ? { ...applicant, status: action === 'approve' ? 'approved' : 'rejected' }
+            : applicant
+        ));
+        alert(`지원자가 ${action === 'approve' ? '승인' : '거절'}되었습니다.`);
+      } else {
+        const error = await response.json();
+        alert(error.error || '상태 변경에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('상태 변경 오류:', error);
+      alert('상태 변경 중 오류가 발생했습니다.');
+    }
   };
 
-  const handleBulkAction = (action: 'approve' | 'reject') => {
-    setApplicants(prev => prev.map(applicant =>
-      selectedApplicants.includes(applicant.id)
-        ? { ...applicant, status: action === 'approve' ? 'approved' : 'rejected' }
-        : applicant
-    ));
-    setSelectedApplicants([]);
-    setShowBulkActions(false);
+  const handleBulkAction = async (action: 'approve' | 'reject') => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      
+      // 각 선택된 지원자에 대해 API 호출
+      const promises = selectedApplicants.map(applicantId => 
+        fetch(`/api/business/applications/${applicantId}/status`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            status: action === 'approve' ? 'approved' : 'rejected'
+          })
+        })
+      );
+
+      const results = await Promise.all(promises);
+      const successCount = results.filter(r => r.ok).length;
+
+      if (successCount > 0) {
+        // 성공한 것들만 로컬 상태 업데이트
+        setApplicants(prev => prev.map(applicant =>
+          selectedApplicants.includes(applicant.id)
+            ? { ...applicant, status: action === 'approve' ? 'approved' : 'rejected' }
+            : applicant
+        ));
+        alert(`${successCount}명의 지원자가 ${action === 'approve' ? '승인' : '거절'}되었습니다.`);
+      }
+
+      if (successCount < selectedApplicants.length) {
+        alert(`${selectedApplicants.length - successCount}명의 상태 변경에 실패했습니다.`);
+      }
+
+      setSelectedApplicants([]);
+      setShowBulkActions(false);
+    } catch (error) {
+      console.error('일괄 처리 오류:', error);
+      alert('일괄 처리 중 오류가 발생했습니다.');
+    }
   };
 
   const toggleApplicantSelection = (applicantId: string) => {

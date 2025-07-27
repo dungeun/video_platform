@@ -86,7 +86,7 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 
     try {
       setSubmittingComment(true)
-      const token = localStorage.getItem('auth_token')
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('auth-token')
       
       const response = await fetch(`/api/posts/${params.id}/comments`, {
         method: 'POST',
@@ -124,7 +124,7 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
     }
 
     try {
-      const token = localStorage.getItem('auth_token')
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('auth-token')
       const response = await fetch(`/api/posts/${params.id}/like`, {
         method: 'POST',
         headers: {

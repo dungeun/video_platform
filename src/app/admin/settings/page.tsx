@@ -65,6 +65,12 @@ interface SystemSettings {
     pushNotifications: boolean
     notificationDelay: number
   }
+  legal: {
+    termsOfService: string
+    privacyPolicy: string
+    termsLastUpdated: string
+    privacyLastUpdated: string
+  }
 }
 
 export default function AdminSettingsPage() {
@@ -128,6 +134,12 @@ export default function AdminSettingsPage() {
       smsNotifications: false,
       pushNotifications: true,
       notificationDelay: 5
+    },
+    legal: {
+      termsOfService: '',
+      privacyPolicy: '',
+      termsLastUpdated: new Date().toISOString().split('T')[0],
+      privacyLastUpdated: new Date().toISOString().split('T')[0]
     }
   })
   
@@ -135,6 +147,7 @@ export default function AdminSettingsPage() {
   const [initialLoading, setInitialLoading] = useState(true)
   const [success, setSuccess] = useState('')
   const [error, setError] = useState('')
+  const [activeTab, setActiveTab] = useState<'general' | 'website' | 'payments' | 'content' | 'notifications' | 'legal'>('general')
 
   useEffect(() => {
     loadSettings()
@@ -230,12 +243,79 @@ export default function AdminSettingsPage() {
           </div>
         )}
 
+        {/* 탭 네비게이션 */}
+        <div className="bg-white border-b">
+          <nav className="-mb-px flex space-x-8 px-6">
+            <button
+              onClick={() => setActiveTab('general')}
+              className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'general'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              일반 설정
+            </button>
+            <button
+              onClick={() => setActiveTab('website')}
+              className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'website'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              웹사이트
+            </button>
+            <button
+              onClick={() => setActiveTab('payments')}
+              className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'payments'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              결제
+            </button>
+            <button
+              onClick={() => setActiveTab('content')}
+              className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'content'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              콘텐츠
+            </button>
+            <button
+              onClick={() => setActiveTab('notifications')}
+              className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'notifications'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              알림
+            </button>
+            <button
+              onClick={() => setActiveTab('legal')}
+              className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'legal'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              약관 및 정책
+            </button>
+          </nav>
+        </div>
+
         {/* 일반 설정 */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">일반 설정</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+        {activeTab === 'general' && (
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">일반 설정</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                 사이트 이름
               </label>
               <input
@@ -308,10 +388,12 @@ export default function AdminSettingsPage() {
               </div>
             </div>
           </div>
-        </div>
+          </div>
+        )}
 
         {/* 웹사이트 설정 */}
-        <div className="bg-white p-6 rounded-lg shadow">
+        {activeTab === 'website' && (
+          <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">웹사이트 설정</h2>
           
           {/* 브랜딩 */}
@@ -704,10 +786,12 @@ export default function AdminSettingsPage() {
               </div>
             </div>
           </div>
-        </div>
+          </div>
+        )}
 
         {/* 결제 설정 */}
-        <div className="bg-white p-6 rounded-lg shadow">
+        {activeTab === 'payments' && (
+          <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">결제 설정</h2>
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -766,10 +850,12 @@ export default function AdminSettingsPage() {
               </label>
             </div>
           </div>
-        </div>
+          </div>
+        )}
 
         {/* 콘텐츠 설정 */}
-        <div className="bg-white p-6 rounded-lg shadow">
+        {activeTab === 'content' && (
+          <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">콘텐츠 설정</h2>
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -855,10 +941,12 @@ export default function AdminSettingsPage() {
               </div>
             </div>
           </div>
-        </div>
+          </div>
+        )}
 
         {/* 알림 설정 */}
-        <div className="bg-white p-6 rounded-lg shadow">
+        {activeTab === 'notifications' && (
+          <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">알림 설정</h2>
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -913,7 +1001,101 @@ export default function AdminSettingsPage() {
               />
             </div>
           </div>
-        </div>
+          </div>
+        )}
+
+        {/* 약관 및 정책 설정 */}
+        {activeTab === 'legal' && (
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">약관 및 정책</h2>
+            <div className="space-y-6">
+              {/* 이용약관 */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-md font-medium text-gray-900">이용약관</h3>
+                  <div className="text-sm text-gray-500">
+                    최종 수정일: {settings.legal.termsLastUpdated}
+                  </div>
+                </div>
+                <textarea
+                  rows={20}
+                  value={settings.legal.termsOfService}
+                  onChange={(e) => {
+                    const newLegal = { 
+                      ...settings.legal, 
+                      termsOfService: e.target.value,
+                      termsLastUpdated: new Date().toISOString().split('T')[0]
+                    }
+                    handleInputChange('legal', 'termsOfService', e.target.value)
+                    handleInputChange('legal', 'termsLastUpdated', new Date().toISOString().split('T')[0])
+                  }}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                  placeholder="이용약관 내용을 입력하세요..."
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  HTML 태그를 사용할 수 있습니다. 변경사항은 저장 후 즉시 적용됩니다.
+                </p>
+              </div>
+
+              {/* 개인정보처리방침 */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-md font-medium text-gray-900">개인정보처리방침</h3>
+                  <div className="text-sm text-gray-500">
+                    최종 수정일: {settings.legal.privacyLastUpdated}
+                  </div>
+                </div>
+                <textarea
+                  rows={20}
+                  value={settings.legal.privacyPolicy}
+                  onChange={(e) => {
+                    const newLegal = { 
+                      ...settings.legal, 
+                      privacyPolicy: e.target.value,
+                      privacyLastUpdated: new Date().toISOString().split('T')[0]
+                    }
+                    handleInputChange('legal', 'privacyPolicy', e.target.value)
+                    handleInputChange('legal', 'privacyLastUpdated', new Date().toISOString().split('T')[0])
+                  }}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                  placeholder="개인정보처리방침 내용을 입력하세요..."
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  HTML 태그를 사용할 수 있습니다. 변경사항은 저장 후 즉시 적용됩니다.
+                </p>
+              </div>
+
+              {/* 미리보기 링크 */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <p className="text-sm font-medium text-gray-700 mb-2">미리보기 링크</p>
+                <div className="space-y-2">
+                  <a
+                    href="/terms"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                  >
+                    이용약관 페이지 보기
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                  <a
+                    href="/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                  >
+                    개인정보처리방침 페이지 보기
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </AdminLayout>
   )

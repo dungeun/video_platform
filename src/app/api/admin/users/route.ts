@@ -10,8 +10,14 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 // 인증 미들웨어
 async function authenticate(request: NextRequest) {
-  const cookieStore = cookies();
-  const token = cookieStore.get('auth-token')?.value;
+  // Authorization 헤더 확인
+  let token = request.headers.get('Authorization')?.replace('Bearer ', '');
+  
+  // 쿠키 확인
+  if (!token) {
+    const cookieStore = cookies();
+    token = cookieStore.get('auth-token')?.value || null;
+  }
 
   if (!token) {
     return null;
@@ -21,6 +27,7 @@ async function authenticate(request: NextRequest) {
     const decoded = jwt.verify(token, JWT_SECRET) as any;
     return decoded;
   } catch (error) {
+    console.error('Token verification failed:', error);
     return null;
   }
 }
@@ -37,8 +44,9 @@ export async function GET(request: NextRequest) {
     }
     
     // 관리자만 접근 가능
-    const userType = user.type?.toLowerCase();
-    if (userType !== 'admin') {
+    const userType = user.type?.toUpperCase();
+    console.log('User authentication:', { userId: user.id, userType });
+    if (userType !== 'ADMIN') {
       return NextResponse.json(
         { error: '관리자만 접근할 수 있습니다.' },
         { status: 403 }
@@ -81,6 +89,7 @@ export async function GET(request: NextRequest) {
       where,
       include: {
         profile: true,
+        businessProfile: true,
         campaigns: {
           select: {
             id: true
@@ -103,10 +112,14 @@ export async function GET(request: NextRequest) {
       type: user.type.toLowerCase(),
       status: user.status?.toLowerCase() || 'active',
       createdAt: user.createdAt.toISOString().split('T')[0],
-      lastLogin: user.lastLoginAt ? user.lastLoginAt.toISOString().split('T')[0] : '미접속',
+      lastLogin: user.lastLogin ? user.lastLogin.toISOString().split('T')[0] : '미접속',
       verified: (user as any).emailVerified,
       campaigns: user.type === 'BUSINESS' ? user.campaigns.length : 0,
-      followers: user.type === 'INFLUENCER' ? user.profile?.followerCount || 0 : undefined
+      followers: user.type === 'INFLUENCER' ? user.profile?.followerCount || 0 : undefined,
+      phone: user.profile?.phone || user.businessProfile?.businessAddress ? 
+        user.profile?.phone || '미등록' : undefined,
+      address: user.type === 'BUSINESS' ? user.businessProfile?.businessAddress : 
+        (user.profile as any)?.address || '미등록'
     }));
 
     // 전체 통계 가져오기 (필터와 관계없이)
@@ -134,11 +147,12 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('사용자 목록 조회 오류:', error);
     return NextResponse.json(
-      { error: '사용자 목록을 불러오는데 실패했습니다.' },
+      { 
+        error: '사용자 목록을 불러오는데 실패했습니다.',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -154,8 +168,8 @@ export async function PATCH(request: NextRequest) {
     }
     
     // 관리자만 접근 가능
-    const userType = user.type?.toLowerCase();
-    if (userType !== 'admin') {
+    const userType = user.type?.toUpperCase();
+    if (userType !== 'ADMIN') {
       return NextResponse.json(
         { error: '관리자만 접근할 수 있습니다.' },
         { status: 403 }

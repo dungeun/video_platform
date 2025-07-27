@@ -167,9 +167,6 @@ export default function AdminInfluencersPage() {
           <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium">
             일괄 승인
           </button>
-          <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium">
-            인플루언서 초대
-          </button>
         </div>
       </div>
 

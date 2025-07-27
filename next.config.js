@@ -2,10 +2,10 @@
 const nextConfig = {
   // output: 'standalone', // 로컬 개발시 주석 처리
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   
   // 환경 변수 런타임 설정
@@ -16,7 +16,12 @@ const nextConfig = {
 
   // 이미지 도메인 설정
   images: {
-    domains: ['localhost', 'res.cloudinary.com'],
+    domains: [
+      'localhost',
+      'res.cloudinary.com',
+      'images.unsplash.com',
+      'ui-avatars.com'
+    ],
   },
 
   // 실험적 기능
@@ -26,6 +31,17 @@ const nextConfig = {
       bodySizeLimit: '2mb',
     },
     serverComponentsExternalPackages: ['@prisma/client', 'prisma'],
+  },
+
+  // 리다이렉트 설정
+  async redirects() {
+    return [
+      {
+        source: '/dashboard/my-campaigns',
+        destination: '/mypage?tab=campaigns',
+        permanent: true,
+      },
+    ]
   },
 };
 

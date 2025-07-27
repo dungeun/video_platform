@@ -7,7 +7,15 @@ export const runtime = 'nodejs'
 export async function GET(request: NextRequest) {
   try {
     // Check both cookie names for compatibility
-    const accessToken = request.cookies.get('auth-token')?.value || request.cookies.get('accessToken')?.value
+    let accessToken = request.cookies.get('auth-token')?.value || request.cookies.get('accessToken')?.value
+    
+    // Also check Authorization header
+    if (!accessToken) {
+      const authHeader = request.headers.get('Authorization')
+      if (authHeader?.startsWith('Bearer ')) {
+        accessToken = authHeader.substring(7)
+      }
+    }
 
     if (!accessToken) {
       return NextResponse.json(
@@ -25,8 +33,16 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Get user
-    const user = await authService.getUserById(tokenData.userId)
+    // Get user - handle both userId and id fields for compatibility
+    const userId = tokenData.userId || tokenData.id
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Invalid token data' },
+        { status: 401 }
+      )
+    }
+    
+    const user = await authService.getUserById(userId)
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },

@@ -50,7 +50,11 @@ interface CampaignFormData {
 interface CampaignTemplate {
   id: string
   name: string
+  description?: string
   data: Partial<CampaignFormData>
+  isDefault?: boolean
+  createdAt?: string
+  updatedAt?: string
 }
 
 export default function NewCampaignPage() {
@@ -59,7 +63,7 @@ export default function NewCampaignPage() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    platform: 'INSTAGRAM',
+    platforms: [],
     budget: '',
     targetFollowers: '',
     startDate: '',
@@ -67,11 +71,20 @@ export default function NewCampaignPage() {
     requirements: '',
     hashtags: '',
     imageUrl: '',
-    youtubeUrl: ''
+    youtubeUrl: '',
+    maxApplicants: ''
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const { toast } = useToast()
+  const [paymentInfo, setPaymentInfo] = useState({
+    campaignBudget: 0,
+    platformFee: 0,
+    vat: 0,
+    totalAmount: 0
+  })
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('CARD')
+  const [createdCampaignId, setCreatedCampaignId] = useState<string | null>(null)
   
   // 오늘 날짜 (YYYY-MM-DD 형식)
   const today = new Date().toISOString().split('T')[0]
@@ -79,22 +92,78 @@ export default function NewCampaignPage() {
   const [imageUploading, setImageUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   
+  // 상세 이미지 관련 상태
+  const [detailImages, setDetailImages] = useState<string[]>([])
+  const [detailImageUploading, setDetailImageUploading] = useState(false)
+  const detailFileInputRef = useRef<HTMLInputElement>(null)
+  
   // 템플릿 관련 상태
   const [templates, setTemplates] = useState<CampaignTemplate[]>([])
   const [showTemplateModal, setShowTemplateModal] = useState(false)
   const [templateName, setTemplateName] = useState('')
+  const [templateDescription, setTemplateDescription] = useState('')
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
+  const [loadingTemplates, setLoadingTemplates] = useState(false)
 
-  // 로컬스토리지에서 템플릿 불러오기
+  // DB에서 템플릿 불러오기
   useEffect(() => {
-    const savedTemplates = localStorage.getItem('campaignTemplates')
-    if (savedTemplates) {
-      setTemplates(JSON.parse(savedTemplates))
-    }
+    loadTemplatesFromDB()
   }, [])
+  
+  // 비용 계산
+  useEffect(() => {
+    if (formData.budget) {
+      const budget = Number(formData.budget)
+      
+      // 신용카드는 부가세 포함, 계좌이체/현금은 부가세 별도
+      let vat = 0
+      let total = budget
+      
+      if (selectedPaymentMethod !== 'CARD') {
+        vat = budget * 0.1  // VAT 10%
+        total = budget + vat
+      }
+      
+      setPaymentInfo({
+        campaignBudget: budget,
+        platformFee: 0,  // 플랫폼 수수료 제거
+        vat: vat,
+        totalAmount: total
+      })
+    }
+  }, [formData.budget, selectedPaymentMethod])
+
+  const loadTemplatesFromDB = async () => {
+    setLoadingTemplates(true)
+    try {
+      const response = await fetch('/api/business/campaign-templates', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setTemplates(data.templates)
+      } else {
+        const errorData = await response.json()
+        console.error('Failed to load templates:', errorData)
+        if (errorData.details) {
+          console.error('Error details:', errorData.details)
+        }
+        if (errorData.stack) {
+          console.error('Stack trace:', errorData.stack)
+        }
+      }
+    } catch (error) {
+      console.error('Error loading templates:', error)
+    } finally {
+      setLoadingTemplates(false)
+    }
+  }
 
   // 템플릿 저장
-  const saveTemplate = () => {
+  const saveTemplate = async () => {
     if (!templateName.trim()) {
       toast({
         title: '오류',
@@ -104,43 +173,117 @@ export default function NewCampaignPage() {
       return
     }
 
-    const newTemplate: CampaignTemplate = {
-      id: Date.now().toString(),
-      name: templateName,
-      data: { ...formData }
-    }
+    setLoading(true)
+    try {
+      const response = await fetch('/api/business/campaign-templates', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        },
+        body: JSON.stringify({
+          name: templateName,
+          description: templateDescription,
+          data: formData,
+          isDefault: false
+        })
+      })
 
-    const updatedTemplates = [...templates, newTemplate]
-    setTemplates(updatedTemplates)
-    localStorage.setItem('campaignTemplates', JSON.stringify(updatedTemplates))
-    
-    setTemplateName('')
-    setShowTemplateModal(false)
-    toast({
-      title: '성공',
-      description: '템플릿이 저장되었습니다.'
-    })
+      if (response.ok) {
+        const data = await response.json()
+        await loadTemplatesFromDB() // 템플릿 목록 새로고침
+        
+        setTemplateName('')
+        setTemplateDescription('')
+        setShowTemplateModal(false)
+        toast({
+          title: '성공',
+          description: '템플릿이 저장되었습니다.'
+        })
+      } else {
+        throw new Error('Failed to save template')
+      }
+    } catch (error) {
+      console.error('Error saving template:', error)
+      toast({
+        title: '오류',
+        description: '템플릿 저장에 실패했습니다.',
+        variant: 'destructive'
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   // 템플릿 불러오기
-  const loadTemplate = (templateId: string) => {
-    const template = templates.find(t => t.id === templateId)
-    if (template) {
-      setFormData({ ...formData, ...template.data })
-      setSelectedTemplate(null)
-      toast({
-        title: '성공',
-        description: '템플릿이 적용되었습니다.'
+  const loadTemplate = async (templateId: string) => {
+    setLoading(true)
+    try {
+      const response = await fetch(`/api/business/campaign-templates/${templateId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
       })
+
+      if (response.ok) {
+        const data = await response.json()
+        const templateData = data.template.data as CampaignFormData
+        // Handle backward compatibility for platform field
+        if ((templateData as any).platform && !(templateData as any).platforms) {
+          (templateData as any).platforms = [(templateData as any).platform]
+        }
+        setFormData({ ...formData, ...templateData })
+        setSelectedTemplate(null)
+        toast({
+          title: '성공',
+          description: '템플릿이 적용되었습니다.'
+        })
+      } else {
+        throw new Error('Failed to load template')
+      }
+    } catch (error) {
+      console.error('Error loading template:', error)
+      toast({
+        title: '오류',
+        description: '템플릿 불러오기에 실패했습니다.',
+        variant: 'destructive'
+      })
+    } finally {
+      setLoading(false)
     }
   }
 
   // 템플릿 삭제
-  const deleteTemplate = (templateId: string) => {
+  const deleteTemplate = async (templateId: string) => {
     if (confirm('이 템플릿을 삭제하시겠습니까?')) {
-      const updatedTemplates = templates.filter(t => t.id !== templateId)
-      setTemplates(updatedTemplates)
-      localStorage.setItem('campaignTemplates', JSON.stringify(updatedTemplates))
+      setLoading(true)
+      try {
+        const response = await fetch(`/api/business/campaign-templates?id=${templateId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          }
+        })
+
+        if (response.ok) {
+          await loadTemplatesFromDB() // 템플릿 목록 새로고침
+          toast({
+            title: '성공',
+            description: '템플릿이 삭제되었습니다.'
+          })
+        } else {
+          throw new Error('Failed to delete template')
+        }
+      } catch (error) {
+        console.error('Error deleting template:', error)
+        toast({
+          title: '오류',
+          description: '템플릿 삭제에 실패했습니다.',
+          variant: 'destructive'
+        })
+      } finally {
+        setLoading(false)
+      }
     }
   }
 
@@ -148,9 +291,38 @@ export default function NewCampaignPage() {
   const validateStep = (step: number): boolean => {
     switch (step) {
       case 1:
-        return !!formData.title && !!(formData as any).description && !!formData.platform
+        if (!formData.title) {
+          setError('캠페인 제목을 입력해주세요.')
+          return false
+        }
+        if (!(formData as any).description) {
+          setError('캠페인 설명을 입력해주세요.')
+          return false
+        }
+        if (!formData.platforms || formData.platforms.length === 0) {
+          setError('최소 하나의 플랫폼을 선택해주세요.')
+          return false
+        }
+        return true
       case 2:
-        if (!formData.budget || !formData.targetFollowers || !formData.startDate || !formData.endDate) {
+        if (!formData.budget) {
+          setError('예산을 입력해주세요.')
+          return false
+        }
+        if (!formData.targetFollowers) {
+          setError('최소 팔로워 수를 입력해주세요.')
+          return false
+        }
+        if (!formData.maxApplicants) {
+          setError('모집 인원수를 입력해주세요.')
+          return false
+        }
+        if (!formData.startDate) {
+          setError('시작일을 선택해주세요.')
+          return false
+        }
+        if (!formData.endDate) {
+          setError('지원 마감일을 선택해주세요.')
           return false
         }
         
@@ -202,9 +374,9 @@ export default function NewCampaignPage() {
       return
     }
 
-    // 파일 크기 검증 (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError('파일 크기는 5MB 이하여야 합니다.')
+    // 파일 크기 검증 (15MB)
+    if (file.size > 15 * 1024 * 1024) {
+      setError('파일 크기는 15MB 이하여야 합니다.')
       return
     }
 
@@ -262,6 +434,46 @@ export default function NewCampaignPage() {
     })
   }
 
+  const handleDetailImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // 이미 2개의 상세 이미지가 있는 경우
+    if (detailImages.length >= 2) {
+      setError('상세 이미지는 최대 2개까지 업로드 가능합니다.')
+      return
+    }
+
+    // 파일 타입 검증
+    if (!file.type.startsWith('image/')) {
+      setError('이미지 파일만 업로드 가능합니다.')
+      return
+    }
+
+    // 파일 크기 검증 (15MB)
+    if (file.size > 15 * 1024 * 1024) {
+      setError('파일 크기는 15MB 이하여야 합니다.')
+      return
+    }
+
+    setDetailImageUploading(true)
+    setError('')
+
+    try {
+      // 이미지 리사이즈
+      const resizedImage = await resizeImage(file, 1200, 1200)
+      setDetailImages([...detailImages, resizedImage])
+    } catch (err) {
+      setError('이미지 업로드에 실패했습니다.')
+    } finally {
+      setDetailImageUploading(false)
+    }
+  }
+
+  const removeDetailImage = (index: number) => {
+    setDetailImages(detailImages.filter((_, i) => i !== index))
+  }
+
   const extractYoutubeVideoId = (url: string) => {
     const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/)
     return match ? match[1] : null
@@ -270,8 +482,8 @@ export default function NewCampaignPage() {
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault()
     
-    // 3단계가 아니면 제출하지 않음
-    if (currentStep !== 3) {
+    // 4단계가 아니면 제출하지 않음
+    if (currentStep !== 4) {
       return
     }
     
@@ -279,33 +491,106 @@ export default function NewCampaignPage() {
     setError('')
 
     try {
-      const response = await fetch('/api/business/campaigns', {
+      // 1. 먼저 캠페인 생성 (결제 전 상태로)
+      const campaignResponse = await fetch('/api/business/campaigns', {
         method: 'POST',
         credentials: 'include', // 쿠키 포함
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
         },
         body: JSON.stringify({
           ...formData,
           budget: parseInt(formData.budget),
           targetFollowers: parseInt(formData.targetFollowers),
+          maxApplicants: parseInt(formData.maxApplicants),
+          rewardAmount: Math.floor(parseInt(formData.budget) * 0.8 / parseInt(formData.maxApplicants)), // 수수료 20% 제외하고 인원수로 나눔
           hashtags: formData.hashtags.split(',').map(tag => tag.trim()).filter(Boolean),
           imageUrl: uploadedImage || formData.imageUrl,
-          youtubeUrl: formData.youtubeUrl
+          detailImages: detailImages,
+          youtubeUrl: formData.youtubeUrl,
+          platform: formData.platforms[0] || 'INSTAGRAM', // For backward compatibility
+          platforms: formData.platforms,
+          isPaid: false // 결제 전 상태
         }),
       })
 
-      if (!response.ok) {
-        const data = await response.json()
+      if (!campaignResponse.ok) {
+        const data = await campaignResponse.json()
         throw new Error(data.error || '캠페인 생성에 실패했습니다.')
       }
 
-      const data = await response.json()
-      toast({
-        title: '성공',
-        description: '캠페인이 성공적으로 생성되었습니다.'
+      const campaignData = await campaignResponse.json()
+      const campaignId = campaignData.campaign.id
+      setCreatedCampaignId(campaignId)
+      
+      // 2. 결제 요청 생성
+      
+      const paymentResponse = await fetch('/api/payments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        },
+        body: JSON.stringify({
+          campaignId: campaignId,
+          amount: paymentInfo.totalAmount,
+          paymentMethod: selectedPaymentMethod
+        })
       })
-      router.push(`/business/campaigns/${data.campaign.id}`)
+      
+      if (!paymentResponse.ok) {
+        const error = await paymentResponse.json()
+        throw new Error(error.error || '결제 요청 생성에 실패했습니다.')
+      }
+      
+      const paymentData = await paymentResponse.json()
+      
+      // 3. 현금 결제인 경우 바로 완료 처리
+      if (selectedPaymentMethod === 'CASH') {
+        // 테스트 결제 완료 처리
+        const completeResponse = await fetch('/api/payments/test-complete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          },
+          body: JSON.stringify({
+            orderId: paymentData.payment.orderId,
+            paymentKey: 'TEST_' + Date.now(),
+            amount: paymentInfo.totalAmount
+          })
+        })
+        
+        if (!completeResponse.ok) {
+          const error = await completeResponse.json()
+          throw new Error(error.error || '결제 완료 처리에 실패했습니다.')
+        }
+        
+        // 성공 페이지로 리다이렉트
+        toast({
+          title: '결제 완료',
+          description: '캠페인이 성공적으로 생성되었습니다.',
+        })
+        
+        router.push(`/business/campaigns/${campaignId}`)
+        return
+      }
+      
+      // 4. 토스페이먼츠 결제창 호출 (카드/계좌이체)
+      const { loadTossPayments } = await import('@tosspayments/payment-sdk')
+      const tossPayments = await loadTossPayments(paymentData.clientKey)
+      
+      // 결제 요청
+      await tossPayments.requestPayment(selectedPaymentMethod === 'CARD' ? '카드' : '계좌이체', {
+        amount: paymentData.paymentRequest.amount,
+        orderId: paymentData.paymentRequest.orderId,
+        orderName: paymentData.paymentRequest.orderName,
+        customerName: paymentData.paymentRequest.customerName,
+        successUrl: paymentData.paymentRequest.successUrl,
+        failUrl: paymentData.paymentRequest.failUrl
+      })
+      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '오류가 발생했습니다.'
       setError(errorMessage)
@@ -314,6 +599,20 @@ export default function NewCampaignPage() {
         description: errorMessage,
         variant: 'destructive'
       })
+      
+      // 결제 실패 시 생성된 캠페인 삭제 (선택사항)
+      if (createdCampaignId) {
+        try {
+          await fetch(`/api/business/campaigns/${createdCampaignId}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            }
+          })
+        } catch (deleteError) {
+          console.error('캠페인 삭제 실패:', deleteError)
+        }
+      }
     } finally {
       setLoading(false)
     }
@@ -342,14 +641,42 @@ export default function NewCampaignPage() {
               </Button>
               <Select value={selectedTemplate || ''} onValueChange={(value) => value && loadTemplate(value)}>
                 <SelectTrigger className="w-48">
-                  <SelectValue placeholder="템플릿 불러오기" />
+                  <SelectValue placeholder={loadingTemplates ? "로딩 중..." : "템플릿 불러오기"} />
                 </SelectTrigger>
                 <SelectContent>
-                  {templates.map(template => (
-                    <SelectItem key={template.id} value={template.id}>
-                      {template.name}
-                    </SelectItem>
-                  ))}
+                  {templates.length === 0 ? (
+                    <div className="p-4 text-center text-gray-500">
+                      저장된 템플릿이 없습니다.
+                    </div>
+                  ) : (
+                    templates.map(template => (
+                      <div key={template.id} className="relative group">
+                        <SelectItem value={template.id}>
+                          <div className="pr-8">
+                            <div className="font-medium">{template.name}</div>
+                            {template.description && (
+                              <div className="text-xs text-gray-500">{template.description}</div>
+                            )}
+                            {template.isDefault && (
+                              <span className="text-xs text-blue-600 ml-2">기본</span>
+                            )}
+                          </div>
+                        </SelectItem>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            deleteTemplate(template.id)
+                          }}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 opacity-0 group-hover:opacity-100"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -359,14 +686,15 @@ export default function NewCampaignPage() {
         {/* 스텝 표시 */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">캠페인 생성 - {currentStep}/3단계</h2>
+            <h2 className="text-xl font-semibold">캠페인 생성 - {currentStep}/4단계</h2>
             <div className="text-sm text-gray-500">
               {currentStep === 1 && '기본 정보'}
               {currentStep === 2 && '캠페인 조건'}
               {currentStep === 3 && '추가 정보'}
+              {currentStep === 4 && '결제 정보'}
             </div>
           </div>
-          <Progress value={(currentStep / 3) * 100} className="w-full" />
+          <Progress value={(currentStep / 4) * 100} className="w-full" />
         </div>
 
         {error && (
@@ -376,7 +704,7 @@ export default function NewCampaignPage() {
         )}
 
         <form onSubmit={handleSubmit} onKeyDown={(e) => {
-          if (e.key === 'Enter' && currentStep !== 3) {
+          if (e.key === 'Enter' && currentStep !== 4) {
             e.preventDefault()
             nextStep()
           }
@@ -413,12 +741,18 @@ export default function NewCampaignPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="platform">플랫폼 *</Label>
+                    <Label>플랫폼 * (복수 선택 가능)</Label>
                     <div className="grid grid-cols-4 gap-3 mt-2">
                       <Button
                         type="button"
-                        variant={formData.platform === 'INSTAGRAM' ? 'default' : 'outline'}
-                        onClick={() => setFormData({...formData, platform: 'INSTAGRAM'})}
+                        variant={formData.platforms.includes('INSTAGRAM') ? 'default' : 'outline'}
+                        onClick={() => {
+                          if (formData.platforms.includes('INSTAGRAM')) {
+                            setFormData({...formData, platforms: formData.platforms.filter(p => p !== 'INSTAGRAM')})
+                          } else {
+                            setFormData({...formData, platforms: [...formData.platforms, 'INSTAGRAM']})
+                          }
+                        }}
                         className="h-16 flex flex-col items-center justify-center gap-2"
                       >
                         <InstagramIcon />
@@ -426,8 +760,14 @@ export default function NewCampaignPage() {
                       </Button>
                       <Button
                         type="button"
-                        variant={formData.platform === 'YOUTUBE' ? 'default' : 'outline'}
-                        onClick={() => setFormData({...formData, platform: 'YOUTUBE'})}
+                        variant={formData.platforms.includes('YOUTUBE') ? 'default' : 'outline'}
+                        onClick={() => {
+                          if (formData.platforms.includes('YOUTUBE')) {
+                            setFormData({...formData, platforms: formData.platforms.filter(p => p !== 'YOUTUBE')})
+                          } else {
+                            setFormData({...formData, platforms: [...formData.platforms, 'YOUTUBE']})
+                          }
+                        }}
                         className="h-16 flex flex-col items-center justify-center gap-2"
                       >
                         <Youtube className="w-6 h-6" />
@@ -435,8 +775,14 @@ export default function NewCampaignPage() {
                       </Button>
                       <Button
                         type="button"
-                        variant={formData.platform === 'TIKTOK' ? 'default' : 'outline'}
-                        onClick={() => setFormData({...formData, platform: 'TIKTOK'})}
+                        variant={formData.platforms.includes('TIKTOK') ? 'default' : 'outline'}
+                        onClick={() => {
+                          if (formData.platforms.includes('TIKTOK')) {
+                            setFormData({...formData, platforms: formData.platforms.filter(p => p !== 'TIKTOK')})
+                          } else {
+                            setFormData({...formData, platforms: [...formData.platforms, 'TIKTOK']})
+                          }
+                        }}
                         className="h-16 flex flex-col items-center justify-center gap-2"
                       >
                         <TikTokIcon />
@@ -444,14 +790,23 @@ export default function NewCampaignPage() {
                       </Button>
                       <Button
                         type="button"
-                        variant={formData.platform === 'BLOG' ? 'default' : 'outline'}
-                        onClick={() => setFormData({...formData, platform: 'BLOG'})}
+                        variant={formData.platforms.includes('BLOG') ? 'default' : 'outline'}
+                        onClick={() => {
+                          if (formData.platforms.includes('BLOG')) {
+                            setFormData({...formData, platforms: formData.platforms.filter(p => p !== 'BLOG')})
+                          } else {
+                            setFormData({...formData, platforms: [...formData.platforms, 'BLOG']})
+                          }
+                        }}
                         className="h-16 flex flex-col items-center justify-center gap-2"
                       >
                         <BlogIcon />
                         <span className="text-sm font-medium">Blog</span>
                       </Button>
                     </div>
+                    {formData.platforms.length === 0 && (
+                      <p className="text-sm text-red-600 mt-2">최소 하나의 플랫폼을 선택해주세요.</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -475,7 +830,9 @@ export default function NewCampaignPage() {
                     placeholder="1000000"
                     className="mt-2"
                   />
+                  <p className="text-xs text-gray-500 mt-1">전체 캠페인 예산을 입력하세요</p>
                 </div>
+
 
                 <div>
                   <Label htmlFor="targetFollowers">최소 팔로워 수 *</Label>
@@ -492,6 +849,22 @@ export default function NewCampaignPage() {
                 </div>
 
                 <div>
+                  <Label htmlFor="maxApplicants">모집 인원수 *</Label>
+                  <Input
+                    id="maxApplicants"
+                    type="number"
+                    required
+                    min="1"
+                    max="1000"
+                    value={formData.maxApplicants}
+                    onChange={(e) => setFormData({...formData, maxApplicants: e.target.value})}
+                    placeholder="10"
+                    className="mt-2"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">최대 모집할 인플루언서 수</p>
+                </div>
+
+                <div>
                   <Label htmlFor="startDate">시작일 *</Label>
                   <Input
                     id="startDate"
@@ -505,7 +878,7 @@ export default function NewCampaignPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="endDate">종료일 *</Label>
+                  <Label htmlFor="endDate">지원 마감일 *</Label>
                   <Input
                     id="endDate"
                     type="date"
@@ -517,6 +890,33 @@ export default function NewCampaignPage() {
                   />
                 </div>
               </div>
+              
+              {/* 예상 비용 계산 */}
+              {formData.budget && formData.maxApplicants && (
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                  <h3 className="font-medium text-sm text-blue-900 mb-2">예상 비용 계산</h3>
+                  <div className="space-y-1 text-sm text-blue-700">
+                    <div className="flex justify-between">
+                      <span>전체 예산</span>
+                      <span>₩{Number(formData.budget).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>플랫폼 수수료 (20%)</span>
+                      <span>₩{Math.floor(Number(formData.budget) * 0.2).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>인플루언서 지원금 총액</span>
+                      <span>₩{Math.floor(Number(formData.budget) * 0.8).toLocaleString()}</span>
+                    </div>
+                    <div className="border-t pt-2 mt-2">
+                      <div className="flex justify-between font-medium text-blue-900">
+                        <span>인플루언서 1명당 지원금</span>
+                        <span>₩{Math.floor(Number(formData.budget) * 0.8 / Number(formData.maxApplicants)).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
             )}
 
@@ -598,7 +998,7 @@ export default function NewCampaignPage() {
                                 클릭하여 이미지 업로드
                               </p>
                               <p className="text-xs text-gray-500 mt-1">
-                                JPG, PNG, GIF (최대 5MB)
+                                JPG, PNG, GIF (최대 15MB)
                               </p>
                             </>
                           )}
@@ -616,6 +1016,70 @@ export default function NewCampaignPage() {
                         placeholder="또는 이미지 URL을 입력하세요"
                       />
                     </div>
+                  </div>
+                </div>
+
+                <div>
+                  <Label>상세 이미지 (최대 2개)</Label>
+                  <div className="space-y-4 mt-2">
+                    {/* 상세 이미지 그리드 */}
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* 업로드된 이미지들 */}
+                      {detailImages.map((image, index) => (
+                        <div key={index} className="relative group">
+                          <img 
+                            src={image} 
+                            alt={`상세 이미지 ${index + 1}`} 
+                            className="w-full h-48 object-cover rounded-lg border-2 border-gray-200"
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            onClick={() => removeDetailImage(index)}
+                            className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      
+                      {/* 업로드 버튼 (최대 2개) */}
+                      {detailImages.length < 2 && (
+                        <div 
+                          onClick={() => detailFileInputRef.current?.click()}
+                          className="relative border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-indigo-500 cursor-pointer transition-colors h-48 flex items-center justify-center"
+                        >
+                          <input
+                            ref={detailFileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleDetailImageUpload}
+                            className="hidden"
+                          />
+                          
+                          <div className="text-center">
+                            {detailImageUploading ? (
+                              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+                            ) : (
+                              <>
+                                <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                                <p className="mt-2 text-sm text-gray-600">
+                                  상세 이미지 추가
+                                </p>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  JPG, PNG, GIF (최대 15MB)
+                                </p>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <p className="text-sm text-gray-500">
+                      상세 이미지는 캠페인의 제품이나 서비스를 자세히 보여주는 이미지를 업로드해주세요.
+                    </p>
                   </div>
                 </div>
 
@@ -651,6 +1115,112 @@ export default function NewCampaignPage() {
               </div>
             </div>
             )}
+            
+            {/* 스텝 4: 결제 정보 */}
+            {currentStep === 4 && (
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">결제 정보</h2>
+                
+                <div className="bg-gray-50 rounded-lg p-6 mb-6">
+                  <h3 className="font-semibold text-lg mb-4">캠페인 비용 상세</h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">캠페인 예산</span>
+                      <span className="font-medium">₩{paymentInfo.campaignBudget.toLocaleString()}</span>
+                    </div>
+                    {selectedPaymentMethod !== 'CARD' && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">부가세 (VAT 10%)</span>
+                        <span className="font-medium">₩{paymentInfo.vat.toLocaleString()}</span>
+                      </div>
+                    )}
+                    <div className="border-t pt-3 flex justify-between items-center">
+                      <span className="font-semibold text-lg">
+                        총 결제 금액
+                        {selectedPaymentMethod === 'CARD' && <span className="text-sm font-normal text-gray-600 ml-2">(부가세 포함)</span>}
+                      </span>
+                      <span className="font-bold text-xl text-indigo-600">₩{paymentInfo.totalAmount.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                  <div className="flex">
+                    <svg className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div className="text-sm text-blue-800">
+                      <p className="font-semibold mb-1">결제 안내</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        <li>결제 완료 후 캠페인이 검토 및 승인됩니다.</li>
+                        <li>캠페인 승인 후 인플루언서 모집이 시작됩니다.</li>
+                        <li>캠페인 취소 시 수수료를 제외한 금액이 환불됩니다.</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <Label>결제 방법</Label>
+                    <div className="grid grid-cols-3 gap-4 mt-2">
+                      <label className="relative flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input 
+                          type="radio" 
+                          name="paymentMethod" 
+                          value="CARD" 
+                          checked={selectedPaymentMethod === 'CARD'}
+                          onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                          className="mr-3" 
+                        />
+                        <div>
+                          <p className="font-medium">신용/체크카드</p>
+                          <p className="text-sm text-gray-500">부가세 포함</p>
+                        </div>
+                      </label>
+                      <label className="relative flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input 
+                          type="radio" 
+                          name="paymentMethod" 
+                          value="BANK_TRANSFER" 
+                          checked={selectedPaymentMethod === 'BANK_TRANSFER'}
+                          onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                          className="mr-3" 
+                        />
+                        <div>
+                          <p className="font-medium">계좌이체</p>
+                          <p className="text-sm text-gray-500">부가세 별도</p>
+                        </div>
+                      </label>
+                      <label className="relative flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input 
+                          type="radio" 
+                          name="paymentMethod" 
+                          value="CASH" 
+                          checked={selectedPaymentMethod === 'CASH'}
+                          onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                          className="mr-3" 
+                        />
+                        <div>
+                          <p className="font-medium">현금 결제</p>
+                          <p className="text-sm text-gray-500">부가세 별도</p>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="flex items-start">
+                      <input type="checkbox" className="mt-1 mr-2" required />
+                      <span className="text-sm text-gray-600">
+                        결제 진행에 동의하며, <a href="/terms" className="text-indigo-600 hover:underline">이용약관</a> 및{' '}
+                        <a href="/refund-policy" className="text-indigo-600 hover:underline">환불정책</a>을 확인하였습니다.
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* 버튼 */}
@@ -674,7 +1244,7 @@ export default function NewCampaignPage() {
                 </Link>
               </Button>
               
-              {currentStep < 3 ? (
+              {currentStep < 4 ? (
                 <Button
                   type="button"
                   onClick={nextStep}
@@ -687,7 +1257,7 @@ export default function NewCampaignPage() {
                   onClick={() => handleSubmit()}
                   disabled={loading}
                 >
-                  {loading ? '생성 중...' : '캠페인 생성'}
+                  {loading ? '결제하기' : '결제하기'}
                 </Button>
               )}
             </div>
@@ -711,6 +1281,17 @@ export default function NewCampaignPage() {
                 onChange={(e) => setTemplateName(e.target.value)}
                 placeholder="템플릿 이름을 입력하세요"
                 className="mt-2"
+              />
+            </div>
+            <div>
+              <Label htmlFor="templateDescription">설명 (선택사항)</Label>
+              <Textarea
+                id="templateDescription"
+                value={templateDescription}
+                onChange={(e) => setTemplateDescription(e.target.value)}
+                placeholder="템플릿에 대한 설명을 입력하세요"
+                className="mt-2"
+                rows={3}
               />
             </div>
           </div>

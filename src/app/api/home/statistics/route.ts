@@ -1,11 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
+import { cacheService, cacheKeys, CACHE_TTL } from '@/lib/cache/cache-service';
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export async function GET(request: NextRequest) {
   try {
+    // 캐시 키 생성
+    const cacheKey = cacheKeys.homeStats();
+    
+    // 캐시된 데이터 확인
+    const cached = await cacheService.get(cacheKey);
+    if (cached) {
+      return NextResponse.json({
+        success: true,
+        statistics: cached,
+        cached: true
+      });
+    }
     // 병렬로 모든 통계 데이터 조회
     const [
       influencerCount,
@@ -111,6 +124,9 @@ export async function GET(request: NextRequest) {
         formatted: applicationCount.toLocaleString()
       }
     };
+    
+    // 캐시에 저장 (1시간 TTL)
+    await cacheService.set(cacheKey, statistics, CACHE_TTL.LONG);
 
     return NextResponse.json({
       success: true,

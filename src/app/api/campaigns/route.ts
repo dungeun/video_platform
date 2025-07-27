@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db/prisma';
-import { getRedis } from '@/lib/db';
+import { prisma, getRedis } from '@/lib/db';
 import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 
@@ -42,8 +41,12 @@ export async function GET(request: NextRequest) {
     // 필터 조건 구성
     const where: any = {};
     
+    // 기본적으로 ACTIVE 상태인 캠페인만 표시 (관리자가 승인한 캠페인)
     if (status) {
       where.status = status.toUpperCase();
+    } else {
+      // status 파라미터가 없으면 ACTIVE 캠페인만 표시
+      where.status = 'ACTIVE';
     }
     
     if (category && category !== 'all') {
@@ -61,7 +64,26 @@ export async function GET(request: NextRequest) {
     // DB에서 캠페인 데이터 조회
     const campaigns = await prisma.campaign.findMany({
       where,
-      include: {
+      select: {
+        id: true,
+        businessId: true,
+        title: true,
+        description: true,
+        platform: true,
+        budget: true,
+        targetFollowers: true,
+        startDate: true,
+        endDate: true,
+        requirements: true,
+        hashtags: true,
+        imageUrl: true,
+        imageId: true,
+        status: true,
+        isPaid: true,
+        maxApplicants: true,
+        rewardAmount: true,
+        createdAt: true,
+        updatedAt: true,
         business: {
           select: {
             id: true,
@@ -97,21 +119,35 @@ export async function GET(request: NextRequest) {
     const total = await prisma.campaign.count({ where });
 
     // 응답 데이터 포맷팅
-    const formattedCampaigns = campaigns.map(campaign => ({
+    const formattedCampaigns = campaigns.map((campaign, index) => ({
       id: campaign.id,
       title: campaign.title,
       brand_name: campaign.business.businessProfile?.companyName || campaign.business.name,
-      description: (campaign as any).description,
+      description: (campaign as any).description || '',
       budget: campaign.budget,
       deadline: campaign.endDate,
       category: campaign.business.businessProfile?.businessCategory || 'other',
       platforms: [campaign.platform.toLowerCase()],
       required_followers: campaign.targetFollowers,
       location: '전국',
-      view_count: Math.floor(Math.random() * 1000) + 100, // 실제 조회수 구현 필요
+      view_count: 0,
       applicant_count: campaign._count.applications,
+      maxApplicants: campaign.maxApplicants,
+      rewardAmount: campaign.rewardAmount,
       image_url: campaign.imageUrl || '/images/campaigns/default.jpg',
-      tags: campaign.hashtags ? JSON.parse(campaign.hashtags) : [],
+      tags: (() => {
+        if (!campaign.hashtags) return [];
+        try {
+          if (campaign.hashtags.startsWith('[')) {
+            return JSON.parse(campaign.hashtags);
+          } else {
+            return campaign.hashtags.split(' ').filter(tag => tag.startsWith('#'));
+          }
+        } catch (e) {
+          console.warn('Failed to parse hashtags:', campaign.hashtags);
+          return campaign.hashtags.split(' ').filter(tag => tag.startsWith('#'));
+        }
+      })(),
       status: campaign.status.toLowerCase(),
       created_at: campaign.createdAt.toISOString(),
       start_date: campaign.startDate,
@@ -231,13 +267,7 @@ export async function POST(request: NextRequest) {
           startDate: new Date(campaign_start_date),
           endDate: new Date(campaign_end_date),
           status: 'DRAFT',
-          budget: {
-            create: {
-              total: budget,
-              paymentType: payment_type,
-              maxParticipants: 100, // 예시 값, 필요시 수정
-            }
-          },
+          budget: budget,
           target: {
             create: {
               minFollowers: min_followers || 0,

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
-import { AuthService } from '@/lib/auth'
+import { verifyJWT } from '@/lib/auth/jwt'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') || ''
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
+    const sort = searchParams.get('sort') || 'latest'
     const skip = (page - 1) * limit
 
     const where: any = {
@@ -32,6 +33,21 @@ export async function GET(request: NextRequest) {
       ]
     }
 
+    // 정렬 옵션 설정
+    let orderBy: any = [
+      { isPinned: 'desc' },
+      { createdAt: 'desc' }
+    ]
+
+    if (sort === 'popular') {
+      // 인기순: 조회수 기준
+      orderBy = [
+        { isPinned: 'desc' },
+        { views: 'desc' },
+        { createdAt: 'desc' }
+      ]
+    }
+
     const [posts, total] = await Promise.all([
       prisma.post.findMany({
         where,
@@ -42,7 +58,7 @@ export async function GET(request: NextRequest) {
               name: true,
               profile: {
                 select: {
-                  avatar: true
+                  profileImage: true
                 }
               }
             }
@@ -56,10 +72,7 @@ export async function GET(request: NextRequest) {
             }
           }
         },
-        orderBy: [
-          { isPinned: 'desc' },
-          { createdAt: 'desc' }
-        ],
+        orderBy,
         skip,
         take: limit
       }),
@@ -81,7 +94,7 @@ export async function GET(request: NextRequest) {
         author: {
           id: post.author.id,
           name: post.author.name,
-          avatar: post.author.profile?.avatar
+          avatar: post.author.profile?.profileImage
         }
       })),
       pagination: {
@@ -107,12 +120,12 @@ export async function POST(request: NextRequest) {
 
     let user
     try {
-      user = AuthService.verifyToken(token)
+      user = await verifyJWT(token)
     } catch (error) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
-    if (!user) {
+    if (!user || !user.id) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
@@ -142,7 +155,7 @@ export async function POST(request: NextRequest) {
             name: true,
             profile: {
               select: {
-                avatar: true
+                profileImage: true
               }
             }
           }
@@ -172,7 +185,7 @@ export async function POST(request: NextRequest) {
       author: {
         id: post.author.id,
         name: post.author.name,
-        avatar: post.author.profile?.avatar
+        avatar: post.author.profile?.profileImage
       }
     }, { status: 201 })
   } catch (error) {

@@ -40,7 +40,36 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
-    // 설정 조회 - 임시로 하드코딩된 데이터 반환
+    // DB에서 설정 조회
+    const settingKeys = [
+      'general',
+      'website', 
+      'payments',
+      'content',
+      'notifications',
+      'security',
+      'legal'
+    ]
+
+    const settings: Record<string, any> = {}
+    
+    // 각 설정 키에 대해 DB 조회
+    for (const key of settingKeys) {
+      const config = await prisma.siteConfig.findUnique({
+        where: { key }
+      })
+      
+      if (config) {
+        try {
+          settings[key] = JSON.parse(config.value)
+        } catch (e) {
+          // JSON 파싱 실패 시 문자열 그대로 사용
+          settings[key] = config.value
+        }
+      }
+    }
+
+    // 설정이 없으면 기본값 사용
     const defaultSettings = {
       general: {
         siteName: 'LinkPick',
@@ -101,11 +130,23 @@ export async function GET(request: NextRequest) {
         smsNotifications: false,
         pushNotifications: true,
         notificationDelay: 5
+      },
+      legal: {
+        termsOfService: '',
+        privacyPolicy: '',
+        termsLastUpdated: new Date().toISOString().split('T')[0],
+        privacyLastUpdated: new Date().toISOString().split('T')[0]
       }
     }
 
+    // DB 설정과 기본값 병합
+    const mergedSettings = {
+      ...defaultSettings,
+      ...settings
+    }
+    
     return NextResponse.json({
-      settings: defaultSettings
+      settings: mergedSettings
     })
 
   } catch (error) {
@@ -154,7 +195,16 @@ export async function PUT(request: NextRequest) {
 
     const newSettings = await request.json()
     
-    console.log('Settings updated:', newSettings)
+    // 각 설정 항목을 DB에 저장
+    for (const [key, value] of Object.entries(newSettings)) {
+      const jsonValue = typeof value === 'string' ? value : JSON.stringify(value)
+      
+      await prisma.siteConfig.upsert({
+        where: { key },
+        update: { value: jsonValue },
+        create: { key, value: jsonValue }
+      })
+    }
 
     return NextResponse.json({
       success: true,

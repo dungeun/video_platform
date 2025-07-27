@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { AuthService } from '@/lib/auth'
 import { apiGet } from '@/lib/api/client'
-import { Plus, Search, Filter, ChevronRight } from 'lucide-react'
+import { Plus, Search, Filter, ChevronRight, Edit, Trash2, Users } from 'lucide-react'
 
 export default function BusinessCampaignsPage() {
   const router = useRouter()
@@ -64,6 +64,32 @@ export default function BusinessCampaignsPage() {
       }
     } catch (error) {
       console.error('캠페인 데이터 조회 실패:', error)
+    }
+  }
+
+  const handleDeleteCampaign = async (campaignId: string) => {
+    if (!window.confirm('정말로 이 캠페인을 삭제하시겠습니까?')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/business/campaigns/${campaignId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      })
+
+      if (response.ok) {
+        setCampaigns(campaigns.filter(c => c.id !== campaignId))
+        alert('캠페인이 삭제되었습니다.')
+      } else {
+        const error = await response.json()
+        alert(error.error || '캠페인 삭제에 실패했습니다.')
+      }
+    } catch (error) {
+      console.error('캠페인 삭제 오류:', error)
+      alert('캠페인 삭제 중 오류가 발생했습니다.')
     }
   }
 
@@ -195,28 +221,35 @@ export default function BusinessCampaignsPage() {
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-3">
                         <Link 
                           href={`/business/campaigns/${campaign.id}`}
-                          className="text-indigo-600 hover:text-indigo-700 font-medium text-sm flex items-center"
+                          className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors"
                         >
                           상세보기
                           <ChevronRight className="w-4 h-4 ml-1" />
                         </Link>
                         <Link 
                           href={`/business/campaigns/${campaign.id}/applicants`}
-                          className="text-indigo-600 hover:text-indigo-700 font-medium text-sm"
+                          className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors"
                         >
+                          <Users className="w-4 h-4 mr-1.5" />
                           지원자 관리
                         </Link>
-                        {campaign.status === 'active' && (
-                          <Link 
-                            href={`/business/campaigns/${campaign.id}/edit`}
-                            className="text-indigo-600 hover:text-indigo-700 font-medium text-sm"
-                          >
-                            수정
-                          </Link>
-                        )}
+                        <Link 
+                          href={`/business/campaigns/${campaign.id}/edit`}
+                          className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
+                          <Edit className="w-4 h-4 mr-1.5" />
+                          수정
+                        </Link>
+                        <button
+                          onClick={() => handleDeleteCampaign(campaign.id)}
+                          className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4 mr-1.5" />
+                          삭제
+                        </button>
                       </div>
                     </div>
                     

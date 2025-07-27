@@ -10,8 +10,19 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 // 인증 미들웨어 (유저 API와 동일)
 async function authenticate(request: NextRequest) {
-  const cookieStore = cookies();
-  const token = cookieStore.get('auth-token')?.value;
+  // Authorization 헤더에서 토큰 확인
+  const authHeader = request.headers.get('authorization');
+  let token = null;
+  
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.substring(7);
+  }
+  
+  // 헤더에 없으면 쿠키에서 확인
+  if (!token) {
+    const cookieStore = cookies();
+    token = cookieStore.get('auth-token')?.value;
+  }
 
   if (!token) {
     return null;
@@ -191,11 +202,14 @@ export async function POST(request: NextRequest) {
         businessId,
         title,
         description,
-        category: platform || 'general', // Using platform as category
-        objectives: requirements ? [requirements] : [],
+        platform: platform || 'general',
+        budget: budget || 0,
+        targetFollowers: targetFollowers || 0,
+        requirements,
+        hashtags,
         startDate: new Date(startDate),
         endDate: new Date(endDate),
-        status: status.toUpperCase() as any
+        status: status.toUpperCase()
       },
       include: {
         business: {

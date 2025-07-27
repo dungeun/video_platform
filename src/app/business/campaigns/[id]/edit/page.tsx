@@ -22,7 +22,7 @@ export default function EditCampaignPage() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    platform: 'INSTAGRAM',
+    platforms: ['INSTAGRAM'],
     budget: '',
     targetFollowers: '',
     startDate: '',
@@ -35,6 +35,11 @@ export default function EditCampaignPage() {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null)
   const [imageUploading, setImageUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  
+  // 상세 이미지 관련 상태
+  const [detailImages, setDetailImages] = useState<string[]>([])
+  const [detailImageUploading, setDetailImageUploading] = useState(false)
+  const detailFileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const fetchCampaignData = async () => {
@@ -82,7 +87,7 @@ export default function EditCampaignPage() {
         setFormData({
           title: campaign.title,
           description: (campaign as any).description,
-          platform: (campaign as any).category,
+          platforms: campaign.platforms || [(campaign as any).platform] || ['INSTAGRAM'],
           budget: campaign.budget.toString(),
           targetFollowers: (campaign as any).targetFollowers.toString(),
           startDate: new Date(campaign.startDate).toISOString().split('T')[0],
@@ -95,6 +100,18 @@ export default function EditCampaignPage() {
         
         if (campaign.imageUrl) {
           setUploadedImage(campaign.imageUrl)
+        }
+        
+        // 상세 이미지 로드
+        if (campaign.detailImages) {
+          try {
+            const images = typeof campaign.detailImages === 'string' 
+              ? JSON.parse(campaign.detailImages) 
+              : campaign.detailImages
+            setDetailImages(Array.isArray(images) ? images : [])
+          } catch (e) {
+            console.error('상세 이미지 파싱 오류:', e)
+          }
         }
         
         setIsLoading(false)
@@ -154,6 +171,61 @@ export default function EditCampaignPage() {
     }
   }
 
+  const handleDetailImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // 이미 2개의 상세 이미지가 있는 경우
+    if (detailImages.length >= 2) {
+      toast({
+        title: '오류',
+        description: '상세 이미지는 최대 2개까지 업로드 가능합니다.',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    // 파일 타입 검증
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: '오류',
+        description: '이미지 파일만 업로드 가능합니다.',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    // 파일 크기 검증 (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: '오류',
+        description: '파일 크기는 5MB 이하여야 합니다.',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    setDetailImageUploading(true)
+
+    try {
+      // 이미지 리사이즈
+      const resizedImage = await resizeImage(file, 800, 600)
+      setDetailImages([...detailImages, resizedImage])
+    } catch (err) {
+      toast({
+        title: '오류',
+        description: '이미지 업로드에 실패했습니다.',
+        variant: 'destructive'
+      })
+    } finally {
+      setDetailImageUploading(false)
+    }
+  }
+
+  const removeDetailImage = (index: number) => {
+    setDetailImages(detailImages.filter((_, i) => i !== index))
+  }
+
   const resizeImage = (file: File, maxWidth: number, maxHeight: number): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
@@ -203,7 +275,10 @@ export default function EditCampaignPage() {
         budget: parseInt(formData.budget),
         targetFollowers: parseInt(formData.targetFollowers),
         hashtags: formData.hashtags.split(',').map(tag => tag.trim()).filter(Boolean),
-        imageUrl: uploadedImage || formData.imageUrl
+        imageUrl: uploadedImage || formData.imageUrl,
+        platform: formData.platforms[0], // For backward compatibility
+        platforms: formData.platforms,
+        detailImages: detailImages
       })
 
       if (!response.ok) {
@@ -284,18 +359,34 @@ export default function EditCampaignPage() {
             </div>
 
             <div>
-              <Label htmlFor="platform">플랫폼 *</Label>
-              <Select value={formData.platform} onValueChange={(value) => setFormData({...formData, platform: value})}>
-                <SelectTrigger className="mt-2">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="INSTAGRAM">Instagram</SelectItem>
-                  <SelectItem value="YOUTUBE">YouTube</SelectItem>
-                  <SelectItem value="TIKTOK">TikTok</SelectItem>
-                  <SelectItem value="BLOG">Blog</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label>플랫폼 * (복수 선택 가능)</Label>
+              <div className="grid grid-cols-2 gap-3 mt-2">
+                {['INSTAGRAM', 'YOUTUBE', 'TIKTOK', 'BLOG'].map((platform) => (
+                  <label key={platform} className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.platforms.includes(platform)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFormData({...formData, platforms: [...formData.platforms, platform]})
+                        } else {
+                          setFormData({...formData, platforms: formData.platforms.filter(p => p !== platform)})
+                        }
+                      }}
+                      className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span className="text-sm font-medium text-gray-700">
+                      {platform === 'INSTAGRAM' && 'Instagram'}
+                      {platform === 'YOUTUBE' && 'YouTube'}
+                      {platform === 'TIKTOK' && 'TikTok'}
+                      {platform === 'BLOG' && 'Blog'}
+                    </span>
+                  </label>
+                ))}
+              </div>
+              {formData.platforms.length === 0 && (
+                <p className="text-sm text-red-600 mt-1">최소 하나의 플랫폼을 선택해주세요.</p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -439,6 +530,65 @@ export default function EditCampaignPage() {
                     placeholder="또는 이미지 URL을 입력하세요"
                   />
                 </div>
+              </div>
+            </div>
+
+            <div>
+              <Label>상세 이미지 (최대 2개)</Label>
+              <div className="space-y-4 mt-2">
+                {/* 상세 이미지 그리드 */}
+                <div className="grid grid-cols-2 gap-4">
+                  {/* 업로드된 상세 이미지들 */}
+                  {detailImages.map((image, index) => (
+                    <div key={index} className="relative">
+                      <img 
+                        src={image} 
+                        alt={`상세 이미지 ${index + 1}`} 
+                        className="w-full h-48 object-cover rounded-lg border"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        onClick={() => removeDetailImage(index)}
+                        className="absolute top-2 right-2 h-8 w-8"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  
+                  {/* 추가 업로드 버튼 */}
+                  {detailImages.length < 2 && (
+                    <div 
+                      onClick={() => detailFileInputRef.current?.click()}
+                      className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-indigo-500 cursor-pointer transition-colors h-48 flex items-center justify-center"
+                    >
+                      <input
+                        ref={detailFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleDetailImageUpload}
+                        className="hidden"
+                      />
+                      
+                      {detailImageUploading ? (
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                      ) : (
+                        <div className="text-center">
+                          <Upload className="mx-auto h-8 w-8 text-gray-400" />
+                          <p className="mt-2 text-sm text-gray-600">
+                            상세 이미지 추가
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                <p className="text-xs text-gray-500">
+                  상세 이미지는 캠페인의 제품이나 서비스를 자세히 보여주는 이미지를 업로드해주세요.
+                </p>
               </div>
             </div>
 

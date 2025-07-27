@@ -95,18 +95,17 @@ export async function GET(request: NextRequest) {
 
     // Create site configuration
     await prisma.siteConfig.upsert({
-      where: { key: 'ui_config' },
+      where: { key: 'ui-config' },
       update: {},
       create: {
-        key: 'ui_config',
+        key: 'ui-config',
         value: JSON.stringify({
           header: {
             menus: [
-              { id: '1', label: '홈', href: '/', order: 0 },
-              { id: '2', label: '캠페인', href: '/campaigns', order: 1 },
-              { id: '3', label: '인플루언서', href: '/influencers', order: 2 },
-              { id: '4', label: '커뮤니티', href: '/community', order: 3 },
-              { id: '5', label: '요금제', href: '/pricing', order: 4 },
+              { id: '1', label: '캠페인', href: '/campaigns', order: 0 },
+              { id: '2', label: '인플루언서', href: '/influencers', order: 1 },
+              { id: '3', label: '커뮤니티', href: '/community', order: 2 },
+              { id: '4', label: '요금제', href: '/pricing', order: 3 },
             ]
           },
           footer: {

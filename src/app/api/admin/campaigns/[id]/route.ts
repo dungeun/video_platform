@@ -55,13 +55,13 @@ export async function GET(
             id: true,
             name: true,
             email: true,
-            profile: {
+            businessProfile: {
               select: {
                 companyName: true,
-                businessNo: true,
-                // representativeName: true,
-                // businessAddress: true,
-                // businessCategory: true
+                businessNumber: true,
+                representativeName: true,
+                businessAddress: true,
+                businessCategory: true
               }
             }
           }
@@ -75,9 +75,9 @@ export async function GET(
                 email: true,
                 profile: {
                   select: {
-                    avatar: true,
+                    profileImage: true,
                     followerCount: true,
-                    platforms: true
+                    categories: true
                   }
                 }
               }

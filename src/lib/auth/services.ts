@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { User } from '@/lib/auth'
+import { prisma } from '@/lib/db/prisma'
 
 export interface LoginCredentials {
   email: string
@@ -12,6 +13,8 @@ export interface RegisterData {
   password: string
   name: string
   type: 'business' | 'influencer'
+  phone?: string
+  address?: string
 }
 
 class AuthServiceClass {
@@ -21,66 +24,136 @@ class AuthServiceClass {
   async login(credentials: LoginCredentials): Promise<{ user: User; token: string; refreshToken: string }> {
     const { email, password } = credentials
 
-    // Mock user data - in real app, this would come from database
-    const mockUser: User = {
-      id: '1',
-      email,
-      name: 'Mock User',
-      type: 'business',
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }
+    try {
+      // Find user in database
+      const user = await prisma.user.findUnique({
+        where: { email },
+        include: {
+          profile: true,
+          businessProfile: true
+        }
+      })
 
-    // Mock password verification - in real app, this would verify against hashed password
-    const isValidPassword = await bcrypt.compare(password, await bcrypt.hash('password123', 10))
-    
-    if (!isValidPassword) {
+      if (!user) {
+        throw new Error('Invalid credentials')
+      }
+
+      // Verify password
+      const isValidPassword = await bcrypt.compare(password, user.password)
+      
+      if (!isValidPassword) {
+        throw new Error('Invalid credentials')
+      }
+
+      // Update last login
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { lastLogin: new Date() }
+      })
+
+      const token = jwt.sign(
+        { userId: user.id, email: user.email, type: user.type },
+        this.JWT_SECRET,
+        { expiresIn: '1h' }
+      )
+
+      const refreshToken = jwt.sign(
+        { userId: user.id },
+        this.REFRESH_SECRET,
+        { expiresIn: '7d' }
+      )
+
+      return {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          type: user.type as 'BUSINESS' | 'INFLUENCER' | 'ADMIN',
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt
+        },
+        token,
+        refreshToken
+      }
+    } catch (error) {
+      console.error('Login error:', error)
       throw new Error('Invalid credentials')
     }
-
-    const token = jwt.sign(
-      { userId: mockUser.id, email: mockUser.email, type: mockUser.type },
-      this.JWT_SECRET,
-      { expiresIn: '1h' }
-    )
-
-    const refreshToken = jwt.sign(
-      { userId: mockUser.id },
-      this.REFRESH_SECRET,
-      { expiresIn: '7d' }
-    )
-
-    return { user: mockUser, token, refreshToken }
   }
 
   async register(data: RegisterData): Promise<{ user: User; token: string; refreshToken: string }> {
-    const { email, password, name, type } = data
+    const { email, password, name, type, phone, address } = data
 
-    // Mock user creation - in real app, this would save to database
-    const hashedPassword = await bcrypt.hash(password, 10)
-    
-    const mockUser: User = {
-      id: Math.random().toString(36).substr(2, 9),
-      email,
-      name,
-      type,
-      createdAt: new Date(),
-      updatedAt: new Date()
+    try {
+      // Check if user already exists
+      const existingUser = await prisma.user.findUnique({
+        where: { email }
+      })
+
+      if (existingUser) {
+        throw new Error('이미 등록된 이메일입니다.')
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10)
+      
+      // Create user with profile
+      const user = await prisma.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          name,
+          type: type.toUpperCase() as 'BUSINESS' | 'INFLUENCER',
+          profile: type === 'influencer' ? {
+            create: {
+              phone,
+              address
+            }
+          } : undefined,
+          businessProfile: type === 'business' ? {
+            create: {
+              companyName: name,
+              businessNumber: '',
+              representativeName: name,
+              businessAddress: address || '',
+              businessCategory: ''
+            }
+          } : undefined
+        },
+        include: {
+          profile: true,
+          businessProfile: true
+        }
+      })
+
+      const token = jwt.sign(
+        { userId: user.id, email: user.email, type: user.type },
+        this.JWT_SECRET,
+        { expiresIn: '1h' }
+      )
+
+      const refreshToken = jwt.sign(
+        { userId: user.id },
+        this.REFRESH_SECRET,
+        { expiresIn: '7d' }
+      )
+
+      return {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          type: user.type as 'BUSINESS' | 'INFLUENCER',
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt
+        },
+        token,
+        refreshToken
+      }
+    } catch (error) {
+      console.error('Registration error:', error)
+      throw error
     }
-
-    const token = jwt.sign(
-      { userId: mockUser.id, email: mockUser.email, type: mockUser.type },
-      this.JWT_SECRET,
-      { expiresIn: '1h' }
-    )
-
-    const refreshToken = jwt.sign(
-      { userId: mockUser.id },
-      this.REFRESH_SECRET,
-      { expiresIn: '7d' }
-    )
-
-    return { user: mockUser, token, refreshToken }
   }
 
   async refreshToken(token: string): Promise<{ token: string; refreshToken: string }> {
@@ -140,7 +213,28 @@ class AuthServiceClass {
   }
 
   async getUserById(userId: string): Promise<User | null> {
-    return this.getUser(userId)
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        include: {
+          profile: true
+        }
+      })
+      
+      if (!user) return null
+      
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        type: user.type as 'BUSINESS' | 'INFLUENCER' | 'ADMIN',
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      }
+    } catch (error) {
+      console.error('Error fetching user:', error)
+      return null
+    }
   }
 
   async refreshSession(refreshToken: string): Promise<any> {

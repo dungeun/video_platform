@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import AdminLayout from '@/components/admin/AdminLayout'
-import SetMockToken from './set-mock-token'
 import CampaignDetailPanel from '@/components/admin/CampaignDetailPanel'
 import CampaignCreateModal from '@/components/admin/CampaignCreateModal'
 import { adminApi } from '@/lib/admin-api'
@@ -36,10 +35,21 @@ export default function AdminCampaignsPage() {
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null)
   const [isPanelOpen, setIsPanelOpen] = useState(false)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState('all') // 탭 상태 추가
+  const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]) // 선택된 캠페인 추가
 
   useEffect(() => {
     fetchCampaigns()
-  }, [currentPage, filter, searchTerm])
+  }, [currentPage, filter, searchTerm, activeTab])
+
+  // activeTab에 따라 filter 업데이트
+  useEffect(() => {
+    if (activeTab !== 'all' && activeTab !== 'trash') {
+      setFilter(activeTab)
+    } else {
+      setFilter('all')
+    }
+  }, [activeTab])
 
   const fetchCampaigns = async () => {
     try {
@@ -47,7 +57,7 @@ export default function AdminCampaignsPage() {
       const params = new URLSearchParams({
         page: currentPage.toString(),
         limit: '20',
-        ...(filter !== 'all' && { status: filter }),
+        ...(activeTab === 'trash' ? { status: 'deleted' } : (filter !== 'all' && { status: filter })),
         ...(searchTerm && { search: searchTerm })
       })
       
@@ -59,6 +69,8 @@ export default function AdminCampaignsPage() {
         setTotalCount(data.pagination?.total || 0)
       } else {
         console.error('Failed to fetch campaigns:', response.status)
+        const errorData = await response.json()
+        console.error('Error details:', errorData)
         setCampaigns([])
       }
     } catch (error) {
@@ -77,6 +89,13 @@ export default function AdminCampaignsPage() {
   const handleSearchChange = (newSearch: string) => {
     setSearchTerm(newSearch)
     setCurrentPage(1)
+  }
+
+  // 탭 변경 시 첫 페이지로 리셋
+  const handleTabChange = (newTab: string) => {
+    setActiveTab(newTab)
+    setCurrentPage(1)
+    setSelectedCampaigns([])
   }
 
   const openCampaignDetail = (campaignId: string) => {
@@ -99,20 +118,6 @@ export default function AdminCampaignsPage() {
   }
 
   const handleStatusChange = async (campaignId: string, newStatus: string) => {
-    // 상태 변경 확인
-    const statusMessages: { [key: string]: string } = {
-      active: '이 캠페인을 승인하시겠습니까?',
-      paused: '이 캠페인을 일시중지하시겠습니까?',
-      completed: '이 캠페인을 완료 처리하시겠습니까?',
-      cancelled: '이 캠페인을 취소하시겠습니까?'
-    }
-    
-    const message = statusMessages[newStatus] || '상태를 변경하시겠습니까?'
-    
-    if (!confirm(message)) {
-      return
-    }
-    
     try {
       const response = await adminApi.put(`/api/admin/campaigns/${campaignId}/status`, { status: newStatus })
       
@@ -120,9 +125,6 @@ export default function AdminCampaignsPage() {
         setCampaigns(prev => prev.map(campaign =>
           campaign.id === campaignId ? { ...campaign, status: newStatus } : campaign
         ))
-        
-        // 성공 메시지 (옵션)
-        // alert('상태가 변경되었습니다.')
       } else {
         alert('상태 변경에 실패했습니다.')
       }
@@ -132,25 +134,158 @@ export default function AdminCampaignsPage() {
     }
   }
 
+  const handleDeleteCampaign = async (campaignId: string) => {
+    if (!confirm('이 캠페인을 삭제하시겠습니까?\n삭제된 캠페인은 휴지통으로 이동됩니다.')) {
+      return
+    }
+    
+    try {
+      const response = await adminApi.put(`/api/admin/campaigns/${campaignId}/status`, { status: 'deleted' })
+      
+      if (response.ok) {
+        // 목록에서 제거
+        setCampaigns(prev => prev.filter(campaign => campaign.id !== campaignId))
+        alert('캠페인이 휴지통으로 이동되었습니다.')
+      } else {
+        alert('캠페인 삭제에 실패했습니다.')
+      }
+    } catch (error) {
+      console.error('캠페인 삭제 실패:', error)
+      alert('캠페인 삭제 중 오류가 발생했습니다.')
+    }
+  }
+
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-green-100 text-green-800'
-      case 'pending': return 'bg-yellow-100 text-yellow-800'
-      case 'paused': return 'bg-orange-100 text-orange-800'
-      case 'completed': return 'bg-blue-100 text-blue-800'
-      case 'cancelled': return 'bg-red-100 text-red-800'
+    switch (status.toUpperCase()) {
+      case 'ACTIVE': return 'bg-green-100 text-green-800'
+      case 'DRAFT': return 'bg-yellow-100 text-yellow-800'
+      case 'PAUSED': return 'bg-orange-100 text-orange-800'
+      case 'COMPLETED': return 'bg-blue-100 text-blue-800'
+      case 'CANCELLED': return 'bg-red-100 text-red-800'
       default: return 'bg-gray-100 text-gray-800'
     }
   }
 
   const getStatusText = (status: string) => {
-    switch (status) {
-      case 'active': return '진행중'
-      case 'pending': return '승인대기'
-      case 'paused': return '일시중지'
-      case 'completed': return '완료'
-      case 'cancelled': return '취소'
+    switch (status.toUpperCase()) {
+      case 'ACTIVE': return '진행중'
+      case 'DRAFT': return '승인대기'
+      case 'PAUSED': return '일시중지'
+      case 'COMPLETED': return '완료'
+      case 'CANCELLED': return '취소'
       default: return '알 수 없음'
+    }
+  }
+
+  // 캠페인 복원
+  const handleRestore = async (campaignId: string) => {
+    if (!confirm('이 캠페인을 복원하시겠습니까?')) {
+      return
+    }
+    
+    try {
+      const response = await adminApi.put(`/api/admin/campaigns/${campaignId}/status`, { status: 'pending' })
+      
+      if (response.ok) {
+        setCampaigns(prev => prev.filter(campaign => campaign.id !== campaignId))
+        alert('캠페인이 복원되었습니다.')
+      } else {
+        alert('캠페인 복원에 실패했습니다.')
+      }
+    } catch (error) {
+      console.error('캠페인 복원 실패:', error)
+      alert('캠페인 복원 중 오류가 발생했습니다.')
+    }
+  }
+
+  // 캠페인 영구 삭제
+  const handlePermanentDelete = async (campaignId: string) => {
+    if (!confirm('이 캠페인을 영구적으로 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+      return
+    }
+    
+    try {
+      const response = await adminApi.delete(`/api/admin/campaigns/${campaignId}`)
+      
+      if (response.ok) {
+        setCampaigns(prev => prev.filter(campaign => campaign.id !== campaignId))
+        alert('캠페인이 영구적으로 삭제되었습니다.')
+      } else {
+        alert('캠페인 삭제에 실패했습니다.')
+      }
+    } catch (error) {
+      console.error('캠페인 삭제 실패:', error)
+      alert('캠페인 삭제 중 오류가 발생했습니다.')
+    }
+  }
+
+  // 캠페인 선택 토글
+  const toggleCampaignSelection = (campaignId: string) => {
+    setSelectedCampaigns(prev => 
+      prev.includes(campaignId)
+        ? prev.filter(id => id !== campaignId)
+        : [...prev, campaignId]
+    )
+  }
+
+  // 전체 선택 토글
+  const toggleAllSelection = () => {
+    if (selectedCampaigns.length === campaigns.length) {
+      setSelectedCampaigns([])
+    } else {
+      setSelectedCampaigns(campaigns.map(c => c.id))
+    }
+  }
+
+  // 일괄 복원
+  const handleBulkRestore = async () => {
+    if (selectedCampaigns.length === 0) {
+      alert('복원할 캠페인을 선택해주세요.')
+      return
+    }
+    
+    if (!confirm(`선택한 ${selectedCampaigns.length}개의 캠페인을 복원하시겠습니까?`)) {
+      return
+    }
+    
+    try {
+      const promises = selectedCampaigns.map(id => 
+        adminApi.put(`/api/admin/campaigns/${id}/status`, { status: 'pending' })
+      )
+      
+      await Promise.all(promises)
+      
+      setCampaigns(prev => prev.filter(campaign => !selectedCampaigns.includes(campaign.id)))
+      setSelectedCampaigns([])
+      alert('선택한 캠페인이 복원되었습니다.')
+    } catch (error) {
+      console.error('일괄 복원 실패:', error)
+      alert('일괄 복원 중 오류가 발생했습니다.')
+    }
+  }
+
+  // 일괄 영구 삭제
+  const handleBulkDelete = async () => {
+    if (selectedCampaigns.length === 0) {
+      alert('삭제할 캠페인을 선택해주세요.')
+      return
+    }
+    
+    if (!confirm(`선택한 ${selectedCampaigns.length}개의 캠페인을 영구적으로 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
+      return
+    }
+    
+    try {
+      const promises = selectedCampaigns.map(id => adminApi.delete(`/api/admin/campaigns/${id}`))
+      
+      await Promise.all(promises)
+      
+      setCampaigns(prev => prev.filter(campaign => !selectedCampaigns.includes(campaign.id)))
+      setSelectedCampaigns([])
+      alert('선택한 캠페인이 영구적으로 삭제되었습니다.')
+    } catch (error) {
+      console.error('일괄 삭제 실패:', error)
+      alert('일괄 삭제 중 오류가 발생했습니다.')
     }
   }
 
@@ -176,7 +311,6 @@ export default function AdminCampaignsPage() {
 
   return (
     <AdminLayout>
-      <SetMockToken />
       <div className="space-y-6">
         {/* 헤더 */}
         <div className="flex justify-between items-center">
@@ -260,6 +394,75 @@ export default function AdminCampaignsPage() {
           </div>
         </div>
 
+        {/* 탭 네비게이션 */}
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => handleTabChange('all')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'all'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              전체
+            </button>
+            <button
+              onClick={() => handleTabChange('DRAFT')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'DRAFT'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              승인대기
+            </button>
+            <button
+              onClick={() => handleTabChange('ACTIVE')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'ACTIVE'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              진행중
+            </button>
+            <button
+              onClick={() => handleTabChange('COMPLETED')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'COMPLETED'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              완료
+            </button>
+            <button
+              onClick={() => handleTabChange('CANCELLED')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'CANCELLED'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              취소
+            </button>
+            <button
+              onClick={() => handleTabChange('trash')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
+                activeTab === 'trash'
+                  ? 'border-red-500 text-red-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              휴지통
+            </button>
+          </nav>
+        </div>
+
         {/* 필터 및 검색 */}
         <div className="bg-white p-4 rounded-lg shadow">
           <div className="flex flex-col sm:flex-row gap-4">
@@ -272,47 +475,79 @@ export default function AdminCampaignsPage() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            <div className="flex gap-2">
-              <select
-                value={filter}
-                onChange={(e) => handleFilterChange(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="all">전체 상태</option>
-                <option value="pending">승인대기</option>
-                <option value="active">진행중</option>
-                <option value="paused">일시중지</option>
-                <option value="completed">완료</option>
-                <option value="cancelled">취소</option>
-              </select>
-            </div>
+            {activeTab !== 'trash' && activeTab !== 'all' && (
+              <div className="flex gap-2">
+                <select
+                  value={filter}
+                  onChange={(e) => handleFilterChange(e.target.value)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="all">전체 상태</option>
+                  <option value="pending">승인대기</option>
+                  <option value="active">진행중</option>
+                  <option value="paused">일시중지</option>
+                  <option value="completed">완료</option>
+                  <option value="cancelled">취소</option>
+                </select>
+              </div>
+            )}
           </div>
         </div>
 
+        {/* 휴지통 탭일 때 일괄 작업 버튼 */}
+        {activeTab === 'trash' && selectedCampaigns.length > 0 && (
+          <div className="bg-white p-4 rounded-lg shadow flex justify-end gap-2">
+            <button
+              onClick={handleBulkRestore}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              선택 복원 ({selectedCampaigns.length})
+            </button>
+            <button
+              onClick={handleBulkDelete}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            >
+              선택 영구삭제 ({selectedCampaigns.length})
+            </button>
+          </div>
+        )}
+
         {/* 캠페인 테이블 */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white rounded-lg shadow overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {activeTab === 'trash' && (
+                  <th className="px-6 py-3 text-left">
+                    <input
+                      type="checkbox"
+                      checked={selectedCampaigns.length === campaigns.length && campaigns.length > 0}
+                      onChange={toggleAllSelection}
+                      className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                  </th>
+                )}
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[350px]">
                   캠페인
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">
                   업체
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
                   플랫폼
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
                   예산
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
                   지원자
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  상태
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {activeTab !== 'trash' && (
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
+                    상태
+                  </th>
+                )}
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">
                   작업
                 </th>
               </tr>
@@ -320,6 +555,16 @@ export default function AdminCampaignsPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {campaigns.map((campaign) => (
                 <tr key={campaign.id} className="hover:bg-gray-50">
+                  {activeTab === 'trash' && (
+                    <td className="px-6 py-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedCampaigns.includes(campaign.id)}
+                        onChange={() => toggleCampaignSelection(campaign.id)}
+                        className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                    </td>
+                  )}
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-16 w-16">
@@ -329,14 +574,14 @@ export default function AdminCampaignsPage() {
                           alt={campaign.title}
                         />
                       </div>
-                      <div className="ml-4">
+                      <div className="ml-4 max-w-md">
                         <button
                           onClick={() => openCampaignDetail(campaign.id)}
-                          className="text-sm font-medium text-gray-900 hover:text-blue-600 text-left"
+                          className="text-sm font-medium text-gray-900 hover:text-blue-600 text-left line-clamp-1"
                         >
                           {campaign.title}
                         </button>
-                        <div className="text-sm text-gray-500">{(campaign as any).description}</div>
+                        <div className="text-sm text-gray-500 line-clamp-2">{(campaign as any).description}</div>
                         <div className="text-xs text-gray-400">
                           {campaign.startDate} ~ {campaign.endDate}
                         </div>
@@ -344,8 +589,8 @@ export default function AdminCampaignsPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{campaign.businessName}</div>
-                    <div className="text-sm text-gray-500">{campaign.businessEmail}</div>
+                    <div className="text-sm text-gray-900 line-clamp-1">{campaign.businessName}</div>
+                    <div className="text-sm text-gray-500 line-clamp-1">{campaign.businessEmail}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -361,68 +606,111 @@ export default function AdminCampaignsPage() {
                     <div className="text-sm text-gray-900">{campaign.applicantCount}명</div>
                     <div className="text-sm text-gray-500">선택: {campaign.selectedCount}명</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(campaign.status)}`}>
-                      {getStatusText(campaign.status)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex flex-col space-y-2">
-                      <div className="flex space-x-1">
-                        {campaign.status === 'pending' && (
-                          <>
-                            <button
-                              onClick={() => handleStatusChange(campaign.id, 'active')}
-                              className="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
-                            >
-                              승인
-                            </button>
-                            <button
-                              onClick={() => handleStatusChange(campaign.id, 'cancelled')}
-                              className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-                            >
-                              거절
-                            </button>
-                          </>
-                        )}
-                        {campaign.status === 'active' && (
-                          <>
-                            <button
-                              onClick={() => handleStatusChange(campaign.id, 'paused')}
-                              className="px-3 py-1 text-xs bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-colors"
-                            >
-                              일시중지
-                            </button>
-                            <button
-                              onClick={() => handleStatusChange(campaign.id, 'completed')}
-                              className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-                            >
-                              완료
-                            </button>
-                          </>
-                        )}
-                        {campaign.status === 'paused' && (
-                          <>
-                            <button
-                              onClick={() => handleStatusChange(campaign.id, 'active')}
-                              className="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
-                            >
-                              재개
-                            </button>
-                            <button
-                              onClick={() => handleStatusChange(campaign.id, 'cancelled')}
-                              className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-                            >
-                              취소
-                            </button>
-                          </>
-                        )}
-                        {(campaign.status === 'completed' || campaign.status === 'cancelled') && (
-                          <span className="px-3 py-1 text-xs text-gray-500">
-                            작업 완료
-                          </span>
-                        )}
+                  {activeTab !== 'trash' && (
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => handleStatusChange(campaign.id, 'DRAFT')}
+                          className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
+                            campaign.status === 'DRAFT' 
+                              ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' 
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                          disabled={campaign.status === 'DRAFT'}
+                        >
+                          승인대기
+                        </button>
+                        <button
+                          onClick={() => handleStatusChange(campaign.id, 'ACTIVE')}
+                          className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
+                            campaign.status === 'ACTIVE' 
+                              ? 'bg-green-100 text-green-800 border border-green-300' 
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                          disabled={campaign.status === 'ACTIVE'}
+                        >
+                          진행중
+                        </button>
+                        <button
+                          onClick={() => handleStatusChange(campaign.id, 'PAUSED')}
+                          className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
+                            campaign.status === 'PAUSED' 
+                              ? 'bg-orange-100 text-orange-800 border border-orange-300' 
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                          disabled={campaign.status === 'PAUSED'}
+                        >
+                          일시중지
+                        </button>
+                        <button
+                          onClick={() => handleStatusChange(campaign.id, 'COMPLETED')}
+                          className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
+                            campaign.status === 'COMPLETED' 
+                              ? 'bg-blue-100 text-blue-800 border border-blue-300' 
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                          disabled={campaign.status === 'COMPLETED'}
+                        >
+                          완료
+                        </button>
+                        <button
+                          onClick={() => handleStatusChange(campaign.id, 'CANCELLED')}
+                          className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
+                            campaign.status === 'CANCELLED' 
+                              ? 'bg-red-100 text-red-800 border border-red-300' 
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                          disabled={campaign.status === 'CANCELLED'}
+                        >
+                          취소
+                        </button>
                       </div>
+                    </td>
+                  )}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => openCampaignDetail(campaign.id)}
+                        className="text-indigo-600 hover:text-indigo-900"
+                        title="상세보기"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      </button>
+                      {activeTab === 'trash' ? (
+                        <>
+                          <button
+                            onClick={() => handleRestore(campaign.id)}
+                            className="text-green-600 hover:text-green-900"
+                            title="복원"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handlePermanentDelete(campaign.id)}
+                            className="text-red-600 hover:text-red-900"
+                            title="영구삭제"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => handleDeleteCampaign(campaign.id)}
+                          className="text-red-600 hover:text-red-900"
+                          title="삭제"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

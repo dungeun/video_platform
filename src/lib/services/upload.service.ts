@@ -1,345 +1,268 @@
-import { z } from 'zod';
-import { prisma } from '@/lib/db/prisma';
-import { ApiError } from '@/lib/utils/errors';
-import crypto from 'crypto';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import sharp from 'sharp';
+import { writeFile, mkdir } from 'fs/promises'
+import { join } from 'path'
+import { NextRequest } from 'next/server'
+import sharp from 'sharp'
 
-// 파일 업로드 스키마
-export const uploadFileSchema = z.object({
-  file: z.any(), // FormData File 객체
-  type: z.enum(['profile', 'campaign', 'content', 'document']),
-  metadata: z.record(z.any()).optional().default({}),
-});
+export interface UploadResult {
+  url: string
+  filename: string
+  size: number
+  type: string
+}
 
-// 이미지 리사이즈 옵션 스키마
-export const imageResizeSchema = z.object({
-  width: z.number().positive(),
-  height: z.number().positive(),
-  quality: z.number().min(1).max(100).default(80),
-});
+export interface ImageResizeOptions {
+  width?: number
+  height?: number
+  quality?: number
+  format?: 'jpeg' | 'png' | 'webp'
+}
 
-export type UploadFileDto = z.infer<typeof uploadFileSchema>;
-export type ImageResizeDto = z.infer<typeof imageResizeSchema>;
+export class UploadService {
+  private uploadDir = join(process.cwd(), 'public', 'uploads')
 
-// 업로드 설정
-const UPLOAD_CONFIG = {
-  maxFileSize: 10 * 1024 * 1024, // 10MB
-  allowedImageTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
-  allowedDocumentTypes: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-  uploadDir: process.env.UPLOAD_DIR || 'public/uploads',
-  cdnUrl: process.env.CDN_URL || '/uploads',
-};
-
-// 이미지 사이즈 프리셋
-const IMAGE_PRESETS = {
-  profile: {
-    thumbnail: { width: 150, height: 150 },
-    medium: { width: 400, height: 400 },
-    large: { width: 800, height: 800 },
-  },
-  campaign: {
-    thumbnail: { width: 300, height: 200 },
-    medium: { width: 600, height: 400 },
-    large: { width: 1200, height: 800 },
-  },
-  content: {
-    thumbnail: { width: 400, height: 400 },
-    medium: { width: 800, height: 800 },
-    large: { width: 1600, height: 1600 },
-  },
-};
-
-class UploadService {
-  // 파일 업로드
-  async uploadFile(file: File, userId: string, type: string, metadata?: any) {
-    // 파일 크기 검증
-    if (file.size > UPLOAD_CONFIG.maxFileSize) {
-      throw new ApiError('파일 크기가 너무 큽니다. (최대 10MB)', 400);
-    }
-
-    // 파일 타입 검증
-    const isImage = UPLOAD_CONFIG.allowedImageTypes.includes(file.type);
-    const isDocument = UPLOAD_CONFIG.allowedDocumentTypes.includes(file.type);
-
-    if (!isImage && !isDocument) {
-      throw new ApiError('지원하지 않는 파일 형식입니다.', 400);
-    }
-
-    // 파일명 생성
-    const ext = file.name.split('.').pop();
-    const filename = `${type}_${userId}_${Date.now()}_${crypto.randomBytes(4).toString('hex')}.${ext}`;
-    const filepath = join(type, filename);
-
-    // 디렉토리 생성
-    const uploadPath = join(process.cwd(), UPLOAD_CONFIG.uploadDir, type);
-    await mkdir(uploadPath, { recursive: true });
-
-    // 파일 저장
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const fullPath = join(uploadPath, filename);
-
-    if (isImage) {
-      // 이미지 처리 및 리사이즈
-      await this.processImage(buffer, fullPath, type);
-    } else {
-      // 일반 파일 저장
-      await writeFile(fullPath, buffer);
-    }
-
-    // DB에 파일 정보 저장
-    const uploadedFile = await prisma.file.create({
-      data: {
-        userId,
-        filename,
-        originalName: file.name,
-        mimetype: file.type,
-        size: file.size,
-        path: filepath,
-        url: `${UPLOAD_CONFIG.cdnUrl}/${filepath}`,
-        type,
-        metadata: metadata || {},
-      }
-    });
-
-    // 이미지인 경우 썸네일 URL 추가
-    if (isImage) {
-      const thumbnailUrl = `${UPLOAD_CONFIG.cdnUrl}/${type}/thumb_${filename}`;
-      const mediumUrl = `${UPLOAD_CONFIG.cdnUrl}/${type}/medium_${filename}`;
-      
-      await prisma.file.update({
-        where: { id: uploadedFile.id },
-        data: {
-          metadata: JSON.stringify({
-            ...(uploadedFile.metadata ? JSON.parse(uploadedFile.metadata) : {}),
-            thumbnailUrl,
-            mediumUrl,
-            originalUrl: uploadedFile.url,
-          })
-        }
-      });
-
-      return {
-        ...uploadedFile,
-        thumbnailUrl,
-        mediumUrl,
-      };
-    }
-
-    return uploadedFile;
+  constructor() {
+    this.ensureUploadDir()
   }
 
-  // 이미지 처리
-  private async processImage(buffer: Buffer, fullPath: string, type: string) {
-    const image = sharp(buffer);
-    const metadata = await image.metadata();
+  private async ensureUploadDir() {
+    try {
+      await mkdir(this.uploadDir, { recursive: true })
+    } catch (error) {
+      console.error('Upload directory creation failed:', error)
+    }
+  }
 
-    // 원본 이미지 저장 (최적화)
-    await image
-      .jpeg({ quality: 90 })
-      .toFile(fullPath);
+  /**
+   * 파일 업로드 처리
+   */
+  async uploadFile(
+    file: File,
+    subfolder: string = '',
+    options?: ImageResizeOptions
+  ): Promise<UploadResult> {
+    try {
+      const bytes = await file.arrayBuffer()
+      const buffer = Buffer.from(bytes)
 
-    // 프리셋에 따라 리사이즈 버전 생성
-    const presets = IMAGE_PRESETS[type as keyof typeof IMAGE_PRESETS] || IMAGE_PRESETS.content;
-    
-    for (const [size, dimensions] of Object.entries(presets)) {
-      const resizedPath = fullPath.replace(
-        /([^/]+)\.(\w+)$/,
-        `${size}_$1.$2`
-      );
+      // 파일명 생성 (timestamp + random)
+      const timestamp = Date.now()
+      const randomString = Math.random().toString(36).substring(2, 10)
+      const extension = file.name.split('.').pop()?.toLowerCase()
+      const filename = `${timestamp}_${randomString}.${extension}`
 
-      await sharp(buffer)
-        .resize(dimensions.width, dimensions.height, {
+      // 업로드 경로 설정
+      const uploadPath = subfolder 
+        ? join(this.uploadDir, subfolder)
+        : this.uploadDir
+
+      await mkdir(uploadPath, { recursive: true })
+
+      let processedBuffer = buffer
+
+      // 이미지 파일인 경우 리사이징 처리
+      if (this.isImageFile(file.type)) {
+        processedBuffer = await this.resizeImage(buffer, options)
+      }
+
+      // 파일 저장
+      const filePath = join(uploadPath, filename)
+      await writeFile(filePath, processedBuffer)
+
+      // URL 생성
+      const url = subfolder 
+        ? `/uploads/${subfolder}/${filename}`
+        : `/uploads/${filename}`
+
+      return {
+        url,
+        filename,
+        size: processedBuffer.length,
+        type: file.type
+      }
+    } catch (error) {
+      console.error('File upload failed:', error)
+      throw new Error('파일 업로드에 실패했습니다.')
+    }
+  }
+
+  /**
+   * Base64 이미지 업로드 처리
+   */
+  async uploadBase64Image(
+    base64Data: string,
+    subfolder: string = '',
+    options?: ImageResizeOptions
+  ): Promise<UploadResult> {
+    try {
+      // Base64 데이터 파싱
+      const matches = base64Data.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/)
+      if (!matches) {
+        throw new Error('Invalid base64 data')
+      }
+
+      const mimeType = matches[1]
+      const buffer = Buffer.from(matches[2], 'base64')
+
+      // 파일명 생성
+      const timestamp = Date.now()
+      const randomString = Math.random().toString(36).substring(2, 10)
+      const extension = mimeType.split('/')[1] || 'jpg'
+      const filename = `${timestamp}_${randomString}.${extension}`
+
+      // 업로드 경로 설정
+      const uploadPath = subfolder 
+        ? join(this.uploadDir, subfolder)
+        : this.uploadDir
+
+      await mkdir(uploadPath, { recursive: true })
+
+      let processedBuffer = buffer
+
+      // 이미지 리사이징 처리
+      if (this.isImageMimeType(mimeType)) {
+        processedBuffer = await this.resizeImage(buffer, options)
+      }
+
+      // 파일 저장
+      const filePath = join(uploadPath, filename)
+      await writeFile(filePath, processedBuffer)
+
+      // URL 생성
+      const url = subfolder 
+        ? `/uploads/${subfolder}/${filename}`
+        : `/uploads/${filename}`
+
+      return {
+        url,
+        filename,
+        size: processedBuffer.length,
+        type: mimeType
+      }
+    } catch (error) {
+      console.error('Base64 upload failed:', error)
+      throw new Error('이미지 업로드에 실패했습니다.')
+    }
+  }
+
+  /**
+   * 이미지 리사이징
+   */
+  private async resizeImage(
+    buffer: Buffer,
+    options?: ImageResizeOptions
+  ): Promise<Buffer> {
+    try {
+      let sharpInstance = sharp(buffer)
+
+      // 리사이징 옵션 적용
+      if (options?.width || options?.height) {
+        sharpInstance = sharpInstance.resize({
+          width: options.width,
+          height: options.height,
           fit: 'cover',
           position: 'center'
         })
-        .jpeg({ quality: 80 })
-        .toFile(resizedPath);
-    }
-  }
-
-  // 파일 삭제
-  async deleteFile(fileId: string, userId: string) {
-    const file = await prisma.file.findUnique({
-      where: { id: fileId }
-    });
-
-    if (!file) {
-      throw new ApiError('파일을 찾을 수 없습니다.', 404);
-    }
-
-    if (file.userId !== userId) {
-      throw new ApiError('파일 삭제 권한이 없습니다.', 403);
-    }
-
-    // 실제 파일 삭제 (선택적)
-    // 보통은 soft delete 또는 스케줄러로 처리
-    
-    // DB에서 삭제
-    await prisma.file.delete({
-      where: { id: fileId }
-    });
-
-    return { success: true };
-  }
-
-  // 파일 목록 조회
-  async getFiles(userId: string, filters: {
-    type?: string;
-    page?: number;
-    limit?: number;
-  }) {
-    const { type, page = 1, limit = 20 } = filters;
-    const skip = (page - 1) * limit;
-
-    const where: any = { userId };
-    if (type) where.type = type;
-
-    const [files, total] = await Promise.all([
-      prisma.file.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' }
-      }),
-      prisma.file.count({ where })
-    ]);
-
-    return {
-      files,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit)
       }
-    };
-  }
 
-  // 파일 정보 조회
-  async getFile(fileId: string) {
-    const file = await prisma.file.findUnique({
-      where: { id: fileId }
-    });
-
-    if (!file) {
-      throw new ApiError('파일을 찾을 수 없습니다.', 404);
-    }
-
-    return file;
-  }
-
-  // 프로필 이미지 업데이트
-  async updateProfileImage(userId: string, file: File) {
-    const uploadedFile = await this.uploadFile(file, userId, 'profile');
-
-    // 프로필 업데이트
-    await prisma.profile.upsert({
-      where: { userId },
-      update: {
-        avatar: uploadedFile.url,
-        avatarId: uploadedFile.id,
-      },
-      create: {
-        userId,
-        avatar: uploadedFile.url,
-        avatarId: uploadedFile.id,
+      // 포맷 변환
+      if (options?.format) {
+        switch (options.format) {
+          case 'jpeg':
+            sharpInstance = sharpInstance.jpeg({ 
+              quality: options.quality || 80 
+            })
+            break
+          case 'png':
+            sharpInstance = sharpInstance.png({ 
+              quality: options.quality || 80 
+            })
+            break
+          case 'webp':
+            sharpInstance = sharpInstance.webp({ 
+              quality: options.quality || 80 
+            })
+            break
+        }
       }
-    });
 
-    return uploadedFile;
+      return await sharpInstance.toBuffer()
+    } catch (error) {
+      console.error('Image resize failed:', error)
+      return buffer // 리사이징 실패 시 원본 반환
+    }
   }
 
-  // 캠페인 이미지 업로드
-  async uploadCampaignImage(campaignId: string, userId: string, file: File) {
-    const campaign = await prisma.campaign.findUnique({
-      where: { id: campaignId }
-    });
-
-    if (!campaign || campaign.businessId !== userId) {
-      throw new ApiError('캠페인을 찾을 수 없습니다.', 404);
-    }
-
-    const uploadedFile = await this.uploadFile(file, userId, 'campaign', {
-      campaignId
-    });
-
-    // 캠페인 업데이트
-    await prisma.campaign.update({
-      where: { id: campaignId },
-      data: {
-        imageUrl: uploadedFile.url,
-        imageId: uploadedFile.id,
-      }
-    });
-
-    return uploadedFile;
+  /**
+   * 이미지 파일 타입 체크
+   */
+  private isImageFile(mimeType: string): boolean {
+    return mimeType.startsWith('image/')
   }
 
-  // 컨텐츠 미디어 업로드
-  async uploadContentMedia(contentId: string, userId: string, files: File[]) {
-    const content = await prisma.content.findUnique({
-      where: { id: contentId },
-      include: {
-        application: true
+  /**
+   * 이미지 MIME 타입 체크
+   */
+  private isImageMimeType(mimeType: string): boolean {
+    return mimeType.startsWith('image/')
+  }
+
+  /**
+   * FormData에서 파일 추출
+   */
+  async extractFileFromFormData(request: NextRequest): Promise<File | null> {
+    try {
+      const formData = await request.formData()
+      const file = formData.get('file') as File
+
+      if (!file || !file.size) {
+        return null
       }
-    });
 
-    if (!content || content.application.influencerId !== userId) {
-      throw new ApiError('컨텐츠를 찾을 수 없습니다.', 404);
+      return file
+    } catch (error) {
+      console.error('FormData extraction failed:', error)
+      return null
     }
+  }
 
-    const uploadedFiles = [];
+  /**
+   * 다중 파일 업로드
+   */
+  async uploadMultipleFiles(
+    files: File[],
+    subfolder: string = '',
+    options?: ImageResizeOptions
+  ): Promise<UploadResult[]> {
+    const results: UploadResult[] = []
 
     for (const file of files) {
-      const uploadedFile = await this.uploadFile(file, userId, 'content', {
-        contentId
-      });
-
-      uploadedFiles.push(uploadedFile);
-
-      // 컨텐츠 미디어 관계 생성
-      await prisma.contentMedia.create({
-        data: {
-          contentId,
-          fileId: uploadedFile.id,
-          type: file.type.startsWith('image/') ? 'IMAGE' : 'VIDEO',
-          order: uploadedFiles.length,
-        }
-      });
+      try {
+        const result = await this.uploadFile(file, subfolder, options)
+        results.push(result)
+      } catch (error) {
+        console.error(`File upload failed for ${file.name}:`, error)
+        // 개별 파일 실패는 무시하고 계속 진행
+      }
     }
 
-    return uploadedFiles;
+    return results
   }
 
-  // 파일 사용량 통계
-  async getStorageStats(userId: string) {
-    const stats = await prisma.file.groupBy({
-      by: ['type'],
-      where: { userId },
-      _sum: {
-        size: true,
-      },
-      _count: true,
-    });
+  /**
+   * 파일 크기 제한 체크
+   */
+  validateFileSize(file: File, maxSizeInMB: number = 15): boolean {
+    const maxSizeInBytes = maxSizeInMB * 1024 * 1024
+    return file.size <= maxSizeInBytes
+  }
 
-    const totalSize = stats.reduce((sum, stat) => sum + (stat._sum.size || 0), 0);
-    const totalFiles = stats.reduce((sum, stat) => sum + stat._count, 0);
-
-    return {
-      totalSize,
-      totalFiles,
-      byType: stats.map(stat => ({
-        type: stat.type,
-        count: stat._count,
-        size: stat._sum.size || 0,
-      })),
-      limit: 1024 * 1024 * 1024, // 1GB limit per user
-      used: totalSize,
-      available: 1024 * 1024 * 1024 - totalSize,
-    };
+  /**
+   * 허용된 파일 타입 체크
+   */
+  validateFileType(file: File, allowedTypes: string[] = ['image/jpeg', 'image/png', 'image/webp']): boolean {
+    return allowedTypes.includes(file.type)
   }
 }
 
-export const uploadService = new UploadService();
+// 싱글톤 인스턴스
+export const uploadService = new UploadService()

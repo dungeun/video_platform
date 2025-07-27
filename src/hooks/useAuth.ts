@@ -45,6 +45,8 @@ export function useAuth() {
 
   const clearTokens = useCallback(() => {
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('auth-token');
+    localStorage.removeItem('user');
   }, []);
 
   // 현재 사용자 정보 가져오기
@@ -63,12 +65,15 @@ export function useAuth() {
       });
 
       if (response.ok) {
-        const user = await response.json();
+        const data = await response.json();
+        const userData = data.user || data; // handle both { user: {...} } and direct user object
         setAuthState({
-          user,
+          user: userData,
           isAuthenticated: true,
           isLoading: false,
         });
+        // Sync with localStorage
+        localStorage.setItem('user', JSON.stringify(userData));
       } else {
         // 토큰이 유효하지 않음
         clearTokens();
@@ -101,7 +106,17 @@ export function useAuth() {
 
       if (response.ok) {
         const result = await response.json();
-        setAccessToken(result.accessToken);
+        // Handle both 'token' and 'accessToken' fields for compatibility
+        const token = result.accessToken || result.token;
+        if (token) {
+          setAccessToken(token);
+          // Also save to auth-token for compatibility
+          localStorage.setItem('auth-token', token);
+        }
+        // Save user to localStorage
+        if (result.user) {
+          localStorage.setItem('user', JSON.stringify(result.user));
+        }
         setAuthState({
           user: result.user,
           isAuthenticated: true,
@@ -130,7 +145,17 @@ export function useAuth() {
 
       if (response.ok) {
         const result = await response.json();
-        setAccessToken(result.accessToken);
+        // Handle nested tokens structure from register endpoint
+        const token = result.tokens?.accessToken || result.accessToken || result.token;
+        if (token) {
+          setAccessToken(token);
+          // Also save to auth-token for compatibility
+          localStorage.setItem('auth-token', token);
+        }
+        // Save user to localStorage
+        if (result.user) {
+          localStorage.setItem('user', JSON.stringify(result.user));
+        }
         setAuthState({
           user: result.user,
           isAuthenticated: true,

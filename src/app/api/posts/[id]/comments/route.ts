@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
-import { AuthService } from '@/lib/auth'
+import { verifyJWT } from '@/lib/auth/jwt'
 
 
 // POST /api/posts/[id]/comments - 댓글 작성
@@ -14,8 +14,14 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const user = await AuthService.authenticateUser(request)
-    if (!user) {
+    let user
+    try {
+      user = await verifyJWT(token)
+    } catch (error) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+    }
+    
+    if (!user || !user.id) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
@@ -59,7 +65,7 @@ export async function POST(
             name: true,
             profile: {
               select: {
-                avatar: true
+                profileImage: true
               }
             }
           }
@@ -75,7 +81,7 @@ export async function POST(
       author: {
         id: comment.author.id,
         name: comment.author.name,
-        avatar: comment.author.profile?.avatar
+        avatar: comment.author.profile?.profileImage
       }
     }, { status: 201 })
   } catch (error) {

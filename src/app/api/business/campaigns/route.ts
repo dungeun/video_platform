@@ -46,18 +46,22 @@ export async function POST(request: NextRequest) {
       title,
       description,
       platform,
+      platforms,
       budget,
       targetFollowers,
+      maxApplicants,
+      rewardAmount,
       startDate,
       endDate,
       requirements,
       hashtags,
       imageUrl,
+      detailImages,
       youtubeUrl
     } = body;
 
     // 유효성 검사
-    if (!title || !description || !platform || !budget || !targetFollowers || !startDate || !endDate) {
+    if (!title || !description || (!platform && (!platforms || platforms.length === 0)) || !budget || !targetFollowers || !maxApplicants || !rewardAmount || !startDate || !endDate) {
       return NextResponse.json(
         { error: '필수 필드를 모두 입력해주세요.' },
         { status: 400 }
@@ -89,14 +93,18 @@ export async function POST(request: NextRequest) {
       data: {
         title,
         description,
-        platform,
+        platform: platform || (platforms && platforms[0]) || 'INSTAGRAM',
+        platforms: platforms ? JSON.stringify(platforms) : null,
         budget,
         targetFollowers,
+        maxApplicants: maxApplicants || 100,
+        rewardAmount: rewardAmount || 0,
         startDate: startDateObj,
         endDate: endDateObj,
         requirements: requirements || '',
         hashtags: hashtags ? JSON.stringify(hashtags) : '[]',
         imageUrl: imageUrl || null,
+        detailImages: detailImages ? JSON.stringify(detailImages) : null,
         status: 'ACTIVE',
         businessId: user.userId || user.id
       }

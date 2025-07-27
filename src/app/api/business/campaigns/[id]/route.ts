@@ -87,13 +87,30 @@ export async function GET(
     } catch (e) {
       hashtags = [];
     }
+    
+    // 플랫폼 파싱
+    let platforms = [];
+    try {
+      platforms = campaign.platforms ? JSON.parse(campaign.platforms) : [campaign.platform];
+    } catch (e) {
+      platforms = [campaign.platform];
+    }
+    
+    // 상세 이미지 파싱
+    let detailImages = [];
+    try {
+      detailImages = campaign.detailImages ? JSON.parse(campaign.detailImages) : [];
+    } catch (e) {
+      detailImages = [];
+    }
 
     // 캠페인 데이터 형식 변환
     const formattedCampaign = {
       id: campaign.id,
       title: campaign.title,
       description: (campaign as any).description,
-      platform: (campaign as any).category,
+      platform: campaign.platform,
+      platforms: platforms,
       budget: campaign.budget,
       targetFollowers: (campaign as any).targetFollowers,
       startDate: campaign.startDate,
@@ -101,6 +118,7 @@ export async function GET(
       requirements: campaign.requirements,
       hashtags: hashtags,
       imageUrl: campaign.imageUrl,
+      detailImages: detailImages,
       status: campaign.status.toLowerCase(),
       applications: campaign._count.applications,
       createdAt: campaign.createdAt,
@@ -175,6 +193,9 @@ export async function PUT(
     if (body.endDate !== undefined) updateData.endDate = new Date(body.endDate);
     if (body.hashtags !== undefined) updateData.hashtags = JSON.stringify(body.hashtags);
     if (body.imageUrl !== undefined) updateData.imageUrl = body.imageUrl;
+    if (body.platform !== undefined) updateData.platform = body.platform;
+    if (body.platforms !== undefined) updateData.platforms = JSON.stringify(body.platforms);
+    if (body.detailImages !== undefined) updateData.detailImages = JSON.stringify(body.detailImages);
 
     // 캠페인 업데이트
     const updatedCampaign = await prisma.campaign.update({

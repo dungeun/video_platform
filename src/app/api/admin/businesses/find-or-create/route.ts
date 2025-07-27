@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     // 기존 비즈니스 계정 찾기
     let businessUser = await prisma.user.findUnique({
       where: { email },
-      include: { profile: true }
+      include: { businessProfile: true }
     })
 
     // 없으면 새로 생성
@@ -65,14 +65,17 @@ export async function POST(request: NextRequest) {
           password: hashedPassword,
           name: companyName,
           type: 'BUSINESS',
-          profile: {
+          businessProfile: {
             create: {
               companyName,
-              businessNo: '000-00-00000', // 임시값
+              businessNumber: '000-00-00000', // 임시값
+              representativeName: companyName,
+              businessAddress: '미입력',
+              businessCategory: '미분류'
             }
           }
         },
-        include: { profile: true }
+        include: { businessProfile: true }
       })
 
       // 실제로는 여기서 이메일로 임시 비밀번호를 전송해야 함
@@ -86,8 +89,8 @@ export async function POST(request: NextRequest) {
       }
 
       // 회사명 업데이트 (필요한 경우)
-      if (businessUser.profile && (businessUser.profile as any).companyName !== companyName) {
-        await prisma.profile.update({
+      if (businessUser.businessProfile && businessUser.businessProfile.companyName !== companyName) {
+        await prisma.businessProfile.update({
           where: { userId: businessUser.id },
           data: { companyName }
         })
@@ -97,7 +100,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       businessId: businessUser.id,
-      businessName: businessUser.profile?.companyName || companyName,
+      businessName: businessUser.businessProfile?.companyName || companyName,
       isNewAccount: !businessUser
     })
 

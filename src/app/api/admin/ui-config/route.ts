@@ -1,26 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
+import { verifyJWT } from '@/lib/auth/jwt';
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export async function GET(request: NextRequest) {
   try {
-    // 미들웨어에서 설정한 헤더에서 사용자 정보 가져오기
-    const userType = request.headers.get('x-user-type');
-    const userId = request.headers.get('x-user-id');
-    
-    if (!userType || !userId) {
+    // 인증 확인
+    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (userType !== 'ADMIN') {
+    let user;
+    try {
+      user = await verifyJWT(token);
+    } catch (error) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+
+    // 관리자 권한 확인
+    if (!user || user.type !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // UI 설정 조회 - siteConfig 테이블이 없으므로 다른 방법 사용
-    // TODO: Implement siteConfig table or use a different storage method
-    const uiConfig = null;
+    // DB에서 UI 설정 조회
+    const uiConfig = await prisma.siteConfig.findUnique({
+      where: { key: 'ui-config' }
+    });
 
     if (!uiConfig) {
       // 기본 설정 반환
@@ -31,10 +39,9 @@ export async function GET(request: NextRequest) {
             imageUrl: null
           },
           menus: [
-            { id: 'menu-1', label: '홈', href: '/', order: 1, visible: true },
+            { id: 'menu-1', label: '캠페인', href: '/campaigns', order: 1, visible: true },
             { id: 'menu-2', label: '인플루언서', href: '/influencers', order: 2, visible: true },
-            { id: 'menu-3', label: '캠페인', href: '/campaigns', order: 3, visible: true },
-            { id: 'menu-4', label: '커뮤니티', href: '/community', order: 4, visible: true },
+            { id: 'menu-3', label: '커뮤니티', href: '/community', order: 3, visible: true },
           ],
           ctaButton: {
             text: '시작하기',
@@ -73,6 +80,59 @@ export async function GET(request: NextRequest) {
             }
           ],
           copyright: '© 2024 LinkPick. All rights reserved.'
+        },
+        mainPage: {
+          heroSlides: [
+            {
+              id: 'slide-1',
+              type: 'blue' as const,
+              tag: '캠페인 혜택',
+              title: '브랜드와 함께하는\\n완벽한 캠페인',
+              subtitle: '최대 500만원 캠페인 참여 기회',
+              bgColor: 'bg-gradient-to-br from-blue-400 to-blue-600',
+              order: 1,
+              visible: true,
+            },
+            {
+              id: 'slide-2',
+              type: 'dark' as const,
+              title: '이번달, 어떤 캠페인이\\n당신을 기다릴까요?',
+              subtitle: '다양한 브랜드와의 만남',
+              bgColor: 'bg-gradient-to-br from-gray-800 to-gray-900',
+              order: 2,
+              visible: true,
+            },
+            {
+              id: 'slide-3',
+              type: 'green' as const,
+              title: '인플루언서 매칭 시작',
+              subtitle: 'AI가 찾아주는 최적의 파트너',
+              bgColor: 'bg-gradient-to-br from-green-400 to-green-600',
+              order: 3,
+              visible: true,
+            },
+          ],
+          categoryMenus: [
+            { id: 'cat-1', name: '뷰티', categoryId: 'beauty', icon: '', order: 1, visible: true },
+            { id: 'cat-2', name: '패션', categoryId: 'fashion', icon: '', order: 2, visible: true },
+            { id: 'cat-3', name: '푸드', categoryId: 'food', icon: '', badge: 'HOT', order: 3, visible: true },
+            { id: 'cat-4', name: '여행', categoryId: 'travel', icon: '', order: 4, visible: true },
+            { id: 'cat-5', name: '테크', categoryId: 'tech', icon: '', order: 5, visible: true },
+            { id: 'cat-6', name: '피트니스', categoryId: 'fitness', icon: '', order: 6, visible: true },
+            { id: 'cat-7', name: '라이프스타일', categoryId: 'lifestyle', icon: '', order: 7, visible: true },
+            { id: 'cat-8', name: '펫', categoryId: 'pet', icon: '', order: 8, visible: true },
+          ],
+          quickLinks: [
+            { id: 'quick-1', title: '이벤트', icon: '🎁', link: '/events', order: 1, visible: true },
+            { id: 'quick-2', title: '쿠폰팩', icon: '🎟️', link: '/coupons', order: 2, visible: true },
+            { id: 'quick-3', title: '랭킹', icon: '🏆', link: '/ranking', order: 3, visible: true },
+          ],
+          promoBanner: {
+            title: '처음이니까, 수수료 50% 할인',
+            subtitle: '첫 캠페인을 더 가볍게 시작하세요!',
+            icon: '📦',
+            visible: true,
+          },
         }
       };
       
@@ -87,26 +147,39 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // 미들웨어에서 설정한 헤더에서 사용자 정보 가져오기
-    const userType = request.headers.get('x-user-type');
-    const userId = request.headers.get('x-user-id');
-    
-    if (!userType || !userId) {
+    // 인증 확인
+    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (userType !== 'ADMIN') {
+    let user;
+    try {
+      user = await verifyJWT(token);
+    } catch (error) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+
+    // 관리자 권한 확인
+    if (!user || user.type !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const { config } = await request.json();
 
-    // UI 설정 저장 - siteConfig 테이블이 없으므로 다른 방법 사용
-    // TODO: Implement siteConfig table or use a different storage method
-    console.log('UI config update requested:', config);
+    // DB에 UI 설정 저장 - JSON을 문자열로 변환
+    await prisma.siteConfig.upsert({
+      where: { key: 'ui-config' },
+      update: { value: JSON.stringify(config) },
+      create: { key: 'ui-config', value: JSON.stringify(config) }
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('UI config save error:', error);
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }

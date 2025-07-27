@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db/prisma';
+import { prisma } from '@/lib/db';
 import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 
@@ -29,6 +29,12 @@ export async function GET(
 ) {
   try {
     const campaignId = params.id;
+
+    // 조회수 증가
+    await prisma.campaign.update({
+      where: { id: campaignId },
+      data: { viewCount: { increment: 1 } }
+    });
 
     // DB에서 캠페인 상세 정보 조회
     const campaign = await prisma.campaign.findUnique({
@@ -94,35 +100,31 @@ export async function GET(
       title: campaign.title,
       brand: campaign.business.businessProfile?.companyName || campaign.business.name,
       brandId: campaign.business.id,
-      description: (campaign as any).description,
+      description: campaign.description || '',
       budget: campaign.budget,
       budgetRange: `₩${campaign.budget.toLocaleString()} ~ ₩${(campaign.budget * 1.5).toLocaleString()}`,
       deadline: campaign.endDate,
       daysLeft: daysLeft > 0 ? daysLeft : 0,
       category: campaign.business.businessProfile?.businessCategory || 'other',
-      platforms: [campaign.platform.toLowerCase()],
+      platforms: (() => {
+        try {
+          return campaign.platforms ? JSON.parse(campaign.platforms).map((p: string) => p.toLowerCase()) : [campaign.platform.toLowerCase()];
+        } catch (e) {
+          return [campaign.platform.toLowerCase()];
+        }
+      })(),
       required_followers: campaign.targetFollowers,
-      location: '전국',
-      view_count: Math.floor(Math.random() * 1000) + 100, // 실제 조회수 구현 필요
+      location: campaign.location,
+      view_count: campaign.viewCount,
       applicants: campaign._count.applications,
-      maxApplicants: 100, // 실제 최대 지원자 수 구현 필요
+      maxApplicants: campaign.maxApplicants,
+      rewardAmount: campaign.rewardAmount,
       image_url: campaign.imageUrl || 'https://images.unsplash.com/photo-1600000000?w=800&q=80',
-      tags: campaign.hashtags ? JSON.parse(campaign.hashtags) : [],
+      tags: campaign.hashtags ? campaign.hashtags.split(' ').filter((tag: string) => tag.startsWith('#')) : [],
       status: campaign.status.toLowerCase(),
       requirements: campaign.requirements || '',
-      detailedRequirements: [
-        `${campaign.business.businessProfile?.businessCategory || '관련'} 콘텐츠 제작 경험 1년 이상`,
-        `${campaign.platform} 팔로워 ${campaign.targetFollowers.toLocaleString()}명 이상`,
-        '평균 참여율 3% 이상',
-        '월 4회 이상 콘텐츠 업로드 가능',
-        '긍정적이고 진정성 있는 리뷰 작성 가능'
-      ],
-      deliverables: [
-        `${campaign.platform} 피드 포스트 3개`,
-        `${campaign.platform} 스토리 5개`,
-        '제품 사용 리뷰 콘텐츠',
-        '제품 사용 전/후 비교 콘텐츠'
-      ],
+      detailedRequirements: campaign.detailedRequirements ? JSON.parse(campaign.detailedRequirements) : [],
+      deliverables: campaign.deliverables ? JSON.parse(campaign.deliverables) : [],
       duration: `${duration}일`,
       campaignPeriod: `${new Date(campaign.startDate).toLocaleDateString('ko-KR')} ~ ${new Date(campaign.endDate).toLocaleDateString('ko-KR')}`,
       applicationDeadline: new Date(campaign.endDate).toLocaleDateString('ko-KR'),
@@ -133,6 +135,10 @@ export async function GET(
         avatar: false
       },
       created_at: campaign.createdAt.toISOString(),
+      
+      // 상품 정보 추가
+      productIntro: campaign.productIntro || null,
+      productImages: campaign.detailImages ? JSON.parse(campaign.detailImages) : [],
       
       // 최근 지원자 정보 (3명)
       recentApplicants: campaign.applications.slice(0, 3).map(app => ({

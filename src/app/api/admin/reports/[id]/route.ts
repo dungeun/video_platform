@@ -28,23 +28,55 @@ export async function PUT(
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
-    const { status, assignedTo, resolution } = await request.json()
+    const { status, adminNotes } = await request.json()
     const reportId = params.id
 
     // 신고 상태 업데이트
-    // const updatedReport = await prisma.report.update({
-    //   where: { id: reportId },
-    //   data: { 
-    //     status,
-    //     assignedTo,
-    //     resolution,
-    //     updatedAt: new Date()
-    //   }
-    // })
+    const updateData: any = {
+      updatedAt: new Date()
+    }
+    
+    if (status) {
+      updateData.status = status.toUpperCase()
+      
+      // 해결됨 상태로 변경시 추가 정보 저장
+      if (status.toUpperCase() === 'RESOLVED' || status.toUpperCase() === 'REJECTED') {
+        updateData.resolvedAt = new Date()
+        updateData.resolvedBy = userId
+      }
+    }
+    
+    if (adminNotes !== undefined) {
+      updateData.adminNotes = adminNotes
+    }
+
+    const updatedReport = await prisma.report.update({
+      where: { id: reportId },
+      data: updateData,
+      include: {
+        reporter: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            type: true
+          }
+        }
+      }
+    })
 
     return NextResponse.json({
       success: true,
-      // report: updatedReport
+      report: {
+        ...updatedReport,
+        type: updatedReport.type.toLowerCase(),
+        targetType: updatedReport.targetType.toLowerCase(),
+        status: updatedReport.status.toLowerCase(),
+        reporter: {
+          ...updatedReport.reporter,
+          type: updatedReport.reporter.type.toLowerCase()
+        }
+      }
     })
 
   } catch (error) {

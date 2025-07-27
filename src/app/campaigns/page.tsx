@@ -31,7 +31,7 @@ export default function CampaignsPage() {
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [selectedSort, setSelectedSort] = useState('latest')
   const [selectedPlatform, setSelectedPlatform] = useState('all')
-  const [viewType, setViewType] = useState('card') // 'card' or 'image'
+  const [viewType] = useState('image') // 이미지형으로 고정 (상태 변경 불가)
   const [favorites, setFavorites] = useState<string[]>([]) // 즐겨찾기 ID 저장
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [loading, setLoading] = useState(true)
@@ -221,29 +221,6 @@ export default function CampaignsPage() {
                   <option value="popular">인기순</option>
                 </select>
 
-                {/* 뷰 타입 선택 */}
-                <div className="flex items-center bg-gray-100 rounded-lg p-1">
-                  <button
-                    onClick={() => setViewType('card')}
-                    className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-                      viewType === 'card' 
-                        ? 'bg-white text-cyan-600 shadow-sm' 
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    카드형
-                  </button>
-                  <button
-                    onClick={() => setViewType('image')}
-                    className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-                      viewType === 'image' 
-                        ? 'bg-white text-cyan-600 shadow-sm' 
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    이미지형
-                  </button>
-                </div>
               </div>
             </div>
           </div>
@@ -310,28 +287,70 @@ export default function CampaignsPage() {
               ) : (
                 <>
 
-          {/* 카드형 뷰 */}
-          {viewType === 'card' && (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sortedCampaigns.map((campaign, index) => (
-                <div key={campaign.id} className="campaign-card relative bg-white rounded-xl shadow-lg hover:shadow-xl transition-all overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-600" style={{ animationDelay: `${index * 100}ms` }}>
-                  <div className="p-6">
-                  {/* Brand & Category */}
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-sm font-medium text-cyan-600 bg-cyan-50 px-3 py-1 rounded-full">
-                      {(campaign as any).category}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-500">
-                        마감 D-{Math.ceil((new Date(campaign.application_deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))}
-                      </span>
+
+          {/* 쇼핑몰 스타일 이미지 뷰 */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {sortedCampaigns.map((campaign, index) => {
+              // 가상 이미지 URL 배열
+              const virtualImages = [
+                'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&q=80', // 화장품
+                'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=800&q=80', // 뷰티
+                'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80', // 스킨케어
+                'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=800&q=80', // 메이크업
+                'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=800&q=80', // 코스메틱
+                'https://images.unsplash.com/photo-1567721913486-6585f069b332?w=800&q=80', // 향수
+                'https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=800&q=80', // 스포츠 신발
+                'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=800&q=80', // 의류
+                'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=800&q=80', // 패션
+                'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=800&q=80', // 옷
+                'https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=800&q=80', // 스마트워치
+                'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80', // 시계
+                'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80', // 음식
+                'https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?w=800&q=80', // 푸드
+                'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80', // 요리
+                'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80', // 맛집
+                'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&q=80', // 여행
+                'https://images.unsplash.com/photo-1530789253388-582c481c54b0?w=800&q=80', // 여행지
+                'https://images.unsplash.com/photo-1468276311594-df7cb65d8df6?w=800&q=80', // 테크
+                'https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=800&q=80', // 전자제품
+                'https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=800&q=80', // 노트북
+                'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&q=80', // 맥북
+                'https://images.unsplash.com/photo-1616348436168-de43ad0db179?w=800&q=80', // 아이폰
+                'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800&q=80', // 가방
+                'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800&q=80', // 선글라스
+                'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80', // 운동화
+                'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&q=80', // 핸드폰
+                'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&q=80', // 카메라
+                'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80', // 헤드폰
+                'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=800&q=80'  // 커피
+              ];
+              
+              // 캠페인 ID를 기반으로 일관된 이미지 인덱스 생성
+              const imageIndex = campaign.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % virtualImages.length;
+              
+              // 이미지 URL 처리
+              let imageUrl = campaign.image_url;
+              // 실제 업로드된 이미지가 없거나 기본 이미지인 경우에만 가상 이미지 사용
+              if (!imageUrl || imageUrl === '/images/campaigns/default.jpg' || imageUrl === '') {
+                imageUrl = virtualImages[imageIndex];
+              }
+              const daysLeft = Math.ceil((new Date(campaign.application_deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+              
+              return (
+                <div key={campaign.id} className="group relative animate-in fade-in slide-in-from-bottom-4 duration-600" style={{ animationDelay: `${index * 50}ms` }}>
+                  <Link href={`/campaigns/${campaign.id}`} className="block">
+                    {/* 이미지 컨테이너 */}
+                    <div className="relative aspect-square mb-3 overflow-hidden rounded-lg bg-gray-100">
                       {/* 즐겨찾기 버튼 */}
                       <button
-                        onClick={() => toggleFavorite(campaign.id)}
-                        className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          toggleFavorite(campaign.id);
+                        }}
+                        className="absolute top-2 right-2 z-10 w-8 h-8 bg-white/90 backdrop-blur rounded-full flex items-center justify-center hover:bg-white transition-all shadow-sm"
                       >
                         <svg 
-                          className={`w-5 h-5 transition-colors ${favorites.includes(campaign.id) ? 'text-red-500 fill-current' : 'text-gray-400'}`} 
+                          className={`w-4 h-4 transition-colors ${favorites.includes(campaign.id) ? 'text-red-500 fill-current' : 'text-gray-600'}`} 
                           fill="none" 
                           stroke="currentColor" 
                           viewBox="0 0 24 24"
@@ -339,149 +358,70 @@ export default function CampaignsPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                         </svg>
                       </button>
-                    </div>
-                  </div>
-
-                  {/* Title & Brand */}
-                  <h3 className="text-xl font-bold mb-2">{campaign.title}</h3>
-                  <p className="text-gray-600 mb-4">{campaign.brand_name}</p>
-
-                  {/* Description */}
-                  <p className="text-gray-700 text-sm mb-4 line-clamp-2">
-                    {(campaign as any).description}
-                  </p>
-
-                  {/* Campaign Info */}
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center text-sm text-gray-600">
-                      <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      팔로워 {campaign.required_followers.toLocaleString()}명 이상
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                      조회수: {campaign.view_count}
-                    </div>
-                  </div>
-
-                  {/* Platforms */}
-                  <div className="flex gap-2 mb-4">
-                    {(campaign as any).category.includes('instagram') && (
-                      <span className="text-xs bg-pink-100 text-pink-700 px-2 py-1 rounded">Instagram</span>
-                    )}
-                    {(campaign as any).category.includes('youtube') && (
-                      <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">YouTube</span>
-                    )}
-                    {(campaign as any).category.includes('tiktok') && (
-                      <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">TikTok</span>
-                    )}
-                    {(campaign as any).category.includes('twitter') && (
-                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Twitter</span>
-                    )}
-                  </div>
-
-                  {/* Stats */}
-                  <div className="flex items-center justify-between mb-4 text-sm text-gray-500">
-                    <span>지원자: {campaign.applicant_count}명</span>
-                    <span>상태: {
-                      campaign.status === 'active' ? '진행중' :
-                      campaign.status === 'paused' ? '일시정지' :
-                      campaign.status === 'completed' ? '완료' :
-                      campaign.status === 'draft' ? '초안' :
-                      campaign.status
-                    }</span>
-                  </div>
-
-                  {/* Action Button */}
-                  <Link 
-                    href={`/campaigns/${campaign.id}`}
-                    className="block w-full text-center px-4 py-3 bg-cyan-600 text-white rounded-lg font-medium hover:bg-cyan-700 transition-colors"
-                  >
-                    상세보기 및 지원하기
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-          )}
-
-          {/* 이미지형 뷰 */}
-          {viewType === 'image' && (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {sortedCampaigns.map((campaign, index) => (
-                <div key={campaign.id} className="group relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-all animate-in fade-in slide-in-from-bottom-4 duration-600" style={{ animationDelay: `${index * 100}ms` }}>
-                  {/* 즐겨찾기 버튼 */}
-                  <button
-                    onClick={() => toggleFavorite(campaign.id)}
-                    className="absolute top-2 right-2 z-10 w-8 h-8 bg-white/80 backdrop-blur rounded-full flex items-center justify-center hover:bg-white transition-colors"
-                  >
-                    <svg 
-                      className={`w-5 h-5 transition-colors ${favorites.includes(campaign.id) ? 'text-red-500 fill-current' : 'text-gray-400'}`} 
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                  </button>
-
-                  {/* 이미지 */}
-                  <Link href={`/campaigns/${campaign.id}`}>
-                    <div className="relative aspect-square">
-                      <img 
-                        src={campaign.image_url || 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=800&q=80'} 
-                        alt={campaign.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                      />
-                      
-                      {/* 오버레이 - 항상 표시 */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
                       
                       {/* 마감일 배지 */}
-                      <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-                        D-{Math.ceil((new Date(campaign.application_deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))}
+                      {daysLeft <= 7 && (
+                        <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                          마감임박 D-{daysLeft}
+                        </div>
+                      )}
+                      
+                      {/* 이미지 */}
+                      <img 
+                        src={imageUrl} 
+                        alt={campaign.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          // 이미지 로드 실패시 대체 이미지로 변경
+                          e.currentTarget.src = virtualImages[index % virtualImages.length];
+                        }}
+                      />
+                    </div>
+                    
+                    {/* 정보 섹션 */}
+                    <div className="space-y-1">
+                      {/* 브랜드명 */}
+                      <p className="text-xs text-gray-500 font-medium">{campaign.brand_name}</p>
+                      
+                      {/* 제목 */}
+                      <h3 className="font-medium text-sm text-gray-900 line-clamp-2 group-hover:text-cyan-600 transition-colors">
+                        {campaign.title}
+                      </h3>
+                      
+                      {/* 카테고리 & 플랫폼 */}
+                      <div className="flex items-center gap-2 text-xs text-gray-600">
+                        <span className="bg-gray-100 px-2 py-0.5 rounded">{campaign.category}</span>
+                        <div className="flex gap-0.5">
+                          {campaign.platforms?.slice(0, 2).map((platform: string) => (
+                            <span key={platform} className="text-sm">
+                              {getPlatformIcon(platform)}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* 가격 정보 (예산) */}
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-bold text-gray-900">
+                          ₩{campaign.budget.toLocaleString()}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {campaign.applicant_count}명 지원
+                        </p>
+                      </div>
+                      
+                      {/* 추가 정보 */}
+                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <span>팔로워 {campaign.required_followers.toLocaleString()}+</span>
+                        <span>•</span>
+                        <span>D-{daysLeft}</span>
                       </div>
                     </div>
                   </Link>
-
-                  {/* 콘텐츠 - 항상 표시 */}
-                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                    <div className="mb-2">
-                      <h3 className="font-bold text-sm line-clamp-2">{campaign.title}</h3>
-                      <p className="text-xs opacity-90">{campaign.brand_name}</p>
-                    </div>
-                    
-                    {/* 플랫폼 아이콘 */}
-                    <div className="flex gap-1 mb-2">
-                      {campaign.platforms?.map((platform: string) => (
-                        <span key={platform} className="text-lg">
-                          {getPlatformIcon(platform)}
-                        </span>
-                      ))}
-                    </div>
-                    
-                    {/* 지원자 수 */}
-                    <div className="flex justify-end items-center text-xs mb-2">
-                      <span>{campaign.applicant_count}명 지원</span>
-                    </div>
-                    
-                    {/* 해시태그 */}
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {campaign.tags.slice(0, 2).map((tag, i) => (
-                        <span key={i} className="text-xs bg-white/20 px-2 py-0.5 rounded">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
                 </div>
-              ))}
-            </div>
-          )}
+              );
+            })}
+          </div>
 
           {/* Pagination */}
           {pagination.totalPages > 1 && (

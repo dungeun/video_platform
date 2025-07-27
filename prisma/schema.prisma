@@ -7,12 +7,40 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserType {
+  ADMIN
+  BUSINESS
+  INFLUENCER
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+  PARTIAL_REFUNDED
+  REFUNDED
+}
+
 model User {
   id                   String                @id @default(cuid())
   email                String                @unique
   password             String
   name                 String
-  type                 String
+  type                 UserType
   status               String                @default("ACTIVE")
   statusReason         String?
   statusUpdatedAt      DateTime?
@@ -20,8 +48,10 @@ model User {
   updatedAt            DateTime              @updatedAt
   lastLogin            DateTime?
   verified             Boolean               @default(false)
+  applicationTemplates ApplicationTemplate[]
   businessProfile      BusinessProfile?
   applications         CampaignApplication[]
+  campaignTemplates    CampaignTemplate[]
   campaigns            Campaign[]
   comments             Comment[]
   files                File[]
@@ -33,6 +63,7 @@ model User {
   postLikes            PostLike[]
   posts                Post[]
   profile              Profile?
+  savedCampaigns       SavedCampaign[]
   settlements          Settlement[]
 
   @@map("users")
@@ -58,6 +89,9 @@ model Profile {
   verifiedAt            DateTime?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
+  followerCount         Int       @default(0)
+  naverBlog             String?
+  address               String?
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("profiles")
@@ -94,28 +128,39 @@ model Follow {
 }
 
 model Campaign {
-  id              String                @id @default(cuid())
-  businessId      String
-  title           String
-  description     String
-  platform        String
-  budget          Float
-  targetFollowers Int
-  startDate       DateTime
-  endDate         DateTime
-  requirements    String?
-  hashtags        String?
-  imageUrl        String?
-  imageId         String?
-  status          String                @default("DRAFT")
-  isPaid          Boolean               @default(false)
-  reviewFeedback  String?
-  reviewedAt      DateTime?
-  createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
-  applications    CampaignApplication[]
-  business        User                  @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  payments        Payment[]
+  id                   String                @id @default(cuid())
+  businessId           String
+  title                String
+  description          String
+  platform             String
+  budget               Float
+  targetFollowers      Int
+  startDate            DateTime
+  endDate              DateTime
+  requirements         String?
+  hashtags             String?
+  imageUrl             String?
+  imageId              String?
+  status               CampaignStatus        @default(DRAFT)
+  isPaid               Boolean               @default(false)
+  reviewFeedback       String?
+  reviewedAt           DateTime?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  deliverables         String?
+  detailedRequirements String?
+  location             String                @default("전국")
+  maxApplicants        Int                   @default(100)
+  productImages        String?
+  productIntro         String?
+  viewCount            Int                   @default(0)
+  detailImages         String?
+  platforms            String?
+  rewardAmount         Float                 @default(0)
+  applications         CampaignApplication[]
+  business             User                  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  payments             Payment[]
+  savedByUsers         SavedCampaign[]
 
   @@map("campaigns")
 }
@@ -126,14 +171,14 @@ model CampaignApplication {
   influencerId    String
   message         String
   proposedPrice   Float?
-  status          String           @default("PENDING")
+  status          ApplicationStatus @default(PENDING)
   reviewedAt      DateTime?
   rejectionReason String?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+  contents        Content[]
   campaign        Campaign         @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   influencer      User             @relation(fields: [influencerId], references: [id], onDelete: Cascade)
-  contents        Content[]
   settlementItems SettlementItem[]
 
   @@unique([campaignId, influencerId])
@@ -177,7 +222,7 @@ model Payment {
   userId         String
   amount         Float
   type           String
-  status         String    @default("PENDING")
+  status         PaymentStatus @default(PENDING)
   paymentMethod  String
   paymentKey     String?
   approvedAt     DateTime?
@@ -269,6 +314,18 @@ model NotificationSettings {
   @@map("notification_settings")
 }
 
+model SavedCampaign {
+  id         String   @id @default(cuid())
+  userId     String
+  campaignId String
+  createdAt  DateTime @default(now())
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, campaignId])
+  @@map("saved_campaigns")
+}
+
 model File {
   id           String         @id @default(cuid())
   userId       String
@@ -344,4 +401,37 @@ model PostLike {
 
   @@unique([postId, userId])
   @@map("post_likes")
+}
+
+model ApplicationTemplate {
+  id        String   @id @default(cuid())
+  name      String
+  content   String
+  userId    String?
+  isPublic  Boolean  @default(true)
+  category  String?
+  useCount  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([isPublic])
+  @@index([category])
+  @@map("application_templates")
+}
+
+model CampaignTemplate {
+  id          String   @id @default(cuid())
+  businessId  String
+  name        String
+  description String?
+  data        Json
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  business    User     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId])
+  @@map("campaign_templates")
 }

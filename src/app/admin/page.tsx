@@ -21,73 +21,48 @@ export default function AdminDashboard() {
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
-        // 실제로는 API 호출로 데이터를 가져옴
-        setTimeout(() => {
-          setStats({
-            totalUsers: 1284,
-            activeUsers: 892,
-            totalCampaigns: 156,
-            activeCampaigns: 42,
-            revenue: 15670000,
-            growth: 23.5,
-            newUsers: 128,
-            pendingApprovals: 15
-          })
-          
-          setRecentActivities([
-            {
-              id: 1,
-              type: 'user_registered',
-              title: '새 사용자 가입',
-              description: '인플루언서 "뷰티크리에이터A"가 가입했습니다.',
-              time: '5분 전',
-              icon: '👤'
-            },
-            {
-              id: 2,
-              type: 'campaign_created',
-              title: '새 캠페인 생성',
-              description: '패션 브랜드 B가 "여름 컬렉션" 캠페인을 생성했습니다.',
-              time: '15분 전',
-              icon: '📢'
-            },
-            {
-              id: 3,
-              type: 'payment_completed',
-              title: '결제 완료',
-              description: '뷰티 캠페인 정산금 ₩2,500,000이 처리되었습니다.',
-              time: '1시간 전',
-              icon: '💰'
-            },
-            {
-              id: 4,
-              type: 'report_received',
-              title: '신고 접수',
-              description: '부적절한 콘텐츠 신고가 접수되었습니다.',
-              time: '2시간 전',
-              icon: '🚨'
-            }
-          ])
-          
-          setSystemAlerts([
-            {
-              id: 1,
-              type: 'warning',
-              message: '서버 사용률이 85%에 도달했습니다.',
-              time: '30분 전'
-            },
-            {
-              id: 2,
-              type: 'info',
-              message: '시스템 정기 점검이 내일 오전 2시에 예정되어 있습니다.',
-              time: '1시간 전'
-            }
-          ])
-          
-          setLoading(false)
-        }, 500)
+        // 토큰 가져오기
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+          console.error('토큰이 없습니다.');
+          setLoading(false);
+          return;
+        }
+
+        // API 호출
+        const response = await fetch('/api/admin/dashboard', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('대시보드 데이터를 불러오는데 실패했습니다.');
+        }
+
+        const data = await response.json();
+        
+        // 데이터 설정
+        setStats(data.stats);
+        setRecentActivities(data.recentActivities);
+        setSystemAlerts(data.systemAlerts);
+        
+        setLoading(false);
       } catch (error) {
         console.error('대시보드 데이터 로드 실패:', error)
+        // 에러 시 기본값 설정
+        setStats({
+          totalUsers: 0,
+          activeUsers: 0,
+          totalCampaigns: 0,
+          activeCampaigns: 0,
+          revenue: 0,
+          growth: 0,
+          newUsers: 0,
+          pendingApprovals: 0
+        });
+        setRecentActivities([]);
+        setSystemAlerts([]);
         setLoading(false)
       }
     }
@@ -109,9 +84,20 @@ export default function AdminDashboard() {
     <AdminLayout>
       <div className="space-y-6">
         {/* 페이지 헤더 */}
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">대시보드</h1>
-          <p className="text-gray-600 mt-1">플랫폼 전체 현황을 한눈에 확인하세요</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">대시보드</h1>
+            <p className="text-gray-600 mt-1">플랫폼 전체 현황을 한눈에 확인하세요</p>
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            새로고침
+          </button>
         </div>
 
         {/* 통계 카드 */}

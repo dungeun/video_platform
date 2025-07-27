@@ -50,6 +50,7 @@ export async function GET(
       where: { id: params.id },
       include: {
         profile: true,
+        businessProfile: true,
         campaigns: {
           select: {
             id: true
@@ -78,21 +79,33 @@ export async function GET(
       id: userDetail.id,
       name: userDetail.name,
       email: userDetail.email,
-      type: userDetail.type,
+      type: userDetail.type.toLowerCase(),
       status: userDetail.status?.toLowerCase() || 'active',
       createdAt: userDetail.createdAt.toISOString().split('T')[0],
-      lastLogin: userDetail.lastLoginAt ? userDetail.lastLoginAt.toISOString().split('T')[0] : '미접속',
-      verified: userDetail.emailVerified,
+      lastLogin: userDetail.lastLogin ? userDetail.lastLogin.toISOString().split('T')[0] : '미접속',
+      verified: userDetail.verified || false,
       campaigns: userDetail.type === 'BUSINESS' ? userDetail.campaigns?.length || 0 : userDetail.applications?.length || 0,
       applications: userDetail.type === 'INFLUENCER' ? userDetail.applications?.length || 0 : undefined,
+      phone: userDetail.profile?.phone || '미등록',
+      address: userDetail.type === 'BUSINESS' ? userDetail.businessProfile?.businessAddress : 
+        (userDetail.profile as any)?.address || '미등록',
       profile: userDetail.profile ? {
         bio: userDetail.profile.bio,
-        platforms: userDetail.profile.platforms,
+        instagram: userDetail.profile.instagram,
+        instagramFollowers: userDetail.profile.instagramFollowers,
+        youtube: userDetail.profile.youtube,
+        youtubeSubscribers: userDetail.profile.youtubeSubscribers,
+        tiktok: userDetail.profile.tiktok,
+        tiktokFollowers: userDetail.profile.tiktokFollowers,
         followerCount: userDetail.profile.followerCount,
-        categories: userDetail.profile.categories,
-        companyName: (userDetail.profile as any).companyName,
-        businessNo: userDetail.profile.businessNo,
-        industry: userDetail.profile.industry
+        categories: userDetail.profile.categories
+      } : undefined,
+      businessProfile: userDetail.businessProfile ? {
+        companyName: userDetail.businessProfile.companyName,
+        businessNumber: userDetail.businessProfile.businessNumber,
+        representativeName: userDetail.businessProfile.representativeName,
+        businessAddress: userDetail.businessProfile.businessAddress,
+        businessCategory: userDetail.businessProfile.businessCategory
       } : undefined
     };
 
