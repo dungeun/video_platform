@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/useAuth'
+import PageLayout from '@/components/layouts/PageLayout'
 import { 
   Calendar, 
   MapPin, 
@@ -276,23 +277,27 @@ export default function CampaignDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-      </div>
+      <PageLayout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        </div>
+      </PageLayout>
     )
   }
 
   if (!campaign) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">캠페인을 찾을 수 없습니다</h1>
-          <p className="text-gray-600 mb-4">요청하신 캠페인이 존재하지 않거나 삭제되었습니다.</p>
-          <Button asChild>
-            <Link href="/campaigns">캠페인 목록으로 돌아가기</Link>
-          </Button>
+      <PageLayout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">캠페인을 찾을 수 없습니다</h1>
+            <p className="text-gray-600 mb-4">요청하신 캠페인이 존재하지 않거나 삭제되었습니다.</p>
+            <Button asChild>
+              <Link href="/campaigns">캠페인 목록으로 돌아가기</Link>
+            </Button>
+          </div>
         </div>
-      </div>
+      </PageLayout>
     )
   }
 
@@ -300,7 +305,8 @@ export default function CampaignDetailPage() {
   const applicationProgress = (campaign._count.applications / campaign.maxApplicants) * 100
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <PageLayout>
+      <div className="min-h-screen bg-gray-50">
       {/* 헤더 이미지 */}
       <div className="relative h-96 bg-gray-900">
         {campaign.imageUrl ? (
@@ -596,5 +602,6 @@ export default function CampaignDetailPage() {
         </div>
       </div>
     </div>
+    </PageLayout>
   )
 }
