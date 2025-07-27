@@ -41,7 +41,6 @@ export async function GET(
             email: true,
             businessProfile: {
               select: {
-                logo: true,
                 companyName: true,
                 businessCategory: true,
                 businessAddress: true
@@ -96,8 +95,8 @@ export async function GET(
     let hasApplied = false;
     let applicationStatus = null;
     
-    if (user && user.role === 'INFLUENCER') {
-      const existingApplication = await prisma.application.findFirst({
+    if (user && user.type === 'INFLUENCER') {
+      const existingApplication = await prisma.campaignApplication.findFirst({
         where: {
           campaignId: campaignId,
           influencerId: user.id
@@ -122,19 +121,19 @@ export async function GET(
         business: {
           id: campaign.business.id,
           name: campaign.business.businessProfile?.companyName || campaign.business.name,
-          logo: campaign.business.businessProfile?.logo || null,
+          logo: null,
           category: campaign.business.businessProfile?.businessCategory || 'other'
         },
-        platforms: campaign.platforms || ['INSTAGRAM'],
+        platforms: campaign.platform ? [campaign.platform] : ['INSTAGRAM'],
         budget: campaign.budget,
         targetFollowers: campaign.targetFollowers,
-        maxApplicants: campaign.maxApplicants,
+        maxApplicants: campaign.maxApplicants || 100,
         startDate: campaign.startDate,
         endDate: campaign.endDate,
         requirements: campaign.requirements,
         hashtags: campaign.hashtags || [],
         imageUrl: campaign.imageUrl,
-        detailImages: campaign.detailImages || [],
+        detailImages: campaign.detailImages ? (typeof campaign.detailImages === 'string' ? JSON.parse(campaign.detailImages) : campaign.detailImages) : [],
         status: campaign.status,
         createdAt: campaign.createdAt,
         _count: {
@@ -159,11 +158,14 @@ export async function GET(
     return NextResponse.json(formattedCampaign);
   } catch (error) {
     console.error('캠페인 조회 오류:', error);
+    console.error('Campaign ID:', params.id);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack');
     
     return NextResponse.json(
       { 
         error: '캠페인을 불러오는데 실패했습니다.',
-        details: error instanceof Error ? error.message : '알 수 없는 오류'
+        details: error instanceof Error ? error.message : '알 수 없는 오류',
+        campaignId: params.id
       },
       { status: 500 }
     );

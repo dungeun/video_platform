@@ -169,7 +169,7 @@ export default function CampaignDetailPage() {
       return
     }
 
-    if (user.role !== 'INFLUENCER') {
+    if (user.type !== 'INFLUENCER') {
       toast({
         title: '권한 없음',
         description: '인플루언서만 캠페인에 지원할 수 있습니다.',
