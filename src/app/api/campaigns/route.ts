@@ -1,42 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma, getRedis } from '@/lib/db';
-import jwt from 'jsonwebtoken';
-import { cookies } from 'next/headers';
+import { prisma } from '@/lib/db';
+import { requireAuth, createAuthResponse, createErrorResponse } from '@/lib/auth-middleware';
+import { validateRequest, paginationSchema, formatValidationErrors } from '@/lib/validation';
+import { z } from 'zod';
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-
-// 인증 미들웨어 (POST 요청용)
-async function authenticate(request: NextRequest) {
-  const cookieStore = cookies();
-  const token = cookieStore.get('auth-token')?.value;
-
-  if (!token) {
-    return null;
-  }
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
-    return decoded;
-  } catch (error) {
-    return null;
-  }
-}
-
+// GET /api/campaigns - 캠페인 목록 조회
 // GET /api/campaigns - 캠페인 목록 조회
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
+    
+    // Validate pagination params
+    const paginationResult = await validateRequest(
+      {
+        page: searchParams.get('page'),
+        limit: searchParams.get('limit')
+      },
+      paginationSchema
+    );
+    
+    if (!paginationResult.success) {
+      return createErrorResponse('Invalid pagination parameters', 400, formatValidationErrors(paginationResult.errors));
+    }
+    
+    const { page, limit } = paginationResult.data;
     const status = searchParams.get('status');
     const category = searchParams.get('category');
     const platform = searchParams.get('platform');
     const offset = (page - 1) * limit;
-
-    // 캐시 기능 비활성화 (개발 환경)
 
     // 필터 조건 구성
     const where: any = {};
@@ -123,7 +117,7 @@ export async function GET(request: NextRequest) {
       id: campaign.id,
       title: campaign.title,
       brand_name: campaign.business.businessProfile?.companyName || campaign.business.name,
-      description: (campaign as any).description || '',
+      description: campaign.description || '',
       budget: campaign.budget,
       deadline: campaign.endDate,
       category: campaign.business.businessProfile?.businessCategory || 'other',
@@ -156,25 +150,34 @@ export async function GET(request: NextRequest) {
       application_deadline: campaign.endDate // 실제 지원 마감일이 있다면 해당 필드 사용
     }));
     
-    // 카테고리별 카운트 조회를 위해 모든 캠페인을 한번 더 조회
-    const allCampaigns = await prisma.campaign.findMany({
-      include: {
-        business: {
-          select: {
-            businessProfile: {
-              select: {
-                businessCategory: true
-              }
+    // 카테고리별 카운트 조회 (최적화된 쿼리)
+    const categoryStats = await prisma.campaign.groupBy({
+      by: ['status'],
+      where: { status: 'ACTIVE' },
+      _count: true
+    });
+    
+    // 카테고리별 통계를 위한 별도 쿼리
+    const campaignsByCategory = await prisma.businessProfile.groupBy({
+      by: ['businessCategory'],
+      _count: {
+        userId: true
+      },
+      where: {
+        user: {
+          campaigns: {
+            some: {
+              status: 'ACTIVE'
             }
           }
         }
       }
     });
-
+    
     const categoryStats2: Record<string, number> = {};
-    allCampaigns.forEach(campaign => {
-      const category = campaign.business.businessProfile?.businessCategory || 'other';
-      categoryStats2[category] = (categoryStats2[category] || 0) + 1;
+    campaignsByCategory.forEach(stat => {
+      const category = stat.businessCategory || 'other';
+      categoryStats2[category] = stat._count.userId;
     });
 
     const response = {
@@ -188,120 +191,108 @@ export async function GET(request: NextRequest) {
       categoryStats: categoryStats2
     };
 
-    // 캐시 저장 기능 비활성화 (개발 환경)
-
-    return NextResponse.json(response);
+    return createAuthResponse(response);
   } catch (error) {
     console.error('캠페인 목록 조회 오류:', error);
-    
-    // 구체적인 오류 메시지 제공
-    let errorMessage = '캠페인 목록을 불러오는데 실패했습니다.';
-    if (error instanceof Error) {
-      errorMessage = `DB 오류: ${error.message}`;
-    }
-    
-    return NextResponse.json(
-      { 
-        error: errorMessage,
-        details: error instanceof Error ? error.message : '알 수 없는 오류'
-      },
-      { status: 500 }
+    return createErrorResponse(
+      '캠페인 목록을 불러오는데 실패했습니다.',
+      500,
+      error instanceof Error ? error.message : undefined
     );
   }
 }
 
+// Campaign creation schema
+const campaignCreateSchema = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().min(1).max(5000),
+  platform: z.enum(['INSTAGRAM', 'YOUTUBE', 'TIKTOK', 'NAVERBLOG']),
+  budget: z.number().positive(),
+  targetFollowers: z.number().int().positive(),
+  startDate: z.string().datetime(),
+  endDate: z.string().datetime(),
+  requirements: z.string().optional(),
+  hashtags: z.array(z.string()).optional(),
+  maxApplicants: z.number().int().positive().default(100),
+  rewardAmount: z.number().positive().default(0),
+  location: z.string().default('전국'),
+});
+
 // POST /api/campaigns - 새 캠페인 생성
 export async function POST(request: NextRequest) {
   try {
-    const user = await authenticate(request);
-    if (!user || user.type !== 'business') {
-      return NextResponse.json(
-        { error: '비즈니스 계정만 캠페인을 생성할 수 있습니다.' },
-        { status: 401 }
-      );
+    // Authenticate user
+    const authResult = await requireAuth(request, ['BUSINESS']);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const user = authResult;
 
     const body = await request.json();
-    const {
-      title,
-      description,
-      category,
-      objectives,
-      platforms,
-      target_gender,
-      target_age_min,
-      target_age_max,
-      target_regions,
-      min_followers,
-      requirements,
-      hashtags,
-      mention_accounts,
-      do_list,
-      dont_list,
-      budget,
-      payment_type,
-      application_deadline,
-      content_deadline,
-      campaign_start_date,
-      campaign_end_date,
-      reference_urls
-    } = body;
-
-    // 유효성 검사
-    if (!title || !description || !category || !budget) {
-      return NextResponse.json(
-        { error: '필수 필드를 모두 입력해주세요.' },
-        { status: 400 }
+    
+    // Map the incoming data to our schema
+    const campaignData = {
+      title: body.title,
+      description: body.description,
+      platform: body.platform || 'INSTAGRAM',
+      budget: body.budget,
+      targetFollowers: body.min_followers || 1000,
+      startDate: body.campaign_start_date || new Date().toISOString(),
+      endDate: body.campaign_end_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      requirements: body.requirements,
+      hashtags: body.hashtags,
+      maxApplicants: body.max_applicants,
+      rewardAmount: body.reward_amount || body.budget * 0.8,
+      location: body.location || '전국'
+    };
+    
+    // Validate the data
+    const validationResult = await validateRequest(campaignData, campaignCreateSchema);
+    
+    if (!validationResult.success) {
+      return createErrorResponse(
+        'Invalid campaign data',
+        400,
+        formatValidationErrors(validationResult.errors)
       );
     }
+    
+    const validatedData = validationResult.data;
 
-    // 트랜잭션으로 캠페인 생성
-    const campaign = await prisma.$transaction(async (prisma) => {
-      return await prisma.campaign.create({
-        data: {
-          business: { connect: { id: user.id } },
-          title,
-          description,
-          category,
-          objectives,
-          startDate: new Date(campaign_start_date),
-          endDate: new Date(campaign_end_date),
-          status: 'DRAFT',
-          budget: budget,
-          target: {
-            create: {
-              minFollowers: min_followers || 0,
-              maxFollowers: 1000000, // 예시 값, 필요시 수정
-              locations: target_regions || [],
-              categories: [category],
-              platforms: platforms || [],
-            }
-          },
-          content: {
-            create: {
-              types: ['post'], // 예시 값, 필요시 수정
-              requirements: requirements || [],
-              guidelines: [],
-              hashtags: hashtags || [],
-              mentions: mention_accounts || [],
-              deliverables: {},
-            }
-          }
-        }
-      });
+    // Create campaign with validated data
+    const campaign = await prisma.campaign.create({
+      data: {
+        businessId: user.id,
+        title: validatedData.title,
+        description: validatedData.description,
+        platform: validatedData.platform,
+        budget: validatedData.budget,
+        targetFollowers: validatedData.targetFollowers,
+        startDate: new Date(validatedData.startDate),
+        endDate: new Date(validatedData.endDate),
+        requirements: validatedData.requirements,
+        hashtags: validatedData.hashtags ? JSON.stringify(validatedData.hashtags) : null,
+        maxApplicants: validatedData.maxApplicants,
+        rewardAmount: validatedData.rewardAmount,
+        location: validatedData.location,
+        status: 'DRAFT',
+        isPaid: false
+      }
     });
 
-    // 캐시 무효화 기능 비활성화 (개발 환경)
-
-    return NextResponse.json({
-      message: '캠페인이 성공적으로 생성되었습니다.',
-      campaign
-    }, { status: 201 });
+    return createAuthResponse(
+      {
+        message: '캠페인이 성공적으로 생성되었습니다.',
+        campaign
+      },
+      201
+    );
   } catch (error) {
     console.error('캠페인 생성 오류:', error);
-    return NextResponse.json(
-      { error: '캠페인 생성에 실패했습니다.' },
-      { status: 500 }
+    return createErrorResponse(
+      '캠페인 생성에 실패했습니다.',
+      500,
+      error instanceof Error ? error.message : undefined
     );
   }
 }

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { User } from '@/lib/auth'
 import { apiGet } from '@/lib/api/client'
+import { parseCategories } from '@/lib/utils/parse-categories'
 import { 
   Clock, CheckCircle, XCircle, AlertCircle, Calendar, DollarSign, 
   Eye, FileText, Upload, MessageSquare, TrendingUp, Star
@@ -223,7 +224,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
             youtube: data.profile.youtube || '',
             tiktok: data.profile.tiktok || '',
             naverBlog: data.profile.naverBlog || '',
-            categories: data.profile.categories ? JSON.parse(data.profile.categories) : []
+            categories: parseCategories(data.profile.categories)
           }))
           setSocialLinks({
             instagram: data.profile.instagram || '',

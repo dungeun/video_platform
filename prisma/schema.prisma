@@ -40,7 +40,7 @@ model User {
   email                String                @unique
   password             String
   name                 String
-  type                 UserType
+  type                 String
   status               String                @default("ACTIVE")
   statusReason         String?
   statusUpdatedAt      DateTime?
@@ -141,7 +141,7 @@ model Campaign {
   hashtags             String?
   imageUrl             String?
   imageId              String?
-  status               CampaignStatus        @default(DRAFT)
+  status               String                @default("DRAFT")
   isPaid               Boolean               @default(false)
   reviewFeedback       String?
   reviewedAt           DateTime?
@@ -171,14 +171,14 @@ model CampaignApplication {
   influencerId    String
   message         String
   proposedPrice   Float?
-  status          ApplicationStatus @default(PENDING)
+  status          String           @default("PENDING")
   reviewedAt      DateTime?
   rejectionReason String?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
-  contents        Content[]
   campaign        Campaign         @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   influencer      User             @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  contents        Content[]
   settlementItems SettlementItem[]
 
   @@unique([campaignId, influencerId])
@@ -222,7 +222,7 @@ model Payment {
   userId         String
   amount         Float
   type           String
-  status         PaymentStatus @default(PENDING)
+  status         String    @default("PENDING")
   paymentMethod  String
   paymentKey     String?
   approvedAt     DateTime?

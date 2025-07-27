@@ -1,163 +1,290 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from '@/lib/auth-server'
 import { prisma } from '@/lib/db/prisma'
-import { verifyAdmin } from '@/lib/auth/verify-admin'
+import { requireAuth, createAuthResponse, createErrorResponse } from '@/lib/auth-middleware'
+import { validateRequest, dateRangeSchema } from '@/lib/validation'
+import { DEFAULT_PLATFORM_FEE_RATE, ERROR_MESSAGES } from '@/lib/constants'
+import { z } from 'zod'
 
-export const dynamic = 'force-dynamic'
+// Revenue query schema
+const revenueQuerySchema = z.object({
+  period: z.enum(['daily', 'weekly', 'monthly', 'yearly']).default('monthly'),
+  startDate: z.string().optional(),
+  endDate: z.string().optional()
+});
 
-export async function GET(request: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
-    // 관리자 권한 확인
-    const adminUser = await verifyAdmin(request)
-    if (!adminUser) {
-      return NextResponse.json({ error: '권한이 없습니다.' }, { status: 401 })
+    // Authenticate admin user
+    const authResult = await requireAuth(req, ['ADMIN']);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
 
-    // 쿼리 파라미터 파싱
-    const searchParams = request.nextUrl.searchParams
-    const period = searchParams.get('period') || 'monthly'
-    const startDateStr = searchParams.get('startDate')
-    const endDateStr = searchParams.get('endDate')
-
-    // 날짜 범위 설정
-    const endDate = endDateStr ? new Date(endDateStr) : new Date()
-    const startDate = startDateStr ? new Date(startDateStr) : new Date(endDate.getFullYear(), endDate.getMonth(), 1)
-
-    // 캠페인 결제 데이터 조회
-    const payments = await prisma.payment.findMany({
-      where: {
-        createdAt: {
-          gte: startDate,
-          lte: endDate
-        },
-        status: 'completed'
+    const searchParams = req.nextUrl.searchParams;
+    
+    // Validate query parameters
+    const queryResult = await validateRequest(
+      {
+        period: searchParams.get('period'),
+        startDate: searchParams.get('startDate'),
+        endDate: searchParams.get('endDate')
       },
-      include: {
-        campaign: {
-          include: {
-            business: {
-              include: {
-                businessProfile: true
-              }
-            }
-          }
+      revenueQuerySchema
+    );
+    
+    if (!queryResult.success) {
+      return createErrorResponse('Invalid query parameters', 400, queryResult.errors);
+    }
+    
+    const { period } = queryResult.data;
+    const startDate = queryResult.data.startDate || new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+    const endDate = queryResult.data.endDate || new Date().toISOString().split('T')[0]
+
+    // 날짜 변환
+    const start = new Date(startDate)
+    const end = new Date(endDate)
+    end.setHours(23, 59, 59, 999)
+
+    // 전체 수익 요약 데이터 조회
+    const revenueData = await prisma.revenue.aggregate({
+      where: {
+        date: {
+          gte: start,
+          lte: end
         }
-      }
-    })
-
-    // 정산 데이터 조회
-    const settlements = await prisma.settlement.findMany({
-      where: {
-        createdAt: {
-          gte: startDate,
-          lte: endDate
-        },
-        status: 'completed'
       },
-      include: {
-        items: true
+      _sum: {
+        totalRevenue: true,
+        platformFee: true,
+        settlementAmount: true,
+        netProfit: true
       }
     })
 
-    // 매출 계산
-    const totalRevenue = payments.reduce((sum, payment) => sum + payment.amount, 0)
-    
-    // 정산금 계산 (인플루언서에게 지급한 금액)
-    const totalSettlements = settlements.reduce((sum, settlement) => 
-      sum + settlement.items.reduce((itemSum, item) => itemSum + item.amount, 0), 0
-    )
-    
-    // 플랫폼 수수료 (20%)
-    const platformFee = totalRevenue * 0.2
-    
-    // 총 지출 (정산금)
-    const totalExpenses = totalSettlements
-    
-    // 순이익 (플랫폼 수수료)
-    const netProfit = platformFee
+    // 지출 데이터 조회
+    const expenseData = await prisma.expense.aggregate({
+      where: {
+        date: {
+          gte: start,
+          lte: end
+        }
+      },
+      _sum: {
+        amount: true
+      }
+    })
 
-    // 월별 데이터 집계
-    const monthlyData = new Map<string, {
+    // 이전 기간 데이터 (성장률 계산용)
+    const daysDiff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+    const prevStart = new Date(start)
+    prevStart.setDate(prevStart.getDate() - daysDiff)
+    const prevEnd = new Date(start)
+    prevEnd.setDate(prevEnd.getDate() - 1)
+
+    const prevRevenueData = await prisma.revenue.aggregate({
+      where: {
+        date: {
+          gte: prevStart,
+          lte: prevEnd
+        }
+      },
+      _sum: {
+        totalRevenue: true
+      }
+    })
+
+    // 성장률 계산
+    const currentRevenue = revenueData._sum.totalRevenue || 0
+    const previousRevenue = prevRevenueData._sum.totalRevenue || 0
+    const monthlyGrowth = previousRevenue > 0 
+      ? ((currentRevenue - previousRevenue) / previousRevenue) * 100 
+      : 0
+
+    // 기간별 수익 데이터 조회
+    let dateFormat: string
+    let dateTrunc: string
+    switch (period) {
+      case 'daily':
+        dateFormat = 'YYYY-MM-DD'
+        dateTrunc = 'day'
+        break
+      case 'weekly':
+        dateFormat = 'YYYY-WW'
+        dateTrunc = 'week'
+        break
+      case 'yearly':
+        dateFormat = 'YYYY'
+        dateTrunc = 'year'
+        break
+      default:
+        dateFormat = 'YYYY-MM'
+        dateTrunc = 'month'
+    }
+
+    const periodRevenue = await prisma.$queryRaw<Array<{
+      period: string
       revenue: number
       expenses: number
       netProfit: number
-    }>()
+    }>>`
+      SELECT 
+        TO_CHAR(r.date, ${dateFormat}) as period,
+        COALESCE(SUM(r."totalRevenue"), 0)::float as revenue,
+        COALESCE(SUM(e.amount), 0)::float as expenses,
+        COALESCE(SUM(r."netProfit"), 0)::float as netProfit
+      FROM revenues r
+      LEFT JOIN expenses e ON DATE_TRUNC(${dateTrunc}, r.date) = DATE_TRUNC(${dateTrunc}, e.date)
+      WHERE r.date >= ${start} AND r.date <= ${end}
+      GROUP BY TO_CHAR(r.date, ${dateFormat})
+      ORDER BY period
+    `
 
-    // 결제 데이터를 월별로 집계
-    payments.forEach(payment => {
-      const monthKey = payment.createdAt.toISOString().substring(0, 7)
-      const existing = monthlyData.get(monthKey) || { revenue: 0, expenses: 0, netProfit: 0 }
-      existing.revenue += payment.amount
-      monthlyData.set(monthKey, existing)
-    })
+    // 카테고리별 수익 데이터 조회
+    const categoryRevenue = await prisma.$queryRaw<Array<{
+      category: string
+      revenue: number
+    }>>`
+      SELECT 
+        COALESCE(rd.category, '기타') as category,
+        SUM(rd.amount)::float as revenue
+      FROM revenue_details rd
+      JOIN revenues r ON rd."revenueId" = r.id
+      WHERE r.date >= ${start} AND r.date <= ${end}
+      GROUP BY rd.category
+      ORDER BY revenue DESC
+      LIMIT 10
+    `
 
-    // 정산 데이터를 월별로 집계
-    settlements.forEach(settlement => {
-      const monthKey = settlement.createdAt.toISOString().substring(0, 7)
-      const existing = monthlyData.get(monthKey) || { revenue: 0, expenses: 0, netProfit: 0 }
-      const settlementAmount = settlement.items.reduce((sum, item) => sum + item.amount, 0)
-      existing.expenses += settlementAmount
-      monthlyData.set(monthKey, existing)
-    })
+    // 전체 수익 대비 카테고리별 비율 계산
+    const totalCategoryRevenue = categoryRevenue.reduce((sum, cat) => sum + cat.revenue, 0)
+    const categoryRevenueWithPercentage = categoryRevenue.map(cat => ({
+      ...cat,
+      percentage: totalCategoryRevenue > 0 ? Math.round((cat.revenue / totalCategoryRevenue) * 100) : 0
+    }))
 
-    // 순이익 계산
-    monthlyData.forEach((data, key) => {
-      data.netProfit = data.revenue * 0.2 // 플랫폼 수수료가 순이익
-    })
-
-    // 월별 데이터 배열로 변환
-    const monthlyRevenue = Array.from(monthlyData.entries())
-      .map(([month, data]) => ({
-        month,
-        ...data
-      }))
-      .sort((a, b) => a.month.localeCompare(b.month))
-
-    // 카테고리별 매출 집계
-    const categoryData = new Map<string, number>()
-    
-    payments.forEach(payment => {
-      const category = payment.campaign?.business?.businessProfile?.businessCategory || '기타'
-      const existing = categoryData.get(category) || 0
-      categoryData.set(category, existing + payment.amount)
-    })
-
-    // 카테고리별 매출 배열로 변환
-    const categoryRevenue = Array.from(categoryData.entries())
-      .map(([category, revenue]) => ({
-        category,
-        revenue,
-        percentage: Math.round((revenue / totalRevenue) * 100)
-      }))
-      .sort((a, b) => b.revenue - a.revenue)
-
-    // 전월 대비 성장률 계산
-    let monthlyGrowth = 0
-    if (monthlyRevenue.length >= 2) {
-      const currentMonth = monthlyRevenue[monthlyRevenue.length - 1]
-      const previousMonth = monthlyRevenue[monthlyRevenue.length - 2]
-      if (previousMonth.revenue > 0) {
-        monthlyGrowth = ((currentMonth.revenue - previousMonth.revenue) / previousMonth.revenue) * 100
-      }
+    // 응답 데이터 구성
+    const summary = {
+      totalRevenue: revenueData._sum.totalRevenue || 0,
+      totalExpenses: expenseData._sum.amount || 0,
+      netProfit: (revenueData._sum.netProfit || 0),
+      platformFee: revenueData._sum.platformFee || 0,
+      settlementAmount: revenueData._sum.settlementAmount || 0,
+      monthlyGrowth: Math.round(monthlyGrowth * 10) / 10
     }
 
+    // 기간별 데이터 포맷팅
+    const formattedPeriodRevenue = periodRevenue.map(item => ({
+      month: item.period,
+      revenue: item.revenue,
+      expenses: item.expenses,
+      netProfit: item.netProfit
+    }))
+
     return NextResponse.json({
-      summary: {
-        totalRevenue,
-        totalExpenses,
-        netProfit,
-        platformFee,
-        settlementAmount: totalSettlements,
-        monthlyGrowth: Math.round(monthlyGrowth * 10) / 10
-      },
-      monthlyRevenue,
-      categoryRevenue
+      summary,
+      monthlyRevenue: formattedPeriodRevenue,
+      categoryRevenue: categoryRevenueWithPercentage
     })
 
   } catch (error) {
-    console.error('매출 데이터 조회 오류:', error)
-    return NextResponse.json(
-      { error: '매출 데이터를 불러오는데 실패했습니다.' },
-      { status: 500 }
-    )
+    console.error('Revenue API Error:', error);
+    return createErrorResponse(
+      'Failed to fetch revenue data',
+      500,
+      error instanceof Error ? error.message : undefined
+    );
+  }
+}
+
+// Revenue data schema
+const revenueDataSchema = z.object({
+  campaignId: z.string(),
+  amount: z.number().positive(),
+  category: z.string().optional(),
+  platform: z.string().optional()
+});
+
+// 수익 데이터 생성/업데이트 (결제 완료 시 호출)
+export async function POST(req: NextRequest) {
+  try {
+    // Authenticate user
+    const authResult = await requireAuth(req);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
+    const body = await req.json();
+    
+    // Validate request data
+    const validationResult = await validateRequest(body, revenueDataSchema);
+    
+    if (!validationResult.success) {
+      return createErrorResponse('Invalid revenue data', 400, validationResult.errors);
+    }
+    
+    const { campaignId, amount, category, platform } = validationResult.data
+
+    // 오늘 날짜의 수익 레코드 찾기 또는 생성
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    const platformFeeRate = DEFAULT_PLATFORM_FEE_RATE;
+    const platformFee = amount * platformFeeRate
+    const settlementAmount = amount * (1 - platformFeeRate)
+
+    // Revenue 레코드 업데이트 또는 생성
+    const revenue = await prisma.revenue.upsert({
+      where: {
+        date: today
+      },
+      update: {
+        totalRevenue: {
+          increment: amount
+        },
+        platformFee: {
+          increment: platformFee
+        },
+        settlementAmount: {
+          increment: settlementAmount
+        },
+        netProfit: {
+          increment: platformFee // 순이익은 플랫폼 수수료
+        },
+        transactionCount: {
+          increment: 1
+        }
+      },
+      create: {
+        date: today,
+        totalRevenue: amount,
+        platformFee: platformFee,
+        settlementAmount: settlementAmount,
+        netProfit: platformFee,
+        transactionCount: 1
+      }
+    })
+
+    // Revenue Detail 생성
+    await prisma.revenueDetail.create({
+      data: {
+        revenueId: revenue.id,
+        campaignId,
+        amount,
+        platformFee,
+        category,
+        platform
+      }
+    })
+
+    return createAuthResponse({ success: true, revenue }, 201);
+
+  } catch (error) {
+    console.error('Revenue POST Error:', error);
+    return createErrorResponse(
+      'Failed to create revenue record',
+      500,
+      error instanceof Error ? error.message : undefined
+    );
   }
 }
