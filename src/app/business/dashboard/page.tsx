@@ -126,7 +126,7 @@ function BusinessDashboardContent() {
         <div className="container mx-auto px-6 py-12">
           <div className="max-w-4xl">
             <h1 className="text-3xl md:text-4xl font-bold mb-4">
-              안녕하세요, {user.name}님! 👋
+              안녕하세요, {user?.name || user?.email || '비즈니스'}님! 👋
             </h1>
             <p className="text-lg text-white/80 mb-6">
               오늘도 성공적인 캠페인을 만들어보세요.
