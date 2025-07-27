@@ -52,21 +52,37 @@ export async function GET(request: NextRequest) {
     // 통계 계산
     const applications = influencer.applications || [];
     
-    // 승인된 콘텐츠가 있는 캠페인들 (수익 발생)
-    const completedCampaigns = applications.filter(app => 
-      app.status === 'APPROVED' && 
-      app.contents && 
-      app.contents.some((content: any) => content.status === 'APPROVED')
-    );
+    // 승인된 캠페인들 중 완료된 것들 (캠페인이 COMPLETED 상태거나 현재 날짜가 endDate를 지났으면 완료로 간주)
+    const completedCampaigns = applications.filter(app => {
+      if (app.status !== 'APPROVED') return false;
+      
+      const campaign = app.campaign;
+      if (!campaign) return false;
+      
+      // 캠페인이 COMPLETED 상태이거나
+      if (campaign.status === 'COMPLETED') return true;
+      
+      // 캠페인 종료일이 지났거나
+      if (new Date(campaign.endDate) < new Date()) return true;
+      
+      // 콘텐츠가 승인되었으면
+      if (app.contents && app.contents.some((content: any) => content.status === 'APPROVED')) return true;
+      
+      return false;
+    });
     
     // 진행 중인 캠페인들
-    const activeCampaigns = applications.filter(app => 
-      app.status === 'APPROVED' && 
-      (!app.contents || app.contents.length === 0 || 
-       app.contents.some((content: any) => content.status === 'PENDING_REVIEW'))
-    );
+    const activeCampaigns = applications.filter(app => {
+      if (app.status !== 'APPROVED') return false;
+      
+      const campaign = app.campaign;
+      if (!campaign) return false;
+      
+      // 캠페인이 아직 진행중이고 종료일이 지나지 않았으면
+      return campaign.status === 'ACTIVE' && new Date(campaign.endDate) >= new Date();
+    });
 
-    // 총 수익 계산 (승인된 콘텐츠의 캠페인 예산의 80%)
+    // 총 수익 계산 (완료된 캠페인 예산의 80%)
     const totalEarnings = completedCampaigns.reduce((sum, app) => {
       return sum + (app.campaign?.budget || 0) * 0.8; // 인플루언서는 80% 수령
     }, 0);

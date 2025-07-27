@@ -2,23 +2,26 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { AuthService } from '@/lib/auth'
 import { apiGet } from '@/lib/api/client'
+import CampaignManagementTab from '@/components/business/CampaignManagementTab'
+import ApplicantManagementTab from '@/components/business/ApplicantManagementTab'
+import { BarChart3, Users, TrendingUp, DollarSign } from 'lucide-react'
 
 export default function BusinessDashboard() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [user, setUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [statsLoading, setStatsLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'campaigns')
   const [stats, setStats] = useState({
     totalCampaigns: 0,
     activeCampaigns: 0,
     totalApplications: 0,
     totalSpent: 0
   })
-  const [campaigns, setCampaigns] = useState<any[]>([])
-  const [recentApplications, setRecentApplications] = useState<any[]>([])
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -72,6 +75,11 @@ export default function BusinessDashboard() {
     checkAuth()
   }, [])
 
+  useEffect(() => {
+    const tab = searchParams.get('tab') || 'campaigns'
+    setActiveTab(tab)
+  }, [searchParams])
+
   const fetchStats = async () => {
     try {
       setStatsLoading(true)
@@ -80,8 +88,6 @@ export default function BusinessDashboard() {
       if (response.ok) {
         const data = await response.json()
         setStats(data.stats)
-        setCampaigns(data.campaigns || [])
-        setRecentApplications(data.recentApplications || [])
       } else {
         console.error('Stats API Error:', response.status, response.statusText)
       }
@@ -105,6 +111,11 @@ export default function BusinessDashboard() {
 
   if (!user) return null
 
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab)
+    router.push(`/business/dashboard?tab=${tab}`)
+  }
+
   return (
     <>
       {/* 메인 컨텐츠 */}
@@ -113,19 +124,12 @@ export default function BusinessDashboard() {
       {/* 서브 히어로 섹션 */}
       <section className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white">
         <div className="container mx-auto px-6 py-12">
-          <div className="mb-6">
-            <Link href="/">
-              <h1 className="text-5xl font-black text-white inline-block hover:opacity-80 transition-opacity cursor-pointer">
-                LinkPick
-              </h1>
-            </Link>
-          </div>
           <div className="max-w-4xl">
             <h1 className="text-3xl md:text-4xl font-bold mb-4">
               안녕하세요, {user.name}님! 👋
             </h1>
             <p className="text-lg text-white/80 mb-6">
-              오늘도 성공적인 캠페인을 만들어보세요. LinkPick가 함께합니다.
+              오늘도 성공적인 캠페인을 만들어보세요.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link 
@@ -144,15 +148,13 @@ export default function BusinessDashboard() {
 
       {/* 메인 컨텐츠 */}
       <main className="container mx-auto px-6 py-8 flex-1">
-        {/* 통계 카드 - 애니메이션 효과 추가 */}
+        {/* 통계 카드 */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-lg transition-shadow transform hover:-translate-y-1 duration-200">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-medium text-gray-600">전체 캠페인</h3>
               <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+                <BarChart3 className="w-6 h-6 text-indigo-600" />
               </div>
             </div>
             <p className="text-3xl font-bold text-gray-900">{stats.totalCampaigns}</p>
@@ -171,9 +173,7 @@ export default function BusinessDashboard() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-medium text-gray-600">진행중 캠페인</h3>
               <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
+                <TrendingUp className="w-6 h-6 text-green-600" />
               </div>
             </div>
             <p className="text-3xl font-bold text-gray-900">{stats.activeCampaigns}</p>
@@ -192,9 +192,7 @@ export default function BusinessDashboard() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-medium text-gray-600">총 지원자</h3>
               <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
+                <Users className="w-6 h-6 text-purple-600" />
               </div>
             </div>
             <p className="text-3xl font-bold text-gray-900">{stats.totalApplications}</p>
@@ -213,9 +211,7 @@ export default function BusinessDashboard() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-medium text-gray-600">총 지출</h3>
               <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <DollarSign className="w-6 h-6 text-blue-600" />
               </div>
             </div>
             <p className="text-3xl font-bold text-gray-900">₩{stats.totalSpent.toLocaleString()}</p>
@@ -228,103 +224,36 @@ export default function BusinessDashboard() {
           </div>
         </div>
 
-        {/* 캠페인 리스트와 최근 지원자 */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* 캠페인 리스트 */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl shadow-sm">
-              <div className="p-6 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-gray-900">내 캠페인</h2>
-                  <Link href="/business/campaigns/new" className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors">
-                    새 캠페인 등록
-                  </Link>
-                </div>
-              </div>
-              <div className="divide-y divide-gray-200">
-                {campaigns.map((campaign) => (
-                  <div key={campaign.id} className="p-6 hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-base font-medium text-gray-900">{campaign.title}</h3>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        campaign.status === 'active' 
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-gray-100 text-gray-700'
-                      }`}>
-                        {campaign.status === 'active' ? '진행중' : '완료'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm text-gray-600">
-                      <div className="flex items-center space-x-4">
-                        <span>지원자: {campaign.applications}/{campaign.maxApplications}명</span>
-                        <span>예산: {campaign.budget}</span>
-                        <span>카테고리: {(campaign as any).category}</span>
-                      </div>
-                      <span className={campaign.deadline === '완료' ? 'text-gray-500' : 'text-red-600 font-medium'}>
-                        {campaign.deadline}
-                      </span>
-                    </div>
-                    <div className="mt-4 flex items-center space-x-3">
-                      <Link href={`/business/campaigns/${campaign.id}`} className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
-                        상세보기
-                      </Link>
-                      <Link href={`/business/campaigns/${campaign.id}/applicants`} className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
-                        지원자 관리
-                      </Link>
-                      {campaign.status === 'active' && (
-                        <Link href={`/business/campaigns/${campaign.id}/edit`} className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
-                          수정
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="p-6 border-t border-gray-200">
-                <Link href="/business/campaigns" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
-                  모든 캠페인 보기 →
-                </Link>
-              </div>
-            </div>
-          </div>
+        {/* 탭 네비게이션 */}
+        <div className="border-b border-gray-200 mb-6">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => handleTabChange('campaigns')}
+              className={`${
+                activeTab === 'campaigns'
+                  ? 'border-indigo-500 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+            >
+              내 캠페인
+            </button>
+            <button
+              onClick={() => handleTabChange('applicants')}
+              className={`${
+                activeTab === 'applicants'
+                  ? 'border-indigo-500 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+            >
+              지원자 관리
+            </button>
+          </nav>
+        </div>
 
-          {/* 최근 지원자 */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-sm">
-              <div className="p-6 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">최근 지원자</h2>
-              </div>
-              <div className="divide-y divide-gray-200">
-                {recentApplications.map((application) => (
-                  <div key={application.id} className="p-4 hover:bg-gray-50 transition-colors">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-900">{application.influencerName}</h4>
-                        <p className="text-xs text-gray-500 mt-1">{application.campaignTitle}</p>
-                      </div>
-                      <span className="text-xs text-gray-500">{application.appliedAt}</span>
-                    </div>
-                    <div className="flex items-center space-x-3 text-xs text-gray-600">
-                      <span>팔로워: {application.followers}</span>
-                      <span>참여율: {application.engagementRate}</span>
-                    </div>
-                    <div className="mt-3 flex items-center space-x-2">
-                      <button className="text-xs text-green-600 hover:text-green-700 font-medium">승인</button>
-                      <span className="text-gray-300">|</span>
-                      <button className="text-xs text-red-600 hover:text-red-700 font-medium">거절</button>
-                      <span className="text-gray-300">|</span>
-                      <button className="text-xs text-indigo-600 hover:text-indigo-700 font-medium">프로필</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="p-6 border-t border-gray-200">
-                <Link href="/business/applications" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
-                  모든 지원자 보기 →
-                </Link>
-              </div>
-            </div>
-          </div>
+        {/* 탭 컨텐츠 */}
+        <div>
+          {activeTab === 'campaigns' && <CampaignManagementTab />}
+          {activeTab === 'applicants' && <ApplicantManagementTab />}
         </div>
       </main>
 

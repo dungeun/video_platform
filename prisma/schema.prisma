@@ -93,6 +93,9 @@ model Profile {
   followerCount         Int       @default(0)
   naverBlog             String?
   address               String?
+  bankName              String?
+  bankAccountNumber     String?
+  bankAccountHolder     String?
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("profiles")

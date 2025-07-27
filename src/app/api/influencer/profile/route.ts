@@ -47,7 +47,10 @@ export async function GET(request: NextRequest) {
         naverBlog: profile.profile.naverBlog,
         followerCount: profile.profile.followerCount,
         categories: profile.profile.categories,
-        averageEngagementRate: profile.profile.averageEngagementRate
+        averageEngagementRate: profile.profile.averageEngagementRate,
+        bankName: profile.profile.bankName,
+        bankAccountNumber: profile.profile.bankAccountNumber,
+        bankAccountHolder: profile.profile.bankAccountHolder
       } : null
     });
   } catch (error) {
@@ -79,7 +82,10 @@ export async function PUT(request: NextRequest) {
       youtube,
       tiktok,
       naverBlog,
-      categories
+      categories,
+      bankName,
+      bankAccountNumber,
+      bankAccountHolder
     } = data;
 
     // 사용자 정보 업데이트
@@ -97,7 +103,10 @@ export async function PUT(request: NextRequest) {
               youtube,
               tiktok,
               naverBlog,
-              categories: categories ? JSON.stringify(categories) : undefined
+              categories: categories ? JSON.stringify(categories) : undefined,
+              bankName,
+              bankAccountNumber,
+              bankAccountHolder
             },
             update: {
               bio,
@@ -106,7 +115,10 @@ export async function PUT(request: NextRequest) {
               youtube,
               tiktok,
               naverBlog,
-              categories: categories ? JSON.stringify(categories) : undefined
+              categories: categories ? JSON.stringify(categories) : undefined,
+              bankName,
+              bankAccountNumber,
+              bankAccountHolder
             }
           }
         }

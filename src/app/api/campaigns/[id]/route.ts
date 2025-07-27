@@ -1,22 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import jwt from 'jsonwebtoken';
-import { cookies } from 'next/headers';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+import { verifyJWT } from '@/lib/auth/jwt';
 
 // 인증 미들웨어
 async function authenticate(request: NextRequest) {
-  const cookieStore = cookies();
-  const token = cookieStore.get('auth-token')?.value;
-
+  const authHeader = request.headers.get('Authorization');
+  const token = authHeader?.replace('Bearer ', '') || '';
+  
   if (!token) {
     return null;
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
-    return decoded;
+    const user = await verifyJWT(token);
+    return user;
   } catch (error) {
     return null;
   }
@@ -29,12 +26,7 @@ export async function GET(
 ) {
   try {
     const campaignId = params.id;
-
-    // 조회수 증가
-    await prisma.campaign.update({
-      where: { id: campaignId },
-      data: { viewCount: { increment: 1 } }
-    });
+    const user = await authenticate(request);
 
     // DB에서 캠페인 상세 정보 조회
     const campaign = await prisma.campaign.findUnique({
@@ -46,8 +38,10 @@ export async function GET(
           select: {
             id: true,
             name: true,
+            email: true,
             businessProfile: {
               select: {
+                logo: true,
                 companyName: true,
                 businessCategory: true,
                 businessAddress: true
@@ -63,6 +57,7 @@ export async function GET(
               select: {
                 id: true,
                 name: true,
+                email: true,
                 profile: {
                   select: {
                     profileImage: true,
@@ -73,9 +68,18 @@ export async function GET(
             }
           }
         },
+        campaignLikes: {
+          where: user ? {
+            userId: user.id
+          } : undefined,
+          select: {
+            id: true
+          }
+        },
         _count: {
           select: {
-            applications: true
+            applications: true,
+            campaignLikes: true
           }
         }
       }
@@ -88,86 +92,81 @@ export async function GET(
       );
     }
 
-    // 캠페인 날짜 계산
-    const now = new Date();
-    const endDate = new Date(campaign.endDate);
-    const daysLeft = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    const duration = Math.ceil((endDate.getTime() - new Date(campaign.startDate).getTime()) / (1000 * 60 * 60 * 24));
+    // 사용자가 이미 지원했는지 확인
+    let hasApplied = false;
+    let applicationStatus = null;
+    
+    if (user && user.role === 'INFLUENCER') {
+      const existingApplication = await prisma.application.findFirst({
+        where: {
+          campaignId: campaignId,
+          influencerId: user.id
+        },
+        select: {
+          status: true
+        }
+      });
+      
+      if (existingApplication) {
+        hasApplied = true;
+        applicationStatus = existingApplication.status;
+      }
+    }
 
     // 응답 데이터 포맷팅
     const formattedCampaign = {
-      id: campaign.id,
-      title: campaign.title,
-      brand: campaign.business.businessProfile?.companyName || campaign.business.name,
-      brandId: campaign.business.id,
-      description: campaign.description || '',
-      budget: campaign.budget,
-      budgetRange: `₩${campaign.budget.toLocaleString()} ~ ₩${(campaign.budget * 1.5).toLocaleString()}`,
-      deadline: campaign.endDate,
-      daysLeft: daysLeft > 0 ? daysLeft : 0,
-      category: campaign.business.businessProfile?.businessCategory || 'other',
-      platforms: (() => {
-        try {
-          return campaign.platforms ? JSON.parse(campaign.platforms).map((p: string) => p.toLowerCase()) : [campaign.platform.toLowerCase()];
-        } catch (e) {
-          return [campaign.platform.toLowerCase()];
-        }
-      })(),
-      required_followers: campaign.targetFollowers,
-      location: campaign.location,
-      view_count: campaign.viewCount,
-      applicants: campaign._count.applications,
-      maxApplicants: campaign.maxApplicants,
-      rewardAmount: campaign.rewardAmount,
-      image_url: campaign.imageUrl || 'https://images.unsplash.com/photo-1600000000?w=800&q=80',
-      tags: campaign.hashtags ? campaign.hashtags.split(' ').filter((tag: string) => tag.startsWith('#')) : [],
-      status: campaign.status.toLowerCase(),
-      requirements: campaign.requirements || '',
-      detailedRequirements: campaign.detailedRequirements ? JSON.parse(campaign.detailedRequirements) : [],
-      deliverables: campaign.deliverables ? JSON.parse(campaign.deliverables) : [],
-      duration: `${duration}일`,
-      campaignPeriod: `${new Date(campaign.startDate).toLocaleDateString('ko-KR')} ~ ${new Date(campaign.endDate).toLocaleDateString('ko-KR')}`,
-      applicationDeadline: new Date(campaign.endDate).toLocaleDateString('ko-KR'),
-      brandInfo: {
-        name: campaign.business.businessProfile?.companyName || campaign.business.name,
-        description: `${campaign.business.businessProfile?.businessCategory} 분야의 선도적인 브랜드입니다.`,
-        values: ['품질 우선', '고객 만족', '혁신 추구', '지속 가능성'],
-        avatar: false
-      },
-      created_at: campaign.createdAt.toISOString(),
-      
-      // 상품 정보 추가
-      productIntro: campaign.productIntro || null,
-      productImages: campaign.detailImages ? JSON.parse(campaign.detailImages) : [],
-      
-      // 최근 지원자 정보 (3명)
-      recentApplicants: campaign.applications.slice(0, 3).map(app => ({
-        id: app.influencer.id,
-        name: app.influencer.name,
-        avatar: app.influencer.profile?.profileImage,
-        followers: app.influencer.profile?.instagramFollowers
-      }))
+      campaign: {
+        id: campaign.id,
+        title: campaign.title,
+        description: campaign.description,
+        business: {
+          id: campaign.business.id,
+          name: campaign.business.businessProfile?.companyName || campaign.business.name,
+          logo: campaign.business.businessProfile?.logo || null,
+          category: campaign.business.businessProfile?.businessCategory || 'other'
+        },
+        platforms: campaign.platforms || ['INSTAGRAM'],
+        budget: campaign.budget,
+        targetFollowers: campaign.targetFollowers,
+        maxApplicants: campaign.maxApplicants,
+        startDate: campaign.startDate,
+        endDate: campaign.endDate,
+        requirements: campaign.requirements,
+        hashtags: campaign.hashtags || [],
+        imageUrl: campaign.imageUrl,
+        detailImages: campaign.detailImages || [],
+        status: campaign.status,
+        createdAt: campaign.createdAt,
+        _count: {
+          applications: campaign._count.applications,
+          likes: campaign._count.campaignLikes
+        },
+        applications: campaign.applications.map(app => ({
+          id: app.id,
+          status: app.status,
+          influencer: {
+            id: app.influencer.id,
+            name: app.influencer.name,
+            profileImage: app.influencer.profile?.profileImage || null
+          }
+        })),
+        isLiked: campaign.campaignLikes.length > 0,
+        hasApplied,
+        applicationStatus
+      }
     };
 
     return NextResponse.json(formattedCampaign);
   } catch (error) {
     console.error('캠페인 조회 오류:', error);
     
-    // 구체적인 오류 메시지 제공
-    let errorMessage = '캠페인을 불러오는데 실패했습니다.';
-    if (error instanceof Error) {
-      errorMessage = `DB 오류: ${error.message}`;
-    }
-    
     return NextResponse.json(
       { 
-        error: errorMessage,
+        error: '캠페인을 불러오는데 실패했습니다.',
         details: error instanceof Error ? error.message : '알 수 없는 오류'
       },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
 

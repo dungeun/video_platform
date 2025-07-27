@@ -15,7 +15,7 @@ function MyPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [user, setUser] = useState<User | null>(null)
-  const [activeTab, setActiveTab] = useState('profile')
+  const [activeTab, setActiveTab] = useState('campaigns')
 
   useEffect(() => {
     const currentUser = AuthService.getCurrentUser()

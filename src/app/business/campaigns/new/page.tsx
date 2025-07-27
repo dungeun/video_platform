@@ -138,7 +138,7 @@ export default function NewCampaignPage() {
     try {
       const response = await fetch('/api/business/campaign-templates', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          'Authorization': `Bearer ${localStorage.getItem('accessToken') || localStorage.getItem('auth-token') || ''}`
         }
       })
       
@@ -179,7 +179,7 @@ export default function NewCampaignPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          'Authorization': `Bearer ${localStorage.getItem('accessToken') || localStorage.getItem('auth-token') || ''}`
         },
         body: JSON.stringify({
           name: templateName,
@@ -221,7 +221,7 @@ export default function NewCampaignPage() {
     try {
       const response = await fetch(`/api/business/campaign-templates/${templateId}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          'Authorization': `Bearer ${localStorage.getItem('accessToken') || localStorage.getItem('auth-token') || ''}`
         }
       })
 
@@ -261,7 +261,7 @@ export default function NewCampaignPage() {
         const response = await fetch(`/api/business/campaign-templates?id=${templateId}`, {
           method: 'DELETE',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            'Authorization': `Bearer ${localStorage.getItem('accessToken') || localStorage.getItem('auth-token') || ''}`
           }
         })
 
@@ -497,7 +497,7 @@ export default function NewCampaignPage() {
         credentials: 'include', // 쿠키 포함
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          'Authorization': `Bearer ${localStorage.getItem('accessToken') || localStorage.getItem('auth-token') || ''}`
         },
         body: JSON.stringify({
           ...formData,
@@ -526,11 +526,15 @@ export default function NewCampaignPage() {
       
       // 2. 결제 요청 생성
       
+      // 토큰 확인
+      const accessToken = localStorage.getItem('accessToken') || localStorage.getItem('auth-token') || ''
+      console.log('Current token:', accessToken ? 'Token exists' : 'No token')
+      
       const paymentResponse = await fetch('/api/payments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          'Authorization': `Bearer ${accessToken}`
         },
         body: JSON.stringify({
           campaignId: campaignId,
@@ -545,6 +549,7 @@ export default function NewCampaignPage() {
       }
       
       const paymentData = await paymentResponse.json()
+      console.log('Payment data:', paymentData)
       
       // 3. 현금 결제인 경우 바로 완료 처리
       if (selectedPaymentMethod === 'CASH') {
@@ -553,7 +558,7 @@ export default function NewCampaignPage() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            'Authorization': `Bearer ${localStorage.getItem('accessToken') || localStorage.getItem('auth-token') || ''}`
           },
           body: JSON.stringify({
             orderId: paymentData.payment.orderId,
@@ -578,18 +583,34 @@ export default function NewCampaignPage() {
       }
       
       // 4. 토스페이먼츠 결제창 호출 (카드/계좌이체)
-      const { loadTossPayments } = await import('@tosspayments/payment-sdk')
-      const tossPayments = await loadTossPayments(paymentData.clientKey)
+      if (!paymentData.clientKey) {
+        console.error('Payment data:', paymentData)
+        throw new Error('토스페이먼츠 클라이언트 키가 없습니다.')
+      }
       
-      // 결제 요청
-      await tossPayments.requestPayment(selectedPaymentMethod === 'CARD' ? '카드' : '계좌이체', {
-        amount: paymentData.paymentRequest.amount,
-        orderId: paymentData.paymentRequest.orderId,
-        orderName: paymentData.paymentRequest.orderName,
-        customerName: paymentData.paymentRequest.customerName,
-        successUrl: paymentData.paymentRequest.successUrl,
-        failUrl: paymentData.paymentRequest.failUrl
-      })
+      try {
+        const { loadTossPayments } = await import('@tosspayments/payment-sdk')
+        const tossPayments = await loadTossPayments(paymentData.clientKey)
+        
+        if (!tossPayments || !tossPayments.requestPayment) {
+          throw new Error('토스페이먼츠 SDK 로드 실패')
+        }
+        
+        // 결제 요청
+        const paymentResult = await tossPayments.requestPayment(selectedPaymentMethod === 'CARD' ? '카드' : '계좌이체', {
+          amount: paymentData.paymentRequest.amount,
+          orderId: paymentData.paymentRequest.orderId,
+          orderName: paymentData.paymentRequest.orderName,
+          customerName: paymentData.paymentRequest.customerName || '고객',
+          successUrl: paymentData.paymentRequest.successUrl,
+          failUrl: paymentData.paymentRequest.failUrl
+        })
+        
+        console.log('Payment result:', paymentResult)
+      } catch (tossError) {
+        console.error('TossPayments error:', tossError)
+        throw new Error(`토스페이먼츠 결제 오류: ${tossError instanceof Error ? tossError.message : '알 수 없는 오류'}`)
+      }
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '오류가 발생했습니다.'
@@ -606,7 +627,7 @@ export default function NewCampaignPage() {
           await fetch(`/api/business/campaigns/${createdCampaignId}`, {
             method: 'DELETE',
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+              'Authorization': `Bearer ${localStorage.getItem('accessToken') || localStorage.getItem('auth-token') || ''}`
             }
           })
         } catch (deleteError) {

@@ -22,6 +22,7 @@ interface Campaign {
   selectedCount: number
   createdAt: string
   imageUrl?: string
+  isPaid: boolean
 }
 
 export default function AdminCampaignsPage() {
@@ -542,6 +543,9 @@ export default function AdminCampaignsPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
                   지원자
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">
+                  결제
+                </th>
                 {activeTab !== 'trash' && (
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
                     상태
@@ -605,6 +609,17 @@ export default function AdminCampaignsPage() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">{campaign.applicantCount}명</div>
                     <div className="text-sm text-gray-500">선택: {campaign.selectedCount}명</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {campaign.isPaid ? (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        결제완료
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        미결제
+                      </span>
+                    )}
                   </td>
                   {activeTab !== 'trash' && (
                     <td className="px-6 py-4 whitespace-nowrap">

@@ -131,7 +131,8 @@ export async function GET(request: NextRequest) {
       createdAt: campaign.createdAt.toISOString().split('T')[0],
       imageUrl: campaign.imageUrl,
       hashtags: campaign.hashtags,
-      requirements: campaign.requirements
+      requirements: campaign.requirements,
+      isPaid: campaign.isPaid
     }));
 
     return NextResponse.json({

@@ -97,6 +97,28 @@ export default function CampaignDetailPanel({
     }
   }
 
+  const handlePaymentStatusToggle = async () => {
+    if (!campaign) return
+    
+    try {
+      const response = await adminApi.put(`/api/admin/campaigns/${campaign.id}/payment-status`, {
+        isPaid: !campaign.isPaid
+      })
+      
+      if (response.ok) {
+        setCampaign({ ...campaign, isPaid: !campaign.isPaid })
+        if (onStatusChange) {
+          onStatusChange()
+        }
+      } else {
+        alert('결제 상태 변경에 실패했습니다.')
+      }
+    } catch (error) {
+      console.error('결제 상태 변경 실패:', error)
+      alert('결제 상태 변경 중 오류가 발생했습니다.')
+    }
+  }
+
   const handleStatusChange = async (newStatus: string) => {
     if (!campaignId) return
 
@@ -230,9 +252,17 @@ export default function CampaignDetailPanel({
                 </div>
                 <div>
                   <label className="text-gray-700 font-medium">결제 상태</label>
-                  <p className={`${campaign.isPaid ? 'text-green-600' : 'text-red-600'}`}>
-                    {campaign.isPaid ? '결제완료' : '미결제'}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className={`${campaign.isPaid ? 'text-green-600' : 'text-red-600'}`}>
+                      {campaign.isPaid ? '결제완료' : '미결제'}
+                    </p>
+                    <button
+                      onClick={handlePaymentStatusToggle}
+                      className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-gray-700"
+                    >
+                      상태 변경
+                    </button>
+                  </div>
                 </div>
               </div>
 

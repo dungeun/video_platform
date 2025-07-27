@@ -18,14 +18,19 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 출금 가능한 금액 계산 (완료된 캠페인 - 이미 출금한 금액)
+    // 출금 가능한 금액 계산 (승인된 캠페인 중 완료된 것들)
     const completedApplications = await prisma.campaignApplication.findMany({
       where: {
         influencerId: user.id,
-        status: 'COMPLETED'
+        status: 'APPROVED',
+        OR: [
+          { campaign: { status: 'COMPLETED' } },
+          { campaign: { endDate: { lt: new Date() } } }
+        ]
       },
       include: {
         campaign: true,
+        contents: true,
         settlementItems: {
           include: {
             settlement: true
@@ -34,9 +39,9 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    // 총 완료된 캠페인 수익
+    // 총 완료된 캠페인 수익 (인플루언서는 80% 수령)
     const totalEarnings = completedApplications.reduce((sum, app) => {
-      return sum + (app.campaign?.budget || 0);
+      return sum + (app.campaign?.budget || 0) * 0.8;
     }, 0);
 
     // 이미 출금 완료된 금액
@@ -141,6 +146,16 @@ export async function POST(request: NextRequest) {
     if (!bankName || !accountNumber || !accountHolder) {
       return NextResponse.json({ error: '은행 정보를 모두 입력해주세요.' }, { status: 400 });
     }
+
+    // 프로필에 은행 정보 저장
+    await prisma.profile.update({
+      where: { userId: user.id },
+      data: {
+        bankName,
+        bankAccountNumber: accountNumber,
+        bankAccountHolder: accountHolder
+      }
+    });
 
     // 출금 가능 금액 확인
     const completedApplications = await prisma.campaignApplication.findMany({

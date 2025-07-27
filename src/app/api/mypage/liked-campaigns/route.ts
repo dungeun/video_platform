@@ -5,7 +5,11 @@ import { verifyJWT } from '@/lib/auth/jwt'
 // GET /api/mypage/liked-campaigns - 사용자가 좋아요한 캠페인 목록
 export async function GET(request: NextRequest) {
   try {
+    console.log('Liked campaigns API called')
+    
     const token = request.headers.get('Authorization')?.replace('Bearer ', '')
+    console.log('Token exists:', !!token)
+    
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -13,11 +17,15 @@ export async function GET(request: NextRequest) {
     let user
     try {
       user = await verifyJWT(token)
+      console.log('User verified:', user)
     } catch (error) {
+      console.error('Token verification error:', error)
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
     
     const userId = user.userId || user.id
+    console.log('User ID:', userId)
+    
     if (!user || !userId) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
@@ -53,23 +61,28 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // 활성 캠페인만 필터링하고 형식 맞추기
+    console.log('Found liked campaigns:', likedCampaigns.length)
+    if (likedCampaigns.length > 0) {
+      console.log('First campaign status:', likedCampaigns[0].campaign.status)
+    }
+
+    // 모든 상태의 캠페인 포함 (ACTIVE, APPROVED, PENDING 등)
     const campaigns = likedCampaigns
-      .filter(like => like.campaign.status === 'ACTIVE')
+      .filter(like => like.campaign && ['ACTIVE', 'APPROVED', 'PENDING', 'DRAFT'].includes(like.campaign.status))
       .map(like => ({
         id: like.campaign.id,
         title: like.campaign.title,
         brand_name: like.campaign.business.businessProfile?.companyName || 'Unknown',
-        category: like.campaign.category,
-        platform: like.campaign.platform,
-        budget_min: like.campaign.budgetMin,
-        budget_max: like.campaign.budgetMax,
-        image_url: like.campaign.thumbnailUrl,
-        requirements: like.campaign.requirements,
-        application_deadline: like.campaign.applicationDeadline,
+        category: '', // Campaign model doesn't have category field
+        platform: like.campaign.platform || '',
+        budget: like.campaign.budget,
+        image_url: like.campaign.imageUrl || '',
+        requirements: like.campaign.requirements || '',
+        application_deadline: like.campaign.endDate, // applicationDeadline doesn't exist
         likes: like.campaign._count.campaignLikes,
         applications: like.campaign._count.campaignApplications,
-        likedAt: like.createdAt
+        likedAt: like.createdAt,
+        status: like.campaign.status
       }))
 
     return NextResponse.json({
@@ -78,9 +91,11 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error fetching liked campaigns:', error)
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace')
     return NextResponse.json({ 
       error: 'Internal server error',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
+      stack: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined
     }, { status: 500 })
   }
 }
