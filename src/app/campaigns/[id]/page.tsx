@@ -411,7 +411,7 @@ export default function CampaignDetailPage() {
               )}
 
               {/* 해시태그 */}
-              {campaign.hashtags.length > 0 && (
+              {campaign.hashtags && Array.isArray(campaign.hashtags) && campaign.hashtags.length > 0 && (
                 <div className="pt-6 border-t">
                   <h2 className="text-xl font-semibold text-gray-900 mb-3">해시태그</h2>
                   <div className="flex flex-wrap gap-2">
@@ -425,7 +425,7 @@ export default function CampaignDetailPage() {
               )}
 
               {/* 상세 이미지 */}
-              {campaign.detailImages && campaign.detailImages.length > 0 && (
+              {campaign.detailImages && Array.isArray(campaign.detailImages) && campaign.detailImages.length > 0 && (
                 <div className="pt-6 border-t">
                   <h2 className="text-xl font-semibold text-gray-900 mb-3">상세 이미지</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

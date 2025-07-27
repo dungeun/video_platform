@@ -131,7 +131,24 @@ export async function GET(
         startDate: campaign.startDate,
         endDate: campaign.endDate,
         requirements: campaign.requirements,
-        hashtags: campaign.hashtags || [],
+        hashtags: (() => {
+          if (!campaign.hashtags) return [];
+          if (Array.isArray(campaign.hashtags)) return campaign.hashtags;
+          if (typeof campaign.hashtags === 'string') {
+            try {
+              // JSON 배열 형식인 경우
+              if (campaign.hashtags.startsWith('[')) {
+                return JSON.parse(campaign.hashtags);
+              }
+              // 공백으로 구분된 해시태그인 경우
+              return campaign.hashtags.split(' ').filter(tag => tag.startsWith('#')).map(tag => tag.replace('#', ''));
+            } catch (e) {
+              // 파싱 실패 시 빈 배열 반환
+              return [];
+            }
+          }
+          return [];
+        })(),
         imageUrl: campaign.imageUrl,
         detailImages: campaign.detailImages ? (typeof campaign.detailImages === 'string' ? JSON.parse(campaign.detailImages) : campaign.detailImages) : [],
         status: campaign.status,
