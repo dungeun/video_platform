@@ -54,7 +54,12 @@ export async function GET(
           select: {
             id: true,
             name: true,
-            email: true
+            email: true,
+            businessProfile: {
+              select: {
+                companyName: true
+              }
+            }
           }
         },
         _count: {
@@ -82,10 +87,13 @@ export async function GET(
 
     // 해시태그 파싱
     let hashtags = [];
-    try {
-      hashtags = campaign.hashtags ? JSON.parse(campaign.hashtags) : [];
-    } catch (e) {
-      hashtags = [];
+    if (campaign.hashtags) {
+      try {
+        hashtags = JSON.parse(campaign.hashtags);
+      } catch (e) {
+        // JSON 파싱 실패 시 공백으로 분리
+        hashtags = campaign.hashtags.split(' ').filter(tag => tag);
+      }
     }
     
     // 플랫폼 파싱
@@ -108,19 +116,22 @@ export async function GET(
     const formattedCampaign = {
       id: campaign.id,
       title: campaign.title,
-      description: (campaign as any).description,
+      description: campaign.description,
       platform: campaign.platform,
       platforms: platforms,
       budget: campaign.budget,
-      targetFollowers: (campaign as any).targetFollowers,
+      targetFollowers: campaign.targetFollowers,
       startDate: campaign.startDate,
       endDate: campaign.endDate,
       requirements: campaign.requirements,
       hashtags: hashtags,
       imageUrl: campaign.imageUrl,
       detailImages: detailImages,
-      status: campaign.status.toLowerCase(),
-      applications: campaign._count.applications,
+      status: campaign.status,
+      maxApplicants: campaign.maxApplicants,
+      rewardAmount: campaign.rewardAmount,
+      location: campaign.location,
+      _count: campaign._count,
       createdAt: campaign.createdAt,
       business: campaign.business
     };
