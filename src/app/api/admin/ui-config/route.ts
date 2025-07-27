@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
-import { verifyJWT } from '@/lib/auth/jwt';
+import { getServerSession } from '@/lib/auth-server';
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -8,21 +8,9 @@ export const runtime = 'nodejs'
 export async function GET(request: NextRequest) {
   try {
     // 인증 확인
-    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
-    if (!token) {
+    const session = await getServerSession();
+    if (!session || session.user.type !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    let user;
-    try {
-      user = await verifyJWT(token);
-    } catch (error) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    }
-
-    // 관리자 권한 확인
-    if (!user || user.type !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     // DB에서 UI 설정 조회
@@ -148,21 +136,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // 인증 확인
-    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
-    if (!token) {
+    const session = await getServerSession();
+    if (!session || session.user.type !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    let user;
-    try {
-      user = await verifyJWT(token);
-    } catch (error) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    }
-
-    // 관리자 권한 확인
-    if (!user || user.type !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const { config } = await request.json();

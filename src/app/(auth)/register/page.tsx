@@ -27,15 +27,40 @@ function RegisterForm() {
     phone: '',
     address: '',
     addressDetail: '',
+    companyName: '',
+    businessNumber: '',
     agreeTerms: false,
     agreeMarketing: false
   })
+  const [businessFile, setBusinessFile] = useState<File | null>(null)
   
   const [showPostcode, setShowPostcode] = useState(false)
 
   const handleRoleSelect = (role: 'business' | 'influencer') => {
     setFormData({ ...formData, role })
     setStep(2)
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+      
+      // 파일 크기 검증 (5MB 이하)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('파일 크기는 5MB 이하여야 합니다.')
+        return
+      }
+      
+      // 파일 형식 검증
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf']
+      if (!allowedTypes.includes(file.type)) {
+        setError('JPG, PNG, GIF, PDF 파일만 업로드 가능합니다.')
+        return
+      }
+      
+      setBusinessFile(file)
+      setError('')
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,23 +77,51 @@ function RegisterForm() {
       return
     }
 
+    // 비즈니스 계정일 경우 사업자등록증 필수
+    if (formData.role === 'business' && !businessFile) {
+      setError('사업자등록증을 첨부해주세요.')
+      return
+    }
+
     setIsLoading(true)
 
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-          name: formData.name,
-          role: formData.role,
-          phone: formData.phone,
-          address: formData.address + (formData.addressDetail ? ' ' + formData.addressDetail : ''),
-        }),
-      })
+      let response;
+      
+      if (formData.role === 'business' && businessFile) {
+        // FormData로 전송 (파일 포함)
+        const submitData = new FormData()
+        submitData.append('type', 'BUSINESS')
+        submitData.append('email', formData.email)
+        submitData.append('password', formData.password)
+        submitData.append('name', formData.name)
+        submitData.append('phone', formData.phone)
+        submitData.append('address', formData.address + (formData.addressDetail ? ' ' + formData.addressDetail : ''))
+        submitData.append('companyName', formData.companyName || formData.name)
+        submitData.append('businessNumber', formData.businessNumber)
+        submitData.append('businessFile', businessFile)
+        
+        response = await fetch('/api/auth/register', {
+          method: 'POST',
+          body: submitData
+        })
+      } else {
+        // JSON으로 전송 (인플루언서)
+        response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+            name: formData.name,
+            role: formData.role,
+            phone: formData.phone,
+            address: formData.address + (formData.addressDetail ? ' ' + formData.addressDetail : ''),
+          }),
+        })
+      }
 
       const data = await response.json()
 
@@ -250,6 +303,67 @@ function RegisterForm() {
                 placeholder="010-1234-5678"
               />
             </div>
+
+            {formData.role === 'business' && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    회사명
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.companyName}
+                    onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 placeholder-gray-400"
+                    placeholder="회사명을 입력해주세요"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    사업자등록번호
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.businessNumber}
+                    onChange={(e) => setFormData({ ...formData, businessNumber: e.target.value })}
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 placeholder-gray-400"
+                    placeholder="000-00-00000"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    사업자등록증 <span className="text-red-500">*</span>
+                  </label>
+                  <div className="mt-1 flex items-center">
+                    <input
+                      id="businessFile"
+                      name="businessFile"
+                      type="file"
+                      required
+                      accept="image/*,.pdf"
+                      onChange={handleFileChange}
+                      className="sr-only"
+                    />
+                    <label
+                      htmlFor="businessFile"
+                      className="cursor-pointer bg-white px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                      파일 선택
+                    </label>
+                    <span className="ml-3 text-sm text-gray-500">
+                      {businessFile ? businessFile.name : '파일을 선택해주세요'}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">
+                    JPG, PNG, GIF, PDF 파일만 가능 (최대 5MB)
+                  </p>
+                </div>
+              </>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

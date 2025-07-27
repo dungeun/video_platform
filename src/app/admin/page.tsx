@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import AdminLayout from '@/components/admin/AdminLayout'
 
 export default function AdminDashboard() {
@@ -86,7 +87,20 @@ export default function AdminDashboard() {
         {/* 페이지 헤더 */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">대시보드</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-gray-900">대시보드</h1>
+              <Link 
+                href="/" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                title="메인페이지로 이동 (새 창)"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+              </Link>
+            </div>
             <p className="text-gray-600 mt-1">플랫폼 전체 현황을 한눈에 확인하세요</p>
           </div>
           <button
@@ -419,26 +433,26 @@ export default function AdminDashboard() {
             <div className="p-6">
               <div className="grid grid-cols-2 gap-4">
                 <a
-                  href="/admin/users/new"
+                  href="/admin/users"
                   className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-colors"
                 >
                   <div className="text-center">
                     <svg className="w-8 h-8 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                     </svg>
-                    <p className="mt-2 text-sm font-medium text-gray-600">사용자 추가</p>
+                    <p className="mt-2 text-sm font-medium text-gray-600">사용자 관리</p>
                   </div>
                 </a>
 
                 <a
-                  href="/admin/campaigns/review"
+                  href="/admin/campaigns"
                   className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-colors"
                 >
                   <div className="text-center">
                     <svg className="w-8 h-8 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                     </svg>
-                    <p className="mt-2 text-sm font-medium text-gray-600">캠페인 검토</p>
+                    <p className="mt-2 text-sm font-medium text-gray-600">캠페인 관리</p>
                   </div>
                 </a>
 

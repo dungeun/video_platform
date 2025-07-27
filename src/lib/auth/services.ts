@@ -15,6 +15,11 @@ export interface RegisterData {
   type: 'business' | 'influencer'
   phone?: string
   address?: string
+  companyName?: string
+  businessNumber?: string
+  businessFileUrl?: string | null
+  businessFileName?: string | null
+  businessFileSize?: number | null
 }
 
 class AuthServiceClass {
@@ -82,7 +87,19 @@ class AuthServiceClass {
   }
 
   async register(data: RegisterData): Promise<{ user: User; token: string; refreshToken: string }> {
-    const { email, password, name, type, phone, address } = data
+    const { 
+      email, 
+      password, 
+      name, 
+      type, 
+      phone, 
+      address, 
+      companyName, 
+      businessNumber,
+      businessFileUrl,
+      businessFileName,
+      businessFileSize
+    } = data
 
     try {
       // Check if user already exists
@@ -112,11 +129,14 @@ class AuthServiceClass {
           } : undefined,
           businessProfile: type === 'business' ? {
             create: {
-              companyName: name,
-              businessNumber: '',
+              companyName: companyName || name,
+              businessNumber: businessNumber || '',
               representativeName: name,
               businessAddress: address || '',
-              businessCategory: ''
+              businessCategory: '',
+              businessRegistration: businessFileUrl,
+              businessFileName: businessFileName,
+              businessFileSize: businessFileSize
             }
           } : undefined
         },
