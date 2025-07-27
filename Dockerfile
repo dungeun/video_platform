@@ -40,21 +40,20 @@ COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules ./node_modules
 
-# Create startup script
-COPY <<'EOF' /app/start.sh
-#!/bin/bash
-echo "=== Starting application ==="
-echo "DATABASE_URL configured: ${DATABASE_URL:0:30}..."
-
-# Try to push schema to database (safe operation)
-echo "Syncing database schema..."
-cd /app && npx prisma db push --accept-data-loss 2>&1 || {
-    echo "Schema sync failed, but continuing..."
-}
-
-echo "Starting Node.js application..."
-exec node server.js
-EOF
+# Create startup script  
+RUN echo '#!/bin/sh' > /app/start.sh && \
+    echo 'echo "=== Starting application ==="' >> /app/start.sh && \
+    echo 'echo "DATABASE_URL: ${DATABASE_URL:0:40}..."' >> /app/start.sh && \
+    echo '' >> /app/start.sh && \
+    echo '# Generate Prisma client and push schema' >> /app/start.sh && \
+    echo 'echo "Generating Prisma client..."' >> /app/start.sh && \
+    echo 'cd /app && npx prisma generate || echo "Prisma generate failed"' >> /app/start.sh && \
+    echo '' >> /app/start.sh && \
+    echo 'echo "Pushing database schema..."' >> /app/start.sh && \
+    echo 'npx prisma db push --skip-generate --accept-data-loss || echo "Schema push failed, continuing anyway"' >> /app/start.sh && \
+    echo '' >> /app/start.sh && \
+    echo 'echo "Starting server..."' >> /app/start.sh && \
+    echo 'exec node server.js' >> /app/start.sh
 
 RUN chmod +x /app/start.sh
 
