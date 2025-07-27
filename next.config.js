@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // output: 'standalone', // 로컬 개발시 주석 처리
+  output: 'standalone',
   typescript: {
     ignoreBuildErrors: true,
   },
