@@ -57,11 +57,11 @@ export class UploadService {
 
       await mkdir(uploadPath, { recursive: true })
 
-      let processedBuffer = buffer
+      let processedBuffer: Buffer = buffer
 
       // 이미지 파일인 경우 리사이징 처리
       if (this.isImageFile(file.type)) {
-        processedBuffer = await this.resizeImage(buffer, options)
+        processedBuffer = await this.resizeImage(buffer, options) as Buffer
       }
 
       // 파일 저장
@@ -116,11 +116,11 @@ export class UploadService {
 
       await mkdir(uploadPath, { recursive: true })
 
-      let processedBuffer = buffer
+      let processedBuffer: Buffer = buffer
 
       // 이미지 리사이징 처리
       if (this.isImageMimeType(mimeType)) {
-        processedBuffer = await this.resizeImage(buffer, options)
+        processedBuffer = await this.resizeImage(buffer, options) as Buffer
       }
 
       // 파일 저장

@@ -20,7 +20,7 @@ export function getRedis() {
   return redis
 }
 
-export async function withTransaction<T>(fn: (tx: PrismaClient) => Promise<T>): Promise<T> {
+export async function withTransaction<T>(fn: (tx: Omit<PrismaClient, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">) => Promise<T>): Promise<T> {
   return await prisma.$transaction(fn)
 }
 

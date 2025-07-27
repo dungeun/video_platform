@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { AuthService } from '@/lib/auth'
@@ -9,7 +9,7 @@ import CampaignManagementTab from '@/components/business/CampaignManagementTab'
 import ApplicantManagementTab from '@/components/business/ApplicantManagementTab'
 import { BarChart3, Users, TrendingUp, DollarSign } from 'lucide-react'
 
-export default function BusinessDashboard() {
+function BusinessDashboardContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [user, setUser] = useState<any>(null)
@@ -259,5 +259,13 @@ export default function BusinessDashboard() {
 
       </div>
     </>
+  )
+}
+
+export default function BusinessDashboard() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <BusinessDashboardContent />
+    </Suspense>
   )
 }

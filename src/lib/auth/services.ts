@@ -73,9 +73,7 @@ class AuthServiceClass {
           id: user.id,
           email: user.email,
           name: user.name,
-          type: user.type as 'BUSINESS' | 'INFLUENCER' | 'ADMIN',
-          createdAt: user.createdAt,
-          updatedAt: user.updatedAt
+          type: user.type as 'BUSINESS' | 'INFLUENCER' | 'ADMIN'
         },
         token,
         refreshToken
@@ -163,9 +161,7 @@ class AuthServiceClass {
           id: user.id,
           email: user.email,
           name: user.name,
-          type: user.type as 'BUSINESS' | 'INFLUENCER',
-          createdAt: user.createdAt,
-          updatedAt: user.updatedAt
+          type: user.type as 'BUSINESS' | 'INFLUENCER'
         },
         token,
         refreshToken
@@ -212,9 +208,7 @@ class AuthServiceClass {
       id: userId,
       email: 'user@example.com',
       name: 'Mock User',
-      type: 'business',
-      createdAt: new Date(),
-      updatedAt: new Date()
+      type: 'business'
     }
   }
 
@@ -247,9 +241,7 @@ class AuthServiceClass {
         id: user.id,
         email: user.email,
         name: user.name,
-        type: user.type as 'BUSINESS' | 'INFLUENCER' | 'ADMIN',
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt
+        type: user.type as 'BUSINESS' | 'INFLUENCER' | 'ADMIN'
       }
     } catch (error) {
       console.error('Error fetching user:', error)

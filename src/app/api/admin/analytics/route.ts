@@ -96,8 +96,8 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    const revenueGrowth = previousRevenue._sum.amount > 0 
-      ? Math.round(((totalRevenue._sum.amount || 0) - previousRevenue._sum.amount) / previousRevenue._sum.amount * 100)
+    const revenueGrowth = (previousRevenue._sum.amount || 0) > 0 
+      ? Math.round(((totalRevenue._sum.amount || 0) - (previousRevenue._sum.amount || 0)) / (previousRevenue._sum.amount || 1) * 100)
       : 0
 
     const totalSettlements = await prisma.settlement.aggregate({

@@ -1,4 +1,4 @@
-import { Redis } from '@upstash/redis';
+import Redis from 'ioredis';
 
 /**
  * Cache configuration and utilities
@@ -14,11 +14,14 @@ export class CacheManager {
   private memoryCache: Map<string, { value: any; expires: number }> = new Map();
 
   constructor() {
-    // Initialize Redis if credentials are available
-    if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    // Initialize Redis if connection is available
+    if (process.env.REDIS_URL) {
+      this.redis = new Redis(process.env.REDIS_URL);
+    } else if (process.env.REDIS_HOST) {
       this.redis = new Redis({
-        url: process.env.UPSTASH_REDIS_REST_URL,
-        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+        host: process.env.REDIS_HOST,
+        port: parseInt(process.env.REDIS_PORT || '6379'),
+        password: process.env.REDIS_PASSWORD
       });
     }
   }

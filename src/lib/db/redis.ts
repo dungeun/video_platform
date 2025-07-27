@@ -53,41 +53,55 @@ class MockRedis {
 
 // Disable Redis in production if REDIS_URL is not provided
 const createRedisClient = () => {
-  // Enable Redis when REDIS_URL is provided
-  if (!process.env.REDIS_URL) {
+  // Disable Redis if explicitly disabled or in development without URL
+  if (process.env.DISABLE_REDIS === 'true' || (!process.env.REDIS_URL && process.env.NODE_ENV !== 'production')) {
     console.log('Redis is disabled - using mock Redis client');
     return new MockRedis() as any;
   }
 
-  // Use REDIS_URL if provided, otherwise use individual config
-  const redisUrl = process.env.REDIS_URL;
-  
-  const client = redisUrl 
-    ? new Redis(redisUrl)
-    : new Redis({
-        host: process.env.REDIS_HOST || 'localhost',
-        port: parseInt(process.env.REDIS_PORT || '6379'),
-        password: process.env.REDIS_PASSWORD,
-        db: parseInt(process.env.REDIS_DB || '0'),
-        retryStrategy(times) {
-          if (process.env.NODE_ENV === 'production') {
-            // In production, don't retry if Redis is not available
-            return null;
-          }
-          const delay = Math.min(times * 50, 2000);
-          return delay;
-        },
-      });
+  try {
+    // Use REDIS_URL if provided, otherwise use individual config
+    const redisUrl = process.env.REDIS_URL;
+    
+    const client = redisUrl 
+      ? new Redis(redisUrl)
+      : new Redis({
+          host: process.env.REDIS_HOST || 'localhost',
+          port: parseInt(process.env.REDIS_PORT || '6379'),
+          password: process.env.REDIS_PASSWORD,
+          db: parseInt(process.env.REDIS_DB || '0'),
+          maxRetriesPerRequest: 3,
+          retryStrategy(times) {
+            if (times > 3) {
+              // Stop retrying after 3 attempts
+              console.log('Redis connection failed after 3 attempts - falling back to mock Redis');
+              return null;
+            }
+            const delay = Math.min(times * 50, 2000);
+            return delay;
+          },
+          lazyConnect: true,
+        });
 
-  client.on('error', (err) => {
-    console.error('Redis connection error:', err);
-  });
+    client.on('error', (err) => {
+      console.error('Redis Client Error:', err.message);
+    });
 
-  client.on('connect', () => {
-    console.log('Redis connected successfully');
-  });
+    client.on('connect', () => {
+      console.log('Redis connected successfully');
+    });
 
-  return client;
+    // Try to connect
+    client.connect().catch((err) => {
+      console.error('Failed to connect to Redis:', err.message);
+    });
+
+    return client;
+  } catch (error) {
+    console.error('Failed to create Redis client:', error);
+    console.log('Falling back to mock Redis client');
+    return new MockRedis() as any;
+  }
 };
 
 export const redis = globalForRedis.redis ?? createRedisClient();

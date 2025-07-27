@@ -1,11 +1,10 @@
 import jwt from 'jsonwebtoken';
-import { UserType } from '@prisma/client';
 
 interface JWTPayload {
   id: string;
   userId: string;
   email: string;
-  type: UserType;
+  type: string;
 }
 
 interface RefreshPayload {

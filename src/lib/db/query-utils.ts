@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { performanceMonitor } from '@/lib/performance';
 
 /**
@@ -210,7 +210,7 @@ export async function getAggregatedStats(
  * Connection pool optimization
  */
 export function createOptimizedPrismaClient() {
-  return new Prisma.PrismaClient({
+  return new PrismaClient({
     log: process.env.NODE_ENV === 'development' 
       ? ['query', 'error', 'warn'] 
       : ['error'],

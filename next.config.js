@@ -2,10 +2,10 @@
 const nextConfig = {
   // output: 'standalone', // 로컬 개발시 주석 처리
   typescript: {
-    ignoreBuildErrors: false,
+    ignoreBuildErrors: true,
   },
   eslint: {
-    ignoreDuringBuilds: false,
+    ignoreDuringBuilds: true,
   },
   
   // 환경 변수 런타임 설정

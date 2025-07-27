@@ -66,6 +66,7 @@ model User {
   savedCampaigns       SavedCampaign[]
   settlements          Settlement[]
   campaignLikes        CampaignLike[]
+  reports              Report[]
 
   @@map("users")
 }
@@ -453,4 +454,53 @@ model CampaignLike {
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@unique([campaignId, userId])
   @@map("campaign_likes")
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  reporterId  String
+  type        String   // 'content', 'user', 'campaign', 'payment'
+  targetId    String
+  reason      String
+  description String?
+  status      String   @default("pending") // 'pending', 'investigating', 'resolved', 'dismissed'
+  priority    String   @default("medium") // 'low', 'medium', 'high', 'urgent'
+  adminNotes  String?
+  resolvedAt  DateTime?
+  resolvedBy  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  reporter    User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@map("reports")
+}
+
+model Revenue {
+  id           String   @id @default(cuid())
+  type         String   // 'campaign_fee', 'premium_subscription', 'featured_listing'
+  amount       Float
+  referenceId  String?  // Related campaign, user, or payment ID
+  description  String?
+  metadata     Json?
+  date         DateTime @default(now())
+  createdAt    DateTime @default(now())
+  
+  @@index([type])
+  @@index([date])
+  @@map("revenues")
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  type        String   // 'influencer_payment', 'refund', 'operational'
+  amount      Float
+  referenceId String?  // Related settlement, refund, or payment ID
+  description String?
+  metadata    Json?
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  
+  @@index([type])
+  @@index([date])
+  @@map("expenses")
 }

@@ -91,7 +91,6 @@ export async function GET(request: NextRequest) {
       id: report.id,
       type: report.type.toLowerCase(),
       targetId: report.targetId,
-      targetType: report.targetType.toLowerCase(),
       reason: report.reason,
       description: report.description,
       status: report.status.toLowerCase(),
@@ -166,7 +165,6 @@ export async function POST(request: NextRequest) {
       data: {
         type: type.toUpperCase(),
         targetId,
-        targetType: targetType.toUpperCase(),
         reason,
         description,
         reporterId: userId
@@ -187,8 +185,7 @@ export async function POST(request: NextRequest) {
       report: {
         ...report,
         type: report.type.toLowerCase(),
-        targetType: report.targetType.toLowerCase(),
-        status: report.status.toLowerCase()
+          status: report.status.toLowerCase()
       }
     })
 

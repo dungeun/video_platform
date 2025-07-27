@@ -52,7 +52,7 @@ export async function GET(
     // 대상 정보 조회 (type에 따라 다른 테이블에서 조회)
     let targetInfo = null
     try {
-      switch (report.targetType.toLowerCase()) {
+      switch (report.type.toLowerCase()) {
         case 'user':
           targetInfo = await prisma.user.findUnique({
             where: { id: report.targetId },
@@ -79,11 +79,11 @@ export async function GET(
         id: report.id,
         type: report.type.toLowerCase(),
         reportedItemId: report.targetId,
-        reportedItemTitle: targetInfo?.title || targetInfo?.name || report.targetId,
+        reportedItemTitle: (targetInfo as any)?.title || (targetInfo as any)?.name || report.targetId,
         reporterName: report.reporter.name,
         reporterEmail: report.reporter.email,
-        targetUserName: targetInfo?.name || '알 수 없음',
-        targetUserEmail: targetInfo?.email || '',
+        targetUserName: (targetInfo as any)?.name || '알 수 없음',
+        targetUserEmail: (targetInfo as any)?.email || '',
         reason: report.reason,
         description: report.description,
         status: report.status.toLowerCase(),
@@ -185,7 +185,6 @@ export async function PUT(
       report: {
         ...updatedReport,
         type: updatedReport.type.toLowerCase(),
-        targetType: updatedReport.targetType.toLowerCase(),
         status: updatedReport.status.toLowerCase(),
         reporter: {
           ...updatedReport.reporter,

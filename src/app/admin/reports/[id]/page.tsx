@@ -106,7 +106,7 @@ export default function ReportDetailPage() {
   }
 
   const getStatusBadge = (status: string) => {
-    const badges = {
+    const badges: Record<string, { color: string; icon: any; text: string }> = {
       pending: { color: 'bg-yellow-100 text-yellow-800', icon: Clock, text: '대기중' },
       investigating: { color: 'bg-blue-100 text-blue-800', icon: AlertTriangle, text: '조사중' },
       resolved: { color: 'bg-green-100 text-green-800', icon: CheckCircle, text: '해결됨' },
@@ -125,7 +125,7 @@ export default function ReportDetailPage() {
   }
 
   const getPriorityBadge = (priority: string) => {
-    const badges = {
+    const badges: Record<string, { color: string; text: string }> = {
       low: { color: 'bg-gray-100 text-gray-800', text: '낮음' },
       medium: { color: 'bg-blue-100 text-blue-800', text: '중간' },
       high: { color: 'bg-orange-100 text-orange-800', text: '높음' },
@@ -142,7 +142,7 @@ export default function ReportDetailPage() {
   }
 
   const getTypeBadge = (type: string) => {
-    const badges = {
+    const badges: Record<string, { color: string; text: string }> = {
       content: { color: 'bg-purple-100 text-purple-800', text: '콘텐츠' },
       user: { color: 'bg-indigo-100 text-indigo-800', text: '사용자' },
       campaign: { color: 'bg-green-100 text-green-800', text: '캠페인' },

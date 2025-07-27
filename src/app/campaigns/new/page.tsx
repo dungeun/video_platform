@@ -608,10 +608,10 @@ export default function CreateCampaignPage() {
               </button>
             </div>
 
-            {/* DON'T 리스트 */}
+            {/* DON&apos;T 리스트 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                DON'T 리스트 (금지사항)
+                DON&apos;T 리스트 (금지사항)
               </label>
               <div className="space-y-2">
                 {formData.dontList.map((item, index) => (

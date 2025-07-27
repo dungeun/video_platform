@@ -307,7 +307,7 @@ export default function ApplicantManagementTab() {
                       
                       {applicant.message && (
                         <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">
-                          "{applicant.message}"
+                          &ldquo;{applicant.message}&rdquo;
                         </p>
                       )}
                     </div>

@@ -21,13 +21,13 @@ class AuthServiceClass {
       const normalizedType = userType.toLowerCase();
       console.log('normalizedType:', normalizedType);
       
-      const emails = {
+      const emails: Record<string, string> = {
         admin: 'admin@linkpick.com',
         business: 'business@company.com',
         user: 'user@example.com',
         influencer: 'user@example.com'
       };
-      const names = {
+      const names: Record<string, string> = {
         admin: 'Administrator',
         business: 'Business User',
         user: 'User',

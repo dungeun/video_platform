@@ -79,7 +79,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
   
   // 내 캠페인 관련 상태
   const [myCampaigns, setMyCampaigns] = useState<any[]>([])
-  const [campaignActiveTab, setCampaignActiveTab] = useState<'all' | 'pending' | 'active' | 'completed'>('all')
+  const [campaignActiveTab, setCampaignActiveTab] = useState<'all' | 'pending' | 'active' | 'completed' | 'reviewing' | 'rejected'>('all')
   const [loadingMyCampaigns, setLoadingMyCampaigns] = useState(false)
 
   // 통계 데이터 가져오기
@@ -753,7 +753,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                           </a>
                         </div>
                       </div>
-                    ))}
+                    )))}
                   
                   {/* 빈 상태 메시지 */}
                   {((campaignActiveTab === 'all' && applications.length === 0) ||
