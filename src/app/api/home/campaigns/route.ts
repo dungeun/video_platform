@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { cacheService, cacheKeys, CACHE_TTL } from '@/lib/cache/cache-service';
+import { CAMPAIGN_FIELD_DEFAULTS } from '@/lib/db/campaign-fields';
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -132,7 +133,7 @@ export async function GET(request: NextRequest) {
         title: campaign.title,
         brand: campaign.business.businessProfile?.companyName || campaign.business.name || campaign.business.email,
         applicants: campaign._count.applications,
-        maxApplicants: campaign.maxApplicants || 100, // 목표 지원자 수
+        maxApplicants: CAMPAIGN_FIELD_DEFAULTS.maxApplicants, // 목표 지원자 수
         deadline: daysLeft,
         category: campaign.business.businessProfile?.businessCategory || '기타',
         platforms: [campaign.platform.toLowerCase()],

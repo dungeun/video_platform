@@ -21,6 +21,8 @@ COPY . .
 
 # Build the application
 ENV NEXT_TELEMETRY_DISABLED 1
+# Generate Prisma client before build
+RUN pnpm prisma generate
 RUN pnpm run build
 
 # Production stage
@@ -30,33 +32,42 @@ WORKDIR /app
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
-# Install pnpm and prisma dependencies
-RUN corepack enable
-RUN corepack prepare pnpm@latest --activate
-RUN apk add --no-cache openssl
+# Install dependencies for prisma
+RUN apk add --no-cache openssl bash
 
-# Create non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-# Copy built application
+# Copy built application first
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
-
-# Install prisma cli for migration
-RUN pnpm add -g prisma
+COPY --from=builder /app/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0 ./node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 
 # Create startup script
-RUN echo '#!/bin/sh' > /app/start.sh && \
-    echo 'echo "Running database migrations..."' >> /app/start.sh && \
-    echo 'npx prisma migrate deploy || echo "Migration failed, but continuing..."' >> /app/start.sh && \
-    echo 'echo "Starting application..."' >> /app/start.sh && \
-    echo 'exec node server.js' >> /app/start.sh && \
-    chmod +x /app/start.sh
+COPY <<'EOF' /app/start.sh
+#!/bin/bash
+set -e
+
+echo "=== Starting application initialization ==="
+echo "DATABASE_URL: ${DATABASE_URL:0:50}..."
+
+# Run migrations
+echo "Running database migrations..."
+cd /app && npx prisma migrate deploy 2>&1 || {
+    echo "Migration deploy failed, trying to generate client..."
+    npx prisma generate 2>&1 || echo "Generate also failed"
+}
+
+echo "Starting application..."
+exec node server.js
+EOF
+
+RUN chmod +x /app/start.sh
+
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
 
 # Set correct permissions
 RUN chown -R nextjs:nodejs /app
