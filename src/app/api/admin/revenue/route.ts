@@ -55,10 +55,10 @@ export async function GET(req: NextRequest) {
         }
       },
       _sum: {
-        totalRevenue: true,
-        platformFee: true,
-        settlementAmount: true,
-        netProfit: true
+        amount: true
+      },
+      _count: {
+        id: true
       }
     })
 
@@ -90,13 +90,13 @@ export async function GET(req: NextRequest) {
         }
       },
       _sum: {
-        totalRevenue: true
+        amount: true
       }
     })
 
     // 성장률 계산
-    const currentRevenue = revenueData._sum.totalRevenue || 0
-    const previousRevenue = prevRevenueData._sum.totalRevenue || 0
+    const currentRevenue = revenueData._sum.amount || 0
+    const previousRevenue = prevRevenueData._sum.amount || 0
     const monthlyGrowth = previousRevenue > 0 
       ? ((currentRevenue - previousRevenue) / previousRevenue) * 100 
       : 0
@@ -130,9 +130,9 @@ export async function GET(req: NextRequest) {
     }>>`
       SELECT 
         TO_CHAR(r.date, ${dateFormat}) as period,
-        COALESCE(SUM(r."totalRevenue"), 0)::float as revenue,
+        COALESCE(SUM(r.amount), 0)::float as revenue,
         COALESCE(SUM(e.amount), 0)::float as expenses,
-        COALESCE(SUM(r."netProfit"), 0)::float as netProfit
+        (COALESCE(SUM(r.amount), 0) * ${platformFeeRate} - COALESCE(SUM(e.amount), 0))::float as netProfit
       FROM revenues r
       LEFT JOIN expenses e ON DATE_TRUNC(${dateTrunc}, r.date) = DATE_TRUNC(${dateTrunc}, e.date)
       WHERE r.date >= ${start} AND r.date <= ${end}
@@ -140,36 +140,48 @@ export async function GET(req: NextRequest) {
       ORDER BY period
     `
 
-    // 카테고리별 수익 데이터 조회
-    const categoryRevenue = await prisma.$queryRaw<Array<{
-      category: string
-      revenue: number
-    }>>`
-      SELECT 
-        COALESCE(rd.category, '기타') as category,
-        SUM(rd.amount)::float as revenue
-      FROM revenue_details rd
-      JOIN revenues r ON rd."revenueId" = r.id
-      WHERE r.date >= ${start} AND r.date <= ${end}
-      GROUP BY rd.category
-      ORDER BY revenue DESC
-      LIMIT 10
-    `
+    // 카테고리별 수익 데이터 조회 (type으로 그룹화)
+    const categoryRevenue = await prisma.revenue.groupBy({
+      by: ['type'],
+      where: {
+        date: {
+          gte: start,
+          lte: end
+        }
+      },
+      _sum: {
+        amount: true
+      },
+      orderBy: {
+        _sum: {
+          amount: 'desc'
+        }
+      },
+      take: 10
+    })
 
     // 전체 수익 대비 카테고리별 비율 계산
-    const totalCategoryRevenue = categoryRevenue.reduce((sum, cat) => sum + cat.revenue, 0)
+    const totalCategoryRevenue = categoryRevenue.reduce((sum, cat) => sum + (cat._sum.amount || 0), 0)
     const categoryRevenueWithPercentage = categoryRevenue.map(cat => ({
-      ...cat,
-      percentage: totalCategoryRevenue > 0 ? Math.round((cat.revenue / totalCategoryRevenue) * 100) : 0
+      category: cat.type,
+      revenue: cat._sum.amount || 0,
+      percentage: totalCategoryRevenue > 0 ? Math.round(((cat._sum.amount || 0) / totalCategoryRevenue) * 100) : 0
     }))
 
     // 응답 데이터 구성
+    const totalRevenue = revenueData._sum.amount || 0
+    const totalExpenses = expenseData._sum.amount || 0
+    const platformFeeRate = DEFAULT_PLATFORM_FEE_RATE || 0.1 // 10% 기본 수수료
+    const platformFee = totalRevenue * platformFeeRate
+    const settlementAmount = totalRevenue * (1 - platformFeeRate)
+    const netProfit = platformFee - totalExpenses
+    
     const summary = {
-      totalRevenue: revenueData._sum.totalRevenue || 0,
-      totalExpenses: expenseData._sum.amount || 0,
-      netProfit: (revenueData._sum.netProfit || 0),
-      platformFee: revenueData._sum.platformFee || 0,
-      settlementAmount: revenueData._sum.settlementAmount || 0,
+      totalRevenue,
+      totalExpenses,
+      netProfit,
+      platformFee,
+      settlementAmount,
       monthlyGrowth: Math.round(monthlyGrowth * 10) / 10
     }
 
@@ -233,47 +245,21 @@ export async function POST(req: NextRequest) {
     const platformFee = amount * platformFeeRate
     const settlementAmount = amount * (1 - platformFeeRate)
 
-    // Revenue 레코드 업데이트 또는 생성
-    const revenue = await prisma.revenue.upsert({
-      where: {
-        date: today
-      },
-      update: {
-        totalRevenue: {
-          increment: amount
-        },
-        platformFee: {
-          increment: platformFee
-        },
-        settlementAmount: {
-          increment: settlementAmount
-        },
-        netProfit: {
-          increment: platformFee // 순이익은 플랫폼 수수료
-        },
-        transactionCount: {
-          increment: 1
-        }
-      },
-      create: {
-        date: today,
-        totalRevenue: amount,
-        platformFee: platformFee,
-        settlementAmount: settlementAmount,
-        netProfit: platformFee,
-        transactionCount: 1
-      }
-    })
-
-    // Revenue Detail 생성
-    await prisma.revenueDetail.create({
+    // Revenue 레코드 생성
+    const revenue = await prisma.revenue.create({
       data: {
-        revenueId: revenue.id,
-        campaignId,
-        amount,
-        platformFee,
-        category,
-        platform
+        type: 'campaign_fee',
+        amount: platformFee, // 플랫폼 수수료가 실제 수익
+        referenceId: campaignId,
+        description: `Campaign fee for ${campaignId}`,
+        metadata: {
+          totalAmount: amount,
+          platformFeeRate,
+          settlementAmount,
+          category,
+          platform
+        },
+        date: today
       }
     })
 
