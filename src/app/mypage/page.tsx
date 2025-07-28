@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { AuthService, User } from '@/lib/auth'
+import { useAuth } from '@/hooks/useAuth'
 import { ProtectedRoute } from '@/lib/auth/protected-route'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
@@ -14,38 +14,36 @@ import BusinessMyPage from '@/components/mypage/BusinessMyPage'
 function MyPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [user, setUser] = useState<User | null>(null)
+  const { user, isAuthenticated, isLoading, logout } = useAuth()
   const [activeTab, setActiveTab] = useState('campaigns')
 
   useEffect(() => {
-    const currentUser = AuthService.getCurrentUser()
-    if (!currentUser) {
+    if (isLoading) return
+
+    if (!isAuthenticated || !user) {
       router.push('/login')
       return
     }
     
     // 관리자인 경우 어드민 페이지로 리다이렉트
-    const userType = currentUser.type?.toUpperCase()
+    const userType = user.type?.toUpperCase()
     if (userType === 'ADMIN') {
       router.push('/admin')
       return
     }
-    
-    setUser(currentUser)
     
     // URL 파라미터에서 탭 정보 가져오기
     const tab = searchParams.get('tab')
     if (tab) {
       setActiveTab(tab)
     }
-  }, [router, searchParams])
+  }, [router, searchParams, user, isAuthenticated, isLoading])
 
   const handleLogout = () => {
-    AuthService.logout()
-    router.push('/login')
+    logout()
   }
 
-  if (!user) {
+  if (isLoading || !user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600"></div>

@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { AuthService, User } from '@/lib/auth'
+import { useAuth } from '@/hooks/useAuth'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -11,36 +11,23 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
   const router = useRouter()
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { user, isAuthenticated, isLoading } = useAuth()
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const currentUser = AuthService.getCurrentUser()
-        if (!currentUser) {
-          router.push('/login')
-          return
-        }
+    if (isLoading) return
 
-        if (requiredRole && currentUser.type !== requiredRole) {
-          router.push('/unauthorized')
-          return
-        }
-
-        setUser(currentUser)
-      } catch (error) {
-        console.error('Auth check failed:', error)
-        router.push('/login')
-      } finally {
-        setLoading(false)
-      }
+    if (!isAuthenticated || !user) {
+      router.push('/login')
+      return
     }
 
-    checkAuth()
-  }, [router, requiredRole])
+    if (requiredRole && user.type !== requiredRole) {
+      router.push('/unauthorized')
+      return
+    }
+  }, [router, requiredRole, user, isAuthenticated, isLoading])
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600"></div>
@@ -48,7 +35,7 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     )
   }
 
-  if (!user) {
+  if (!isAuthenticated || !user) {
     return null
   }
 
