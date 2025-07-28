@@ -451,7 +451,7 @@ export default function CampaignDetailPage() {
   }
 
   const daysLeft = calculateDaysLeft(campaign.endDate)
-  const applicationProgress = (campaign._count.applications / campaign.maxApplicants) * 100
+  const applicationProgress = ((campaign._count?.applications || 0) / (campaign.maxApplicants || 1)) * 100
 
   return (
     <PageLayout>
@@ -532,7 +532,7 @@ export default function CampaignDetailPage() {
                     {getStatusBadge(campaign.status)}
                     <span className="text-gray-500">|</span>
                     <div className="flex items-center gap-2">
-                      {campaign.platforms.map(platform => (
+                      {(campaign.platforms || []).map(platform => (
                         <span key={platform} className="flex items-center gap-1 text-gray-600">
                           {getPlatformIcon(platform)}
                         </span>
@@ -543,12 +543,12 @@ export default function CampaignDetailPage() {
               </div>
 
               {/* 비즈니스 정보 */}
-              <Link href={`/business/${campaign.business.id}`} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors mb-6">
+              <Link href={`/business/${campaign.business?.id || ''}`} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors mb-6">
                 <div className="w-16 h-16 rounded-full bg-gray-200 overflow-hidden">
-                  {campaign.business.logo ? (
+                  {campaign.business?.logo ? (
                     <Image
-                      src={campaign.business.logo}
-                      alt={campaign.business.name}
+                      src={campaign.business?.logo || ''}
+                      alt={campaign.business?.name || ''}
                       width={64}
                       height={64}
                       className="object-cover"
@@ -560,8 +560,8 @@ export default function CampaignDetailPage() {
                   )}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">{campaign.business.name}</h3>
-                  <p className="text-sm text-gray-600">{campaign.business.category}</p>
+                  <h3 className="font-semibold text-gray-900">{campaign.business?.name || ''}</h3>
+                  <p className="text-sm text-gray-600">{campaign.business?.category || ''}</p>
                 </div>
               </Link>
 
@@ -580,11 +580,11 @@ export default function CampaignDetailPage() {
 
                 {/* 제품 소개 탭 */}
                 <TabsContent value="product" className="mt-6">
-                  {campaign.productImages && campaign.productImages.length > 0 ? (
+                  {campaign.productImages && Array.isArray(campaign.productImages) && campaign.productImages.length > 0 ? (
                     <div className="space-y-6">
                       <h2 className="text-xl font-semibold text-gray-900">제품 소개</h2>
                       <div className="grid grid-cols-1 gap-6">
-                        {campaign.productImages.map((image, index) => (
+                        {(campaign.productImages || []).map((image, index) => (
                           <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
                             <Image
                               src={image}
@@ -625,7 +625,7 @@ export default function CampaignDetailPage() {
                     <div className="pt-6 border-t">
                       <h2 className="text-xl font-semibold text-gray-900 mb-3">해시태그</h2>
                       <div className="flex flex-wrap gap-2">
-                        {campaign.hashtags.map((tag, index) => (
+                        {(campaign.hashtags || []).map((tag, index) => (
                           <span key={index} className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-sm">
                             #{tag}
                           </span>
@@ -639,7 +639,7 @@ export default function CampaignDetailPage() {
                     <div className="pt-6 border-t">
                       <h2 className="text-xl font-semibold text-gray-900 mb-3">상세 이미지</h2>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {campaign.detailImages.map((image, index) => (
+                        {(campaign.detailImages || []).map((image, index) => (
                           <div key={index} className="relative aspect-video rounded-lg overflow-hidden">
                             <Image
                               src={image}
@@ -671,7 +671,7 @@ export default function CampaignDetailPage() {
                     <DollarSign className="w-4 h-4" />
                     총 예산
                   </span>
-                  <span className="font-semibold">₩{campaign.budget.toLocaleString()}</span>
+                  <span className="font-semibold">₩{(campaign.budget || 0).toLocaleString()}</span>
                 </div>
 
                 {/* 모집 인원 */}
@@ -682,7 +682,7 @@ export default function CampaignDetailPage() {
                       모집 현황
                     </span>
                     <span className="font-semibold">
-                      {campaign._count.applications}/{campaign.maxApplicants}명
+                      {campaign._count?.applications || 0}/{campaign.maxApplicants || 0}명
                     </span>
                   </div>
                   <Progress value={applicationProgress} className="h-2" />
@@ -694,7 +694,7 @@ export default function CampaignDetailPage() {
                     <TrendingUp className="w-4 h-4" />
                     최소 팔로워
                   </span>
-                  <span className="font-semibold">{campaign.targetFollowers.toLocaleString()}명</span>
+                  <span className="font-semibold">{(campaign.targetFollowers || 0).toLocaleString()}명</span>
                 </div>
 
                 {/* 기간 */}
@@ -781,7 +781,7 @@ export default function CampaignDetailPage() {
                     >
                       <Button variant="outline" className="w-full" size="lg">
                         <Users className="w-4 h-4 mr-2" />
-                        지원자 관리 ({campaign._count.applications}명)
+                        지원자 관리 ({campaign._count?.applications || 0}명)
                       </Button>
                     </Link>
                   </>
@@ -932,15 +932,15 @@ export default function CampaignDetailPage() {
             >
               <option value="">직접 작성</option>
               <optgroup label="기본 템플릿">
-                {templates.filter(t => t.isPublic && (!t.user || t.user.name === 'LinkPick System')).map(template => (
+                {(templates || []).filter(t => t.isPublic && (!t.user || t.user.name === 'LinkPick System')).map(template => (
                   <option key={template.id} value={template.id}>
                     {template.name}
                   </option>
                 ))}
               </optgroup>
-              {templates.filter(t => !t.isPublic || (t.user && t.user.name !== 'LinkPick System')).length > 0 && (
+              {(templates || []).filter(t => !t.isPublic || (t.user && t.user.name !== 'LinkPick System')).length > 0 && (
                 <optgroup label="내 템플릿">
-                  {templates.filter(t => !t.isPublic || (t.user && t.user.name !== 'LinkPick System')).map(template => (
+                  {(templates || []).filter(t => !t.isPublic || (t.user && t.user.name !== 'LinkPick System')).map(template => (
                     <option key={template.id} value={template.id}>
                       {template.name}
                     </option>
