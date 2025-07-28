@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/db/prisma'
+import { requireAdminAuth } from '@/lib/admin-auth'
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session || session.user.type !== 'ADMIN') {
-      return NextResponse.json(
-        { error: '관리자 권한이 필요합니다.' },
-        { status: 403 }
-      )
+    // 관리자 인증 확인
+    const authResult = await requireAdminAuth(request)
+    if (authResult.error) {
+      return authResult.error
     }
 
     const { platformFeeRate } = await request.json()

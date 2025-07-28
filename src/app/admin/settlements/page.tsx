@@ -101,7 +101,8 @@ export default function AdminSettlementsPage() {
     
     setSettlements(mockSettlements)
     setFilteredSettlements(mockSettlements)
-  }, [router])
+    }
+  }, [authLoading, isAuthenticated, user])
 
   useEffect(() => {
     let filtered = settlements.filter(settlement => {
@@ -351,7 +352,6 @@ export default function AdminSettlementsPage() {
                 </div>
               )}
             </div>
-          </div>
       </div>
     </AdminLayout>
   )
