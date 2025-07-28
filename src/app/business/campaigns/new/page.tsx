@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/Button'
 import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
+import { useTemplates } from '@/hooks/useSharedData'
+import { invalidateCache } from '@/hooks/useCachedData'
 import { Save, Trash2, Youtube } from 'lucide-react'
 
 // Component imports
@@ -119,13 +121,13 @@ export default function NewCampaignPage() {
   
   const [dynamicQuestions, setDynamicQuestions] = useState<DynamicQuestion[]>(defaultQuestions)
   
-  // Template states
-  const [templates, setTemplates] = useState<CampaignTemplate[]>([])
+  // Template states - 캐싱된 데이터 사용
+  const { data: templatesData, isLoading: loadingTemplates, refetch: refetchTemplates } = useTemplates('campaign')
+  const templates = templatesData || []
   const [showTemplateModal, setShowTemplateModal] = useState(false)
   const [templateName, setTemplateName] = useState('')
   const [templateDescription, setTemplateDescription] = useState('')
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
-  const [loadingTemplates, setLoadingTemplates] = useState(false)
   
   // Question editor state
   const [showQuestionEditor, setShowQuestionEditor] = useState(false)
@@ -133,31 +135,6 @@ export default function NewCampaignPage() {
   // Payment info
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('CARD')
   const platformFee = formData.budget ? Number(formData.budget) * 0.1 : 0
-  
-  // Load templates on mount
-  useEffect(() => {
-    loadTemplatesFromDB()
-  }, [])
-  
-  const loadTemplatesFromDB = async () => {
-    setLoadingTemplates(true)
-    try {
-      const response = await fetch('/api/business/campaign-templates', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
-        }
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        setTemplates(data.templates || [])
-      }
-    } catch (error) {
-      console.error('Failed to load templates:', error)
-    } finally {
-      setLoadingTemplates(false)
-    }
-  }
   
   const saveTemplate = async () => {
     if (!templateName) {
@@ -189,7 +166,9 @@ export default function NewCampaignPage() {
         setShowTemplateModal(false)
         setTemplateName('')
         setTemplateDescription('')
-        loadTemplatesFromDB()
+        // 캐시 무효화하여 템플릿 목록 갱신
+        invalidateCache(`campaign_templates`)
+        refetchTemplates()
       }
     } catch (error) {
       console.error('Failed to save template:', error)
@@ -226,7 +205,9 @@ export default function NewCampaignPage() {
         toast({
           title: '템플릿이 삭제되었습니다.',
         })
-        loadTemplatesFromDB()
+        // 캐시 무효화하여 템플릿 목록 갱신
+        invalidateCache(`campaign_templates`)
+        refetchTemplates()
       }
     } catch (error) {
       console.error('Failed to delete template:', error)
@@ -323,51 +304,98 @@ export default function NewCampaignPage() {
       const data = await response.json()
       const createdCampaignId = data.campaign.id
       
-      // Initialize payment
-      const paymentData = {
-        orderId: `campaign_${createdCampaignId}_${Date.now()}`,
-        amount: Number(formData.budget) + platformFee,
-        orderName: `캠페인: ${formData.title}`,
-        customerName: '비즈니스',
-        successUrl: `${window.location.origin}/business/campaigns/${createdCampaignId}/payment/success`,
-        failUrl: `${window.location.origin}/business/campaigns/${createdCampaignId}/payment/fail`,
-        method: selectedPaymentMethod
-      }
-      
-      const paymentResponse = await fetch('/api/payments/prepare', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
-        },
-        body: JSON.stringify(paymentData)
-      })
-      
-      if (!paymentResponse.ok) {
-        throw new Error('결제 준비 실패')
-      }
-      
-      const paymentResult = await paymentResponse.json()
-      
-      // Redirect to payment page
-      if (paymentResult.paymentUrl) {
-        window.location.href = paymentResult.paymentUrl
-      } else {
-        // For Toss Payments widget integration
-        const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY
-        if (!clientKey) throw new Error('토스페이먼츠 클라이언트 키가 설정되지 않았습니다.')
+      // 계좌이체인 경우 바로 결제 완료 처리
+      if (selectedPaymentMethod === 'TRANSFER') {
+        // 계좌이체는 바로 결제 완료 처리
+        const paymentData = {
+          orderId: `campaign_${createdCampaignId}_${Date.now()}`,
+          amount: Number(formData.budget) + platformFee,
+          orderName: `캠페인: ${formData.title}`,
+          customerName: '비즈니스',
+          campaignId: createdCampaignId,
+          method: 'TRANSFER',
+          status: 'COMPLETED'
+        }
         
-        const { loadTossPayments } = await import('@tosspayments/payment-sdk')
-        const tossPayments = await loadTossPayments(clientKey)
-        
-        await tossPayments.requestPayment(selectedPaymentMethod, {
-          amount: paymentData.amount,
-          orderId: paymentData.orderId,
-          orderName: paymentData.orderName,
-          customerName: paymentData.customerName,
-          successUrl: paymentData.successUrl,
-          failUrl: paymentData.failUrl
+        const paymentResponse = await fetch('/api/payments/direct', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
+          },
+          body: JSON.stringify(paymentData)
         })
+        
+        if (!paymentResponse.ok) {
+          throw new Error('계좌이체 결제 처리 실패')
+        }
+        
+        // 캠페인 상태 업데이트
+        const updateResponse = await fetch(`/api/business/campaigns/${createdCampaignId}/publish`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
+          }
+        })
+        
+        if (!updateResponse.ok) {
+          throw new Error('캠페인 활성화 실패')
+        }
+        
+        toast({
+          title: '캠페인이 성공적으로 생성되었습니다!',
+          description: '계좌이체로 결제가 완료되었습니다.',
+        })
+        
+        // 캠페인 상세 페이지로 이동
+        router.push(`/business/campaigns/${createdCampaignId}`)
+      } else {
+        // 신용카드나 휴대폰 결제는 토스페이먼츠 사용
+        const paymentData = {
+          orderId: `campaign_${createdCampaignId}_${Date.now()}`,
+          amount: Number(formData.budget) + platformFee,
+          orderName: `캠페인: ${formData.title}`,
+          customerName: '비즈니스',
+          successUrl: `${window.location.origin}/business/campaigns/${createdCampaignId}/payment/success`,
+          failUrl: `${window.location.origin}/business/campaigns/${createdCampaignId}/payment/fail`,
+          method: selectedPaymentMethod
+        }
+        
+        const paymentResponse = await fetch('/api/payments/prepare', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
+          },
+          body: JSON.stringify(paymentData)
+        })
+        
+        if (!paymentResponse.ok) {
+          throw new Error('결제 준비 실패')
+        }
+        
+        const paymentResult = await paymentResponse.json()
+        
+        // Redirect to payment page
+        if (paymentResult.paymentUrl) {
+          window.location.href = paymentResult.paymentUrl
+        } else {
+          // For Toss Payments widget integration
+          const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY
+          if (!clientKey) throw new Error('토스페이먼츠 클라이언트 키가 설정되지 않았습니다.')
+          
+          const { loadTossPayments } = await import('@tosspayments/payment-sdk')
+          const tossPayments = await loadTossPayments(clientKey)
+          
+          await tossPayments.requestPayment(selectedPaymentMethod === 'CARD' ? '카드' : '휴대폰', {
+            amount: paymentData.amount,
+            orderId: paymentData.orderId,
+            orderName: paymentData.orderName,
+            customerName: paymentData.customerName,
+            successUrl: paymentData.successUrl,
+            failUrl: paymentData.failUrl
+          })
+        }
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '오류가 발생했습니다.'
@@ -576,7 +604,7 @@ export default function NewCampaignPage() {
                       </div>
                       <div className="font-medium text-sm">계좌이체</div>
                       <p className="text-xs text-gray-600 mt-1">
-                        실시간 계좌이체
+                        즉시 결제 처리
                       </p>
                       {selectedPaymentMethod === 'TRANSFER' && (
                         <div className="mt-2 flex justify-center">
@@ -657,7 +685,8 @@ export default function NewCampaignPage() {
                 onClick={handleSubmit}
                 disabled={loading}
               >
-                {loading ? '처리 중...' : '결제하고 캠페인 생성'}
+                {loading ? '처리 중...' : 
+                 selectedPaymentMethod === 'TRANSFER' ? '캠페인 생성하기' : '결제하고 캠페인 생성'}
               </Button>
             )}
           </div>

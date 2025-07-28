@@ -147,6 +147,14 @@ export async function GET(request: NextRequest) {
             icon: '📦',
             visible: true,
           },
+          sectionOrder: [
+            { id: 'hero', type: 'hero', order: 1, visible: true },
+            { id: 'category', type: 'category', order: 2, visible: true },
+            { id: 'quicklinks', type: 'quicklinks', order: 3, visible: true },
+            { id: 'promo', type: 'promo', order: 4, visible: true },
+            { id: 'ranking', type: 'ranking', order: 5, visible: true },
+            { id: 'recommended', type: 'recommended', order: 6, visible: true }
+          ]
         }
       };
 
@@ -300,6 +308,14 @@ export async function GET(request: NextRequest) {
           icon: '📦',
           visible: true,
         },
+        sectionOrder: [
+          { id: 'hero', type: 'hero', order: 1, visible: true },
+          { id: 'category', type: 'category', order: 2, visible: true },
+          { id: 'quicklinks', type: 'quicklinks', order: 3, visible: true },
+          { id: 'promo', type: 'promo', order: 4, visible: true },
+          { id: 'ranking', type: 'ranking', order: 5, visible: true },
+          { id: 'recommended', type: 'recommended', order: 6, visible: true }
+        ]
       }
     };
     

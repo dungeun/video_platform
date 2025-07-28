@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import { verifyJWT } from '@/lib/auth/jwt';
+import { prisma } from '@/lib/db/prisma';
+import { requireAdminAuth } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -8,23 +8,17 @@ export const runtime = 'nodejs'
 // GET /api/admin/dashboard - 관리자 대시보드 통계
 export async function GET(request: NextRequest) {
   try {
-    // 인증 확인
-    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    console.log('[Dashboard API] Headers:', Object.fromEntries(request.headers.entries()));
+    console.log('[Dashboard API] Authorization header:', request.headers.get('authorization'));
+    
+    // 공통 인증 함수 사용
+    const authResult = await requireAdminAuth(request);
+    if (authResult.error) {
+      console.log('[Dashboard API] Auth error:', authResult.error);
+      return authResult.error;
     }
-
-    let user;
-    try {
-      user = await verifyJWT(token);
-    } catch (error) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    }
-
-    // 관리자 권한 확인
-    if (!user || user.type !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    const { user } = authResult;
+    console.log('[Dashboard API] Authenticated user:', user);
 
     // 통계 데이터 조회
     const [

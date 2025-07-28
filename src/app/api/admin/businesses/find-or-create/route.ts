@@ -1,45 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
-import { verifyJWT } from '@/lib/auth/jwt'
+import { requireAdminAuth } from '@/lib/admin-auth'
 import bcrypt from 'bcryptjs'
 
 export async function POST(request: NextRequest) {
   try {
-    // JWT 토큰에서 사용자 정보 추출
-    const authHeader = request.headers.get('authorization')
-    const token = authHeader?.replace('Bearer ', '') || request.cookies.get('accessToken')?.value
-    
-    if (!token && process.env.NODE_ENV === 'production') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // 관리자 인증 확인
+    const authResult = await requireAdminAuth(request)
+    if (authResult.error) {
+      return authResult.error
     }
-
-    let adminId: string = ''
-    let userType: string = ''
-    
-    if (token) {
-      try {
-        // 개발 환경에서 mock 토큰 처리
-        if (process.env.NODE_ENV === 'development' && token.startsWith('mock-')) {
-          if (token === 'mock-admin-access-token') {
-            adminId = 'mock-admin-id'
-            userType = 'ADMIN'
-          } else {
-            return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
-          }
-        } else {
-          const payload = await verifyJWT(token)
-          adminId = payload.id
-          userType = payload.type
-          
-          // 관리자 권한 확인
-          if (userType !== 'ADMIN') {
-            return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
-          }
-        }
-      } catch (error) {
-        return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-      }
-    }
+    const { user } = authResult
 
     const { email, companyName } = await request.json()
 

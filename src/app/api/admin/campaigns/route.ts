@@ -1,60 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
-import jwt from 'jsonwebtoken';
-import { cookies } from 'next/headers';
+import { requireAdminAuth } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-
-// 인증 미들웨어 (유저 API와 동일)
-async function authenticate(request: NextRequest) {
-  // Authorization 헤더에서 토큰 확인
-  const authHeader = request.headers.get('authorization');
-  let token = null;
-  
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    token = authHeader.substring(7);
-  }
-  
-  // 헤더에 없으면 쿠키에서 확인
-  if (!token) {
-    const cookieStore = cookies();
-    token = cookieStore.get('auth-token')?.value;
-  }
-
-  if (!token) {
-    return null;
-  }
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
-    return decoded;
-  } catch (error) {
-    return null;
-  }
-}
-
 // GET /api/admin/campaigns - 캠페인 목록 조회 (관리자용)
 export async function GET(request: NextRequest) {
   try {
-    const user = await authenticate(request);
-    if (!user) {
-      return NextResponse.json(
-        { error: '인증이 필요합니다.' },
-        { status: 401 }
-      );
+    // 공통 인증 함수 사용
+    const authResult = await requireAdminAuth(request);
+    if (authResult.error) {
+      return authResult.error;
     }
-    
-    // 관리자만 접근 가능
-    const userType = user.type?.toLowerCase();
-    if (userType !== 'admin') {
-      return NextResponse.json(
-        { error: '관리자만 접근할 수 있습니다.' },
-        { status: 403 }
-      );
-    }
+    const { user } = authResult;
 
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get('status');
@@ -132,7 +91,8 @@ export async function GET(request: NextRequest) {
       imageUrl: campaign.imageUrl,
       hashtags: campaign.hashtags,
       requirements: campaign.requirements,
-      isPaid: campaign.isPaid
+      isPaid: campaign.isPaid,
+      platformFeeRate: (campaign as any).platformFeeRate || 0.2
     }));
 
     return NextResponse.json({

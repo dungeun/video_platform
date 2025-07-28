@@ -3,12 +3,12 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { AuthService } from '@/lib/auth'
 
 export default function LoginPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [urlError, setUrlError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
@@ -21,6 +21,21 @@ export default function LoginPage() {
     admin: { email: string; name: string } | null;
   }>({ influencer: null, business: null, admin: null })
   
+  // URL 파라미터에서 에러 메시지 확인
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search)
+      const errorType = urlParams.get('error')
+      const message = urlParams.get('message')
+      
+      if (errorType === 'admin_required' && message) {
+        setUrlError(message)
+        // URL에서 파라미터 제거
+        window.history.replaceState({}, '', '/login')
+      }
+    }
+  }, [])
+
   // 데모 계정 정보 가져오기
   useEffect(() => {
     fetchDemoAccounts()
@@ -66,14 +81,18 @@ export default function LoginPage() {
         if (token) {
           localStorage.setItem('auth-token', token)
           localStorage.setItem('accessToken', token) // 관리자 페이지 호환성
+          
+          // 쿠키에도 토큰 저장 (미들웨어 호환성을 위해)
+          document.cookie = `accessToken=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=lax`;
+          document.cookie = `auth-token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=lax`;
+          
           console.log('토큰 저장됨:', { accessToken: !!token });
         } else {
           console.error('토큰이 없습니다:', data);
+          alert('로그인에 실패했습니다. 토큰이 없습니다.');
+          return;
         }
         localStorage.setItem('user', JSON.stringify(data.user))
-        
-        // AuthService 업데이트
-        AuthService.login(data.user.type, data.user)
         
         // 직접 리다이렉트 실행 - 전체 URL 사용
         const url = data.user.type === 'ADMIN' ? '/admin' : 
@@ -121,16 +140,13 @@ export default function LoginPage() {
       const credentials = {
         user: { email: 'user@example.com', password: 'password123' },
         business: { email: 'business@company.com', password: 'password123' },
-        admin: { email: 'admin@linkpick.co.kr', password: 'admin123!' }
+        admin: { email: 'admin@linkpick.co.kr', password: 'password123' }
       }
       email = credentials[userType].email
     }
     
-    // 각 계정별 비밀번호 설정
+    // 모든 계정 동일한 비밀번호 사용
     let password = 'password123'
-    if (userType === 'admin') {
-      password = 'admin123!'
-    }
     
     const cred = { email, password }
     setFormData(cred)
@@ -156,14 +172,18 @@ export default function LoginPage() {
         if (token) {
           localStorage.setItem('auth-token', token)
           localStorage.setItem('accessToken', token) // 관리자 페이지 호환성
-          console.log('토큰 저장됨:', { accessToken: !!token });
+          
+          // 쿠키에도 토큰 저장 (미들웨어 호환성을 위해)
+          document.cookie = `accessToken=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=lax`;
+          document.cookie = `auth-token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=lax`;
+          
+          console.log('토큰 저장됨 (localStorage + 쿠키):', { accessToken: !!token });
         } else {
           console.error('토큰이 없습니다:', data);
+          alert('로그인에 실패했습니다. 토큰이 없습니다.');
+          return;
         }
         localStorage.setItem('user', JSON.stringify(data.user))
-        
-        // AuthService 업데이트
-        AuthService.login(data.user.type, data.user)
         
         // 직접 리다이렉트 실행 - 전체 URL 사용
         const url = data.user.type === 'ADMIN' ? '/admin' : 
@@ -205,9 +225,18 @@ export default function LoginPage() {
             <h2 className="text-xl text-gray-600">다시 만나서 반가워요!</h2>
           </div>
 
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-4">
-              {error}
+
+          {/* 에러 메시지 표시 */}
+          {(error || urlError) && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-center">
+                <svg className="w-5 h-5 text-red-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                <span className="text-red-700 text-sm font-medium">
+                  {urlError || error}
+                </span>
+              </div>
             </div>
           )}
 

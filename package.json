@@ -16,6 +16,8 @@
     "db:seed-korean": "ts-node prisma/clear-and-seed-korean.ts",
     "db:seed-pricing": "ts-node prisma/seed-pricing.ts",
     "db:seed-templates": "ts-node prisma/seed-templates.ts",
+    "db:seed-real": "ts-node prisma/seed-real-accounts.ts",
+    "db:remove-placeholders": "ts-node prisma/remove-placeholder-images.ts",
     "db:verify": "ts-node prisma/verify-data.ts",
     "db:update-images": "ts-node prisma/update-campaign-images.ts"
   },

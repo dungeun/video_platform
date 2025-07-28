@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { AuthService } from '@/lib/auth'
+import { useAuth } from '@/hooks/useAuth'
 import { apiGet } from '@/lib/api/client'
 import AdminLayout from '@/components/admin/AdminLayout'
 import {
@@ -61,22 +61,23 @@ interface AnalyticsData {
 
 export default function AdminAnalyticsPage() {
   const router = useRouter()
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth()
   const [loading, setLoading] = useState(true)
   const [dateRange, setDateRange] = useState('30days')
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null)
 
   useEffect(() => {
-    const checkAuth = () => {
-      const user = AuthService.getCurrentUser()
-      if (!user || user.type !== 'ADMIN') {
-        router.push('/login')
-        return
-      }
+    if (!authLoading && (!isAuthenticated || user?.type !== 'ADMIN')) {
+      router.push('/login')
+      return
     }
+  }, [authLoading, isAuthenticated, user, router])
 
-    checkAuth()
-    fetchAnalytics()
-  }, [dateRange])
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && user?.type === 'ADMIN') {
+      fetchAnalytics()
+    }
+  }, [authLoading, isAuthenticated, user, dateRange])
 
   const fetchAnalytics = async () => {
     try {
@@ -96,7 +97,7 @@ export default function AdminAnalyticsPage() {
     }
   }
 
-  if (loading || !analyticsData) {
+  if (authLoading || loading || !analyticsData) {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center h-64">

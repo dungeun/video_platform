@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { AuthService } from '@/lib/auth'
+import { useAuth } from '@/hooks/useAuth'
 import { apiGet, apiPut } from '@/lib/api/client'
 import AdminLayout from '@/components/admin/AdminLayout'
 
@@ -37,6 +37,7 @@ interface Payment {
 
 export default function AdminPaymentsPage() {
   const router = useRouter()
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth()
   const [payments, setPayments] = useState<Payment[]>([])
   const [loading, setLoading] = useState(true)
   const [filters, setFilters] = useState({
@@ -60,17 +61,17 @@ export default function AdminPaymentsPage() {
   })
 
   useEffect(() => {
-    const checkAuth = () => {
-      const user = AuthService.getCurrentUser()
-      if (!user || user.type !== 'ADMIN') {
-        router.push('/login')
-        return
-      }
+    if (!authLoading && (!isAuthenticated || user?.type !== 'ADMIN')) {
+      router.push('/login')
+      return
     }
+  }, [authLoading, isAuthenticated, user, router])
 
-    checkAuth()
-    fetchPayments()
-  }, [pagination.page, filters.status, filters.method, filters.search])
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && user?.type === 'ADMIN') {
+      fetchPayments()
+    }
+  }, [authLoading, isAuthenticated, user, pagination.page, filters.status, filters.method, filters.search])
 
   const fetchPayments = async () => {
     try {
@@ -168,7 +169,7 @@ export default function AdminPaymentsPage() {
 
   const filteredPayments = payments
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center h-64">

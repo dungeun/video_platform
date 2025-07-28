@@ -143,6 +143,35 @@ export async function POST(request: NextRequest) {
 
     const { config } = await request.json();
 
+    // 중복 섹션 ID 정리
+    if (config.mainPage?.sectionOrder) {
+      // sectionOrder에서 중복 제거
+      const seenIds = new Set<string>();
+      const cleanedSectionOrder = config.mainPage.sectionOrder.filter((section: any) => {
+        if (seenIds.has(section.id)) {
+          console.log(`Removing duplicate section ID: ${section.id}`);
+          return false;
+        }
+        seenIds.add(section.id);
+        return true;
+      });
+      config.mainPage.sectionOrder = cleanedSectionOrder;
+    }
+
+    if (config.mainPage?.customSections) {
+      // customSections에서 중복 제거
+      const seenCustomIds = new Set<string>();
+      const cleanedCustomSections = config.mainPage.customSections.filter((section: any) => {
+        if (seenCustomIds.has(section.id)) {
+          console.log(`Removing duplicate custom section ID: ${section.id}`);
+          return false;
+        }
+        seenCustomIds.add(section.id);
+        return true;
+      });
+      config.mainPage.customSections = cleanedCustomSections;
+    }
+
     // DB에 UI 설정 저장 - JSON을 문자열로 변환
     await prisma.siteConfig.upsert({
       where: { key: 'ui-config' },

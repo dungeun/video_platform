@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
-import { AuthService } from '@/lib/auth'
 import { useAuth } from '@/hooks/useAuth'
 
 interface AdminLayoutProps {
@@ -13,49 +12,24 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter()
   const pathname = usePathname()
-  const [user, setUser] = useState<any>(null)
+  const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth()
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const checkAuth = async () => {
-      // First try to get user from AuthService (which checks localStorage)
-      let currentUser = AuthService.getCurrentUser()
-      console.log('AdminLayout - Initial Current User:', currentUser)
+    if (!authLoading) {
+      console.log('AdminLayout - User:', user)
+      console.log('AdminLayout - User Type:', user?.type)
+      console.log('AdminLayout - Is Authenticated:', isAuthenticated)
       
-      // If not in AuthService, try to restore from localStorage
-      if (!currentUser && typeof window !== 'undefined') {
-        const storedUser = localStorage.getItem('user')
-        console.log('AdminLayout - Stored User in localStorage:', storedUser)
+      if (!isAuthenticated || (user?.type !== 'ADMIN' && user?.type !== 'admin')) {
+        console.log('AdminLayout - 관리자 권한이 없습니다. 로그인 페이지로 이동합니다.')
+        console.log('현재 사용자:', user)
         
-        if (storedUser) {
-          try {
-            const parsedUser = JSON.parse(storedUser)
-            // Re-initialize AuthService with stored user
-            AuthService.login(parsedUser.type, parsedUser)
-            currentUser = parsedUser
-            console.log('AdminLayout - Restored user from localStorage:', currentUser)
-          } catch (e) {
-            console.error('AdminLayout - Failed to parse stored user:', e)
-          }
-        }
+        router.push('/login?error=admin_required&message=관리자 권한이 필요합니다')
       }
-      
-      console.log('AdminLayout - Final Current User:', currentUser)
-      console.log('AdminLayout - User Type:', currentUser?.type)
-      
-      if (!currentUser || (currentUser.type !== 'ADMIN' && currentUser.type !== 'admin')) {
-        console.log('AdminLayout - Redirecting to login')
-        setIsLoading(false)
-        router.push('/login')
-        return
-      }
-      setUser(currentUser)
       setIsLoading(false)
     }
-    
-    // Call checkAuth immediately
-    checkAuth()
-  }, [router])
+  }, [authLoading, isAuthenticated, user, router])
 
   const menuItems = [
     {
@@ -152,7 +126,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   ]
 
   const handleLogout = () => {
-    AuthService.logout()
+    logout()
     router.push('/login')
   }
 

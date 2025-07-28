@@ -41,12 +41,18 @@ export function useAuth() {
 
   const setAccessToken = useCallback((token: string) => {
     localStorage.setItem('accessToken', token);
+    // 쿠키에도 토큰 저장 (미들웨어 호환성을 위해)
+    document.cookie = `accessToken=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=lax`;
+    document.cookie = `auth-token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=lax`;
   }, []);
 
   const clearTokens = useCallback(() => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('auth-token');
     localStorage.removeItem('user');
+    // 쿠키도 제거
+    document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
   }, []);
 
   // 현재 사용자 정보 가져오기

@@ -158,19 +158,20 @@ model Campaign {
   isPaid               Boolean               @default(false)
   reviewFeedback       String?
   reviewedAt           DateTime?
+  maxApplicants        Int                   @default(100)
+  rewardAmount         Float                 @default(0)
+  detailImages         Json?                 // 상세 이미지 배열
+  productImages        Json?                 // 상품소개 이미지 배열
+  questions            Json?                 // 추가 질문 JSON
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
   deliverables         String?
   detailedRequirements String?
+  platformFeeRate      Float                 @default(0.2) // 플랫폼 수수료율 (기본 20%)
   location             String                @default("전국")
-  maxApplicants        Int                   @default(100)
-  productImages        String?
   productIntro         String?
   viewCount            Int                   @default(0)
-  detailImages         String?
   platforms            String?
-  rewardAmount         Float                 @default(0)
-  questions            Json?                 // 동적 질문 데이터
   applications         CampaignApplication[]
   business             User                  @relation(fields: [businessId], references: [id], onDelete: Cascade)
   payments             Payment[]

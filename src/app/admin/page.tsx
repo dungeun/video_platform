@@ -2,9 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import AdminLayout from '@/components/admin/AdminLayout'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function AdminDashboard() {
+  const router = useRouter()
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth()
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -19,34 +23,92 @@ export default function AdminDashboard() {
   const [recentActivities, setRecentActivities] = useState<any[]>([])
   const [systemAlerts, setSystemAlerts] = useState<any[]>([])
 
+  // 인증 및 권한 확인
+  useEffect(() => {
+    if (!authLoading) {
+      if (!isAuthenticated) {
+        router.push('/login')
+        return
+      }
+      
+      if (user?.type !== 'ADMIN') {
+        router.push('/')
+        return
+      }
+    }
+  }, [user, isAuthenticated, authLoading, router])
+
   useEffect(() => {
     const loadDashboardData = async () => {
+      // 인증 확인 중이거나 인증되지 않았거나 관리자가 아니면 로드하지 않음
+      if (authLoading || !isAuthenticated || user?.type !== 'ADMIN') {
+        return
+      }
+
       try {
-        // 토큰 가져오기
-        const token = localStorage.getItem('accessToken');
+        // 토큰 가져오기 (localStorage 또는 쿠키에서)
+        let token = localStorage.getItem('accessToken');
+        
+        // localStorage에 없으면 쿠키에서 확인
+        if (!token) {
+          const cookies = document.cookie.split(';');
+          for (const cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'accessToken' || name === 'auth-token') {
+              token = value;
+              break;
+            }
+          }
+        }
+        
         if (!token) {
           console.error('토큰이 없습니다.');
+          console.log('Available localStorage keys:', Object.keys(localStorage));
+          console.log('Available cookies:', document.cookie);
           setLoading(false);
+          router.push('/login');
           return;
         }
+        
+        console.log('Token found:', token);
 
         // API 호출
         const response = await fetch('/api/admin/dashboard', {
+          method: 'GET',
+          credentials: 'include', // 쿠키를 포함하여 전송
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
           }
         });
 
         if (!response.ok) {
-          throw new Error('대시보드 데이터를 불러오는데 실패했습니다.');
+          const errorData = await response.json().catch(() => ({}));
+          console.error('API 응답 에러:', response.status, errorData);
+          
+          if (response.status === 401) {
+            router.push('/login');
+            return;
+          }
+          
+          throw new Error(errorData.error || '대시보드 데이터를 불러오는데 실패했습니다.');
         }
 
         const data = await response.json();
         
         // 데이터 설정
-        setStats(data.stats);
-        setRecentActivities(data.recentActivities);
-        setSystemAlerts(data.systemAlerts);
+        setStats(data.stats || {
+          totalUsers: 0,
+          activeUsers: 0,
+          totalCampaigns: 0,
+          activeCampaigns: 0,
+          revenue: 0,
+          growth: 0,
+          newUsers: 0,
+          pendingApprovals: 0
+        });
+        setRecentActivities(data.recentActivities || []);
+        setSystemAlerts(data.systemAlerts || []);
         
         setLoading(false);
       } catch (error) {
@@ -69,13 +131,36 @@ export default function AdminDashboard() {
     }
 
     loadDashboardData()
-  }, [])
+  }, [authLoading, isAuthenticated, user, router])
 
+  // 인증 확인 중
+  if (authLoading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="mt-4 text-gray-600">인증 확인 중...</p>
+          </div>
+        </div>
+      </AdminLayout>
+    )
+  }
+
+  // 인증되지 않았거나 관리자가 아닌 경우
+  if (!isAuthenticated || user?.type !== 'ADMIN') {
+    return null // 리다이렉트 중이므로 아무것도 렌더링하지 않음
+  }
+
+  // 데이터 로딩 중
   if (loading) {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="mt-4 text-gray-600">대시보드 데이터 로딩 중...</p>
+          </div>
         </div>
       </AdminLayout>
     )

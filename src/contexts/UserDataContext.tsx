@@ -109,7 +109,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false)
     }
-  }, [user, profileData])
+  }, [user])
 
   // 프로필 데이터 업데이트 (로컬 상태만, API 호출 없음)
   const updateProfile = useCallback((updates: Partial<ProfileData>) => {

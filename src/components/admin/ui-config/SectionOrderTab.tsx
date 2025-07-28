@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Eye, EyeOff } from 'lucide-react';
+import { useUIConfigStore } from '@/lib/stores/ui-config.store';
 
 interface Section {
   id: string;
@@ -14,6 +15,7 @@ interface Section {
   visible: boolean;
   fixed?: boolean;
   order: number;
+  type: 'hero' | 'category' | 'quicklinks' | 'promo' | 'ranking' | 'custom' | 'recommended';
 }
 
 interface SortableSectionItemProps {
@@ -78,58 +80,135 @@ function SortableSectionItem({ section, onToggleVisibility }: SortableSectionIte
 }
 
 export function SectionOrderTab() {
-  const [sections, setSections] = useState<Section[]>([
-    {
-      id: 'hero',
+  const { config, updateSectionOrder, updateMainPageCustomSections } = useUIConfigStore();
+  const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  
+  // 섹션 기본 정보 매핑
+  const sectionInfo: Record<string, { name: string; description: string; fixed?: boolean }> = {
+    hero: {
       name: '히어로 배너',
-      description: '메인 배너 슬라이드',
-      visible: true,
-      order: 1
+      description: '메인 배너 슬라이드'
     },
-    {
-      id: 'category',
+    category: {
       name: '카테고리 메뉴',
-      description: '카테고리별 아이콘 그리드',
-      visible: true,
-      order: 2
+      description: '카테고리별 아이콘 그리드'
     },
-    {
-      id: 'quicklinks',
+    quicklinks: {
       name: '바로가기 링크',
-      description: '빠른 접근 링크',
-      visible: true,
-      order: 3
+      description: '빠른 접근 링크'
     },
-    {
-      id: 'promo',
+    promo: {
       name: '프로모션 배너',
-      description: '이벤트 및 공지 배너',
-      visible: true,
-      order: 4
+      description: '이벤트 및 공지 배너'
     },
-    {
-      id: 'ranking',
+    ranking: {
       name: '실시간 랭킹',
-      description: '인기/마감임박 캠페인',
-      visible: true,
-      order: 5
+      description: '인기/마감임박 캠페인'
     },
-    {
-      id: 'recommended',
+    recommended: {
       name: '추천 캠페인',
-      description: '큐레이션된 캠페인 목록',
-      visible: true,
-      order: 6
+      description: '큐레이션된 캠페인 목록'
     },
-    {
-      id: 'cta',
+    cta: {
       name: '하단 CTA',
       description: '회원가입 유도 영역',
-      visible: true,
-      fixed: true,
-      order: 7
+      fixed: true
     }
-  ]);
+  };
+  
+  // Store에서 섹션 순서 가져와서 Section 형태로 변환
+  const [sections, setSections] = useState<Section[]>([]);
+  
+  // 초기 로드 시 중복 감지
+  useEffect(() => {
+    const sectionOrder = config.mainPage?.sectionOrder || [];
+    const customSections = config.mainPage?.customSections || [];
+    
+    // 중복 ID 감지
+    const allIds = [...sectionOrder.map(s => s.id), ...customSections.map(s => s.id)];
+    const uniqueIds = new Set(allIds);
+    
+    if (allIds.length !== uniqueIds.size) {
+      console.warn('Duplicate section IDs detected in stored configuration');
+    }
+  }, [config]);
+  
+  useEffect(() => {
+    const sectionOrder = config.mainPage?.sectionOrder || [];
+    
+    const convertedSections = sectionOrder.map(section => ({
+      id: section.id,
+      type: section.type,
+      name: sectionInfo[section.id]?.name || section.id,
+      description: sectionInfo[section.id]?.description || '',
+      visible: section.visible,
+      fixed: sectionInfo[section.id]?.fixed || false,
+      order: section.order
+    }));
+    
+    // 커스텀 섹션 추가 (중복 방지를 위해 유니크한 ID 보장)
+    const customSectionsRaw = config.mainPage?.customSections || [];
+    
+    // 먼저 커스텀 섹션의 중복 ID를 제거
+    const uniqueCustomSections = customSectionsRaw.filter((cs, index, self) => 
+      index === self.findIndex(s => s.id === cs.id)
+    );
+    
+    // 이미 사용된 ID 수집
+    const usedIds = new Set(convertedSections.map(s => s.id));
+    
+    const customSections = uniqueCustomSections.map((cs, index) => {
+      let finalId = cs.id || `custom-${index}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      
+      // ID가 이미 사용 중이면 새로운 ID 생성
+      if (usedIds.has(finalId)) {
+        finalId = `${finalId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        console.warn(`Duplicate custom section ID detected: ${cs.id}, using new ID: ${finalId}`);
+      }
+      
+      usedIds.add(finalId);
+      
+      return {
+        id: finalId,
+        type: 'custom' as const,
+        name: cs.title,
+        description: cs.subtitle || '커스텀 섹션',
+        visible: cs.visible,
+        fixed: false,
+        order: cs.order || 999 + index
+      };
+    });
+    
+    // 중복 ID 제거 및 정렬
+    const sectionMap = new Map<string, Section>();
+    
+    // 기본 섹션 먼저 추가
+    convertedSections.forEach(section => {
+      sectionMap.set(section.id, section);
+    });
+    
+    // 커스텀 섹션 추가 (중복 ID는 덮어쓰기 방지)
+    customSections.forEach(section => {
+      if (!sectionMap.has(section.id)) {
+        sectionMap.set(section.id, section);
+      } else {
+        // 중복된 ID가 있으면 새로운 ID로 변경
+        const newId = `${section.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        console.warn(`Duplicate section ID found: ${section.id}, changing to ${newId}`);
+        sectionMap.set(newId, { ...section, id: newId });
+      }
+    });
+    
+    const allSections = Array.from(sectionMap.values()).sort((a, b) => a.order - b.order);
+    
+    // 디버깅용 로그
+    if (process.env.NODE_ENV === 'development') {
+      console.log('All sections:', allSections);
+      console.log('Section IDs:', allSections.map(s => s.id));
+    }
+    
+    setSections(allSections);
+  }, [config]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -160,17 +239,37 @@ export function SectionOrderTab() {
         });
       });
 
+      // Store에 업데이트
+      const sectionOrder = newSections.map(section => ({
+        id: section.id,
+        type: section.type,
+        order: section.order,
+        visible: section.visible
+      }));
+      
+      updateSectionOrder(sectionOrder);
+      
       // API 호출하여 즉시 저장
       try {
-        // API 호출 로직
-        console.log('섹션 순서가 자동으로 저장되었습니다:', newSections);
-        // 실제 API 호출 시에는 아래와 같이
-        // await fetch('/api/admin/ui-config/section-order', {
-        //   method: 'POST',
-        //   body: JSON.stringify({ sections: newSections })
-        // });
+        const response = await fetch('/api/admin/ui-config', {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ config })
+        });
+        
+        if (response.ok) {
+          setSaveMessage({ type: 'success', message: '섹션 순서가 저장되었습니다.' });
+          setTimeout(() => setSaveMessage(null), 3000);
+        } else {
+          throw new Error('저장 실패');
+        }
       } catch (error) {
         console.error('섹션 순서 저장 실패:', error);
+        setSaveMessage({ type: 'error', message: '섹션 순서 저장에 실패했습니다.' });
+        setTimeout(() => setSaveMessage(null), 3000);
       }
     }
   };
@@ -184,30 +283,141 @@ export function SectionOrderTab() {
     
     setSections(updatedSections);
     
+    // Store에 업데이트
+    const sectionOrder = updatedSections.map(section => ({
+      id: section.id,
+      type: section.type,
+      order: section.order,
+      visible: section.visible
+    }));
+    
+    updateSectionOrder(sectionOrder);
+    
     // API 호출하여 즉시 저장
     try {
-      console.log('섹션 표시 상태가 자동으로 저장되었습니다:', updatedSections);
-      // 실제 API 호출 시에는 아래와 같이
-      // await fetch('/api/admin/ui-config/section-visibility', {
-      //   method: 'POST',
-      //   body: JSON.stringify({ sections: updatedSections })
-      // });
+      const response = await fetch('/api/admin/ui-config', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ config })
+      });
+      
+      if (response.ok) {
+        setSaveMessage({ type: 'success', message: '섹션 표시 상태가 저장되었습니다.' });
+        setTimeout(() => setSaveMessage(null), 3000);
+      } else {
+        throw new Error('저장 실패');
+      }
     } catch (error) {
       console.error('섹션 표시 상태 저장 실패:', error);
+      setSaveMessage({ type: 'error', message: '섹션 표시 상태 저장에 실패했습니다.' });
+      setTimeout(() => setSaveMessage(null), 3000);
+    }
+  };
+
+  // 중복 섹션 정리 함수
+  const cleanupDuplicateSections = async () => {
+    // 기본 섹션만 유지 (중복 제거)
+    const defaultSectionOrder = [
+      { id: 'hero', type: 'hero' as const, order: 1, visible: true },
+      { id: 'category', type: 'category' as const, order: 2, visible: true },
+      { id: 'quicklinks', type: 'quicklinks' as const, order: 3, visible: true },
+      { id: 'promo', type: 'promo' as const, order: 4, visible: true },
+      { id: 'ranking', type: 'ranking' as const, order: 5, visible: true },
+      { id: 'recommended', type: 'recommended' as const, order: 6, visible: true }
+    ];
+    
+    // 커스텀 섹션은 중복 제거하여 유지
+    const existingCustomSections = config.mainPage?.customSections || [];
+    const seenCustomIds = new Set<string>();
+    const cleanedCustomSections = existingCustomSections.filter((section: any) => {
+      if (seenCustomIds.has(section.id)) {
+        return false;
+      }
+      seenCustomIds.add(section.id);
+      return true;
+    });
+    
+    // Store 업데이트
+    updateSectionOrder(defaultSectionOrder);
+    updateMainPageCustomSections(cleanedCustomSections);
+    
+    // 새로운 config로 API 호출
+    const cleanedConfig = {
+      ...config,
+      mainPage: {
+        ...config.mainPage,
+        sectionOrder: defaultSectionOrder,
+        customSections: cleanedCustomSections
+      }
+    };
+    
+    try {
+      const response = await fetch('/api/admin/ui-config', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ config: cleanedConfig })
+      });
+      
+      if (response.ok) {
+        setSaveMessage({ type: 'success', message: '중복 섹션이 정리되었습니다. 새로고침합니다...' });
+        
+        // localStorage 정리
+        localStorage.removeItem('ui-config-storage');
+        
+        // 2초 후 페이지 새로고침
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      } else {
+        throw new Error('API 호출 실패');
+      }
+    } catch (error) {
+      setSaveMessage({ type: 'error', message: '정리 중 오류가 발생했습니다.' });
+      setTimeout(() => setSaveMessage(null), 3000);
     }
   };
 
   return (
     <div className="space-y-6">
+      {/* 저장 메시지 */}
+      {saveMessage && (
+        <div className={`p-4 rounded-lg ${
+          saveMessage.type === 'success' 
+            ? 'bg-green-100 text-green-700' 
+            : 'bg-red-100 text-red-700'
+        }`}>
+          {saveMessage.message}
+        </div>
+      )}
+      
       <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold mb-2">섹션 순서 관리</h2>
-        <p className="text-sm text-gray-600 mb-2">
-          드래그하여 홈페이지에 표시될 섹션 순서를 변경할 수 있습니다. 
-          눈 아이콘을 클릭하여 섹션 표시 여부를 설정하세요.
-        </p>
-        <p className="text-xs text-blue-600 mb-6">
-          ※ 변경사항은 자동으로 저장됩니다.
-        </p>
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h2 className="text-xl font-bold mb-2">섹션 순서 관리</h2>
+            <p className="text-sm text-gray-600 mb-2">
+              드래그하여 홈페이지에 표시될 섹션 순서를 변경할 수 있습니다. 
+              눈 아이콘을 클릭하여 섹션 표시 여부를 설정하세요.
+            </p>
+            <p className="text-xs text-blue-600">
+              ※ 변경사항은 자동으로 저장됩니다.
+            </p>
+          </div>
+          {/* 중복 정리 버튼 */}
+          {sections.length !== new Set(sections.map(s => s.id)).size && (
+            <button
+              onClick={cleanupDuplicateSections}
+              className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors text-sm"
+            >
+              중복 섹션 정리
+            </button>
+          )}
+        </div>
 
         <DndContext
           sensors={sensors}

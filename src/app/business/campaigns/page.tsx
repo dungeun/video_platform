@@ -5,15 +5,20 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { AuthService } from '@/lib/auth'
 import { apiGet } from '@/lib/api/client'
+import { useBusinessCampaigns } from '@/hooks/useSharedData'
+import { invalidateCache } from '@/hooks/useCachedData'
 import { Plus, Search, Filter, ChevronRight, Edit, Trash2, Users } from 'lucide-react'
 
 export default function BusinessCampaignsPage() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [campaigns, setCampaigns] = useState<any[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
+  
+  // 캐싱된 캠페인 데이터 사용
+  const { data: campaignsData, isLoading: loadingCampaigns, refetch: refetchCampaigns } = useBusinessCampaigns()
+  const campaigns = campaignsData || []
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -42,7 +47,6 @@ export default function BusinessCampaignsPage() {
         }
         
         setIsLoading(false)
-        fetchCampaigns()
       } catch (error) {
         console.error('Auth check error:', error)
         router.push('/login')
@@ -52,20 +56,7 @@ export default function BusinessCampaignsPage() {
     checkAuth()
   }, [])
 
-  const fetchCampaigns = async () => {
-    try {
-      const response = await apiGet('/api/business/campaigns')
-      
-      if (response.ok) {
-        const data = await response.json()
-        setCampaigns(data.campaigns || [])
-      } else {
-        console.error('Campaigns API Error:', response.status, response.statusText)
-      }
-    } catch (error) {
-      console.error('캠페인 데이터 조회 실패:', error)
-    }
-  }
+  // fetchCampaigns 함수 제거 - useBusinessCampaigns로 대체됨
 
   const handleDeleteCampaign = async (campaignId: string) => {
     if (!window.confirm('정말로 이 캠페인을 삭제하시겠습니까?')) {
@@ -81,8 +72,10 @@ export default function BusinessCampaignsPage() {
       })
 
       if (response.ok) {
-        setCampaigns(campaigns.filter(c => c.id !== campaignId))
         alert('캠페인이 삭제되었습니다.')
+        // 캐시 무효화하여 목록 갱신
+        invalidateCache(`business_campaigns_${user?.id}`)
+        refetchCampaigns()
       } else {
         const error = await response.json()
         alert(error.error || '캠페인 삭제에 실패했습니다.')
@@ -99,7 +92,7 @@ export default function BusinessCampaignsPage() {
     return matchesSearch && matchesStatus
   })
 
-  if (isLoading) {
+  if (isLoading || loadingCampaigns) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">

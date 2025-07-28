@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { prisma } from '@/lib/db/prisma'
 import { verifyJWT } from '@/lib/auth/jwt'
+
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 // POST /api/campaigns/[id]/apply - 캠페인 지원
 export async function POST(
@@ -15,8 +18,15 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const user = await verifyJWT(token)
-    if (!user || user.role !== 'INFLUENCER') {
+    let user;
+    try {
+      user = await verifyJWT(token);
+    } catch (jwtError: any) {
+      console.error('JWT verification error:', jwtError);
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+    
+    if (!user || user.type !== 'INFLUENCER') {
       return NextResponse.json({ error: 'Only influencers can apply' }, { status: 403 })
     }
 
@@ -49,7 +59,7 @@ export async function POST(
     }
 
     // 이미 지원했는지 확인
-    const existingApplication = await prisma.application.findFirst({
+    const existingApplication = await prisma.campaignApplication.findFirst({
       where: {
         campaignId: campaignId,
         influencerId: user.id
@@ -77,13 +87,38 @@ export async function POST(
       }, { status: 400 })
     }
 
+    // request body에서 메시지 가져오기
+    const body = await request.json()
+    const { message = '', name, birthYear, gender, phone, address } = body
+
+    // 프로필 정보 업데이트 (제공된 경우)
+    if (name || birthYear || gender || phone || address) {
+      await prisma.profile.update({
+        where: { userId: user.id },
+        data: {
+          ...(birthYear && { birthYear: birthYear }),
+          ...(gender && { gender: gender }),
+          ...(phone && { phone: phone }),
+          ...(address && { address: address })
+        }
+      })
+      
+      // 사용자 이름 업데이트
+      if (name) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { name: name }
+        })
+      }
+    }
+
     // 지원 생성
-    const application = await prisma.application.create({
+    const application = await prisma.campaignApplication.create({
       data: {
         campaignId: campaignId,
         influencerId: user.id,
         status: 'PENDING',
-        message: ''
+        message: message || ''
       }
     })
 
@@ -104,10 +139,15 @@ export async function POST(
       applicationId: application.id,
       message: 'Successfully applied to campaign'
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Campaign apply error:', error)
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code
+    })
     return NextResponse.json(
-      { error: 'Failed to apply to campaign' },
+      { error: error.message || 'Failed to apply to campaign' },
       { status: 500 }
     )
   }

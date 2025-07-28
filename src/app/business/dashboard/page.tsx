@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { AuthService } from '@/lib/auth'
 import { apiGet } from '@/lib/api/client'
+import { useBusinessStats } from '@/hooks/useSharedData'
 import CampaignManagementTab from '@/components/business/CampaignManagementTab'
 import ApplicantManagementTab from '@/components/business/ApplicantManagementTab'
 import { BarChart3, Users, TrendingUp, DollarSign } from 'lucide-react'
@@ -14,14 +15,16 @@ function BusinessDashboardContent() {
   const searchParams = useSearchParams()
   const [user, setUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [statsLoading, setStatsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'campaigns')
-  const [stats, setStats] = useState({
+  
+  // 캐싱된 통계 데이터 사용
+  const { data: statsData, isLoading: statsLoading } = useBusinessStats()
+  const stats = statsData || {
     totalCampaigns: 0,
     activeCampaigns: 0,
     totalApplications: 0,
     totalSpent: 0
-  })
+  }
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -63,9 +66,6 @@ function BusinessDashboardContent() {
         console.log('인증 성공 - 페이지 로드');
         setUser(currentUser)
         setIsLoading(false)
-        
-        // 통계 데이터 가져오기
-        fetchStats()
       } catch (error) {
         console.error('Auth check error:', error)
         router.push('/login')
@@ -80,25 +80,9 @@ function BusinessDashboardContent() {
     setActiveTab(tab)
   }, [searchParams])
 
-  const fetchStats = async () => {
-    try {
-      setStatsLoading(true)
-      const response = await apiGet('/api/business/stats')
-      
-      if (response.ok) {
-        const data = await response.json()
-        setStats(data.stats)
-      } else {
-        console.error('Stats API Error:', response.status, response.statusText)
-      }
-    } catch (error) {
-      console.error('통계 데이터 조회 실패:', error)
-    } finally {
-      setStatsLoading(false)
-    }
-  }
+  // fetchStats 함수 제거 - useBusinessStats로 대체됨
 
-  if (isLoading) {
+  if (isLoading || statsLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">

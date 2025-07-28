@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 import { verifyJWT } from '@/lib/auth/jwt'
 
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+
 // GET /api/mypage/liked-campaigns - 사용자가 좋아요한 캠페인 목록
 export async function GET(request: NextRequest) {
   try {
@@ -50,7 +53,7 @@ export async function GET(request: NextRequest) {
             _count: {
               select: {
                 campaignLikes: true,
-                campaignApplications: true
+                applications: true
               }
             }
           }
@@ -80,7 +83,7 @@ export async function GET(request: NextRequest) {
         requirements: like.campaign.requirements || '',
         application_deadline: like.campaign.endDate, // applicationDeadline doesn't exist
         likes: like.campaign._count.campaignLikes,
-        applications: like.campaign._count.campaignApplications,
+        applications: like.campaign._count.applications,
         likedAt: like.createdAt,
         status: like.campaign.status
       }))
@@ -97,5 +100,7 @@ export async function GET(request: NextRequest) {
       details: error instanceof Error ? error.message : 'Unknown error',
       stack: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined
     }, { status: 500 })
+  } finally {
+    await prisma.$disconnect()
   }
 }

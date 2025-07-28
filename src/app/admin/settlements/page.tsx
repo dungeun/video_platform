@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { AuthService, User } from '@/lib/auth'
-import { ProtectedRoute } from '@/lib/auth/protected-route'
+import { useAuth } from '@/hooks/useAuth'
+import AdminLayout from '@/components/admin/AdminLayout'
 
 interface SettlementRequest {
   id: string
@@ -23,25 +23,21 @@ interface SettlementRequest {
 
 export default function AdminSettlementsPage() {
   const router = useRouter()
-  const [user, setUser] = useState<User | null>(null)
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth()
   const [settlements, setSettlements] = useState<SettlementRequest[]>([])
   const [filteredSettlements, setFilteredSettlements] = useState<SettlementRequest[]>([])
   const [filterStatus, setFilterStatus] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
-    const currentUser = AuthService.getCurrentUser()
-    if (!currentUser) {
+    if (!authLoading && (!isAuthenticated || user?.type !== 'ADMIN')) {
       router.push('/login')
       return
     }
+  }, [authLoading, isAuthenticated, user, router])
 
-    if (currentUser.type?.toUpperCase() !== 'ADMIN') {
-      router.push('/mypage')
-      return
-    }
-
-    setUser(currentUser)
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && user?.type === 'ADMIN') {
     
     // Mock data for settlement requests
     const mockSettlements: SettlementRequest[] = [
@@ -125,10 +121,6 @@ export default function AdminSettlementsPage() {
     ))
   }
 
-  const handleLogout = () => {
-    AuthService.logout()
-    router.push('/login')
-  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -160,11 +152,13 @@ export default function AdminSettlementsPage() {
     }
   }
 
-  if (!user) {
+  if (authLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
-      </div>
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+        </div>
+      </AdminLayout>
     )
   }
 
@@ -177,65 +171,8 @@ export default function AdminSettlementsPage() {
   }
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <header className="bg-white shadow-sm">
-          <div className="container mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Link href="/admin" className="text-2xl font-bold text-purple-600">
-                  LinkPick
-                </Link>
-                <span className="text-gray-400">•</span>
-                <h1 className="text-xl font-semibold text-gray-900">수익 정산 관리</h1>
-              </div>
-              
-              <div className="flex items-center space-x-4">
-                <nav className="hidden md:flex space-x-6">
-                  <Link href="/admin" className="text-gray-600 hover:text-gray-900">
-                    대시보드
-                  </Link>
-                  <Link href="/admin/users" className="text-gray-600 hover:text-gray-900">
-                    사용자 관리
-                  </Link>
-                  <Link href="/admin/campaigns" className="text-gray-600 hover:text-gray-900">
-                    캠페인 관리
-                  </Link>
-                  <Link href="/admin/settlements" className="text-purple-600 font-medium">
-                    수익 정산
-                  </Link>
-                  <Link href="/admin/ui-config" className="text-gray-600 hover:text-gray-900">
-                    UI 설정
-                  </Link>
-                </nav>
-                
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                    <span className="text-purple-600 font-semibold text-sm">
-                      {user.name?.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                    <p className="text-xs text-gray-500">관리자</p>
-                  </div>
-                </div>
-                
-                <button
-                  onClick={handleLogout}
-                  className="text-sm text-gray-600 hover:text-red-600 font-medium transition-colors"
-                >
-                  로그아웃
-                </button>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content */}
-        <main className="container mx-auto px-6 py-8">
-          <div className="max-w-7xl mx-auto">
+    <AdminLayout>
+      <div className="space-y-6">
             {/* Header */}
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">수익 정산 관리</h1>
@@ -415,8 +352,7 @@ export default function AdminSettlementsPage() {
               )}
             </div>
           </div>
-        </main>
       </div>
-    </ProtectedRoute>
+    </AdminLayout>
   )
 }

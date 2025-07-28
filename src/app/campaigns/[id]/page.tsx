@@ -9,6 +9,9 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/useAuth'
+import { useUserData } from '@/contexts/UserDataContext'
+import { useCampaignData, useTemplates } from '@/hooks/useSharedData'
+import { invalidateCache } from '@/hooks/useCachedData'
 import PageLayout from '@/components/layouts/PageLayout'
 import {
   Dialog,
@@ -29,6 +32,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs'
 import { 
   Calendar, 
   MapPin, 
@@ -42,7 +51,9 @@ import {
   TrendingUp,
   CheckCircle,
   AlertCircle,
-  Edit
+  Edit,
+  Package,
+  FileText
 } from 'lucide-react'
 
 // 플랫폼 아이콘 컴포넌트들
@@ -77,7 +88,10 @@ interface Campaign {
   requirements: string | null
   hashtags: string[]
   imageUrl: string | null
+  headerImageUrl: string | null
+  thumbnailImageUrl: string | null
   detailImages: string[]
+  productImages: string[] | null
   status: string
   createdAt: string
   _count: {
@@ -104,8 +118,11 @@ export default function CampaignDetailPage() {
   const { user } = useAuth()
   const { toast } = useToast()
   
-  const [campaign, setCampaign] = useState<Campaign | null>(null)
-  const [loading, setLoading] = useState(true)
+  // 캐싱된 데이터 사용
+  const { profileData } = useUserData()
+  const { data: campaign, isLoading: loading, refetch: refetchCampaign } = useCampaignData(params.id as string)
+  const { data: templates = [], refetch: refetchTemplates } = useTemplates('application')
+  
   const [isLiked, setIsLiked] = useState(false)
   const [likeCount, setLikeCount] = useState(0)
   const [applying, setApplying] = useState(false)
@@ -119,71 +136,39 @@ export default function CampaignDetailPage() {
     address: ''
   })
   const [useProfileInfo, setUseProfileInfo] = useState(false)
-  const [profileData, setProfileData] = useState<any>(null)
-  const [templates, setTemplates] = useState<Array<{
-    id: string
-    name: string
-    content: string
-    isPublic: boolean
-    user?: { id: string, name: string | null }
-  }>>([])
   const [selectedTemplate, setSelectedTemplate] = useState<string>('')
   const [showSaveTemplate, setShowSaveTemplate] = useState(false)
   const [templateName, setTemplateName] = useState('')
 
+  // 캠페인 데이터 로드 시 좋아요 상태 설정
   useEffect(() => {
-    fetchCampaign()
-  }, [params.id])
+    if (campaign) {
+      setIsLiked(campaign.isLiked || false)
+      setLikeCount(campaign._count?.likes || 0)
+      
+      // 디버깅용 로그
+      console.log('Campaign data:', {
+        hasApplied: campaign.hasApplied,
+        applicationStatus: campaign.applicationStatus,
+        campaignId: campaign.id,
+        userId: user?.id
+      })
+    }
+  }, [campaign, user])
 
+  // 프로필 데이터로 폼 초기값 설정
   useEffect(() => {
-    if (user && user.type === 'INFLUENCER') {
-      fetchTemplates()
-      fetchProfile()
+    if (profileData && user?.type === 'INFLUENCER') {
+      setApplyForm(prev => ({
+        ...prev,
+        name: profileData.name || '',
+        birthYear: profileData.profile?.birthYear || '',
+        gender: profileData.profile?.gender || '',
+        phone: profileData.profile?.phone || '',
+        address: profileData.profile?.address || ''
+      }))
     }
-  }, [user])
-
-  const fetchProfile = async () => {
-    try {
-      const response = await fetch('/api/influencer/profile', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
-        }
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        setProfileData(data)
-        // 초기값 설정
-        setApplyForm(prev => ({
-          ...prev,
-          name: data.name || '',
-          birthYear: data.profile?.birthYear || '',
-          gender: data.profile?.gender || '',
-          phone: data.profile?.phone || '',
-          address: data.profile?.address || ''
-        }))
-      }
-    } catch (error) {
-      console.error('Error fetching profile:', error)
-    }
-  }
-
-  const fetchTemplates = async () => {
-    try {
-      const response = await fetch('/api/application-templates', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
-        }
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        setTemplates(data.templates)
-      }
-    } catch (error) {
-      console.error('Error fetching templates:', error)
-    }
-  }
+  }, [profileData, user])
 
   const handleSaveTemplate = async () => {
     if (!templateName.trim() || !applyForm.message.trim()) return
@@ -210,7 +195,9 @@ export default function CampaignDetailPage() {
         })
         setShowSaveTemplate(false)
         setTemplateName('')
-        fetchTemplates()
+        // 템플릿 캐시 무효화 및 새로고침
+        invalidateCache(`application_templates_${user?.id}`)
+        await refetchTemplates()
       }
     } catch (error) {
       console.error('Error saving template:', error)
@@ -253,31 +240,7 @@ export default function CampaignDetailPage() {
     }
   }
 
-  const fetchCampaign = async () => {
-    try {
-      const response = await fetch(`/api/campaigns/${params.id}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
-        }
-      })
-      
-      if (!response.ok) throw new Error('Failed to fetch campaign')
-      
-      const data = await response.json()
-      setCampaign(data.campaign)
-      setIsLiked(data.campaign.isLiked || false)
-      setLikeCount(data.campaign._count.likes || 0)
-    } catch (error) {
-      console.error('Error fetching campaign:', error)
-      toast({
-        title: '오류',
-        description: '캠페인 정보를 불러올 수 없습니다.',
-        variant: 'destructive'
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
+  // fetchCampaign 함수 제거 - useCampaignData로 대체됨
 
   const handleLike = async () => {
     if (!user) {
@@ -302,6 +265,9 @@ export default function CampaignDetailPage() {
       const data = await response.json()
       setIsLiked(data.liked)
       setLikeCount(prev => data.liked ? prev + 1 : prev - 1)
+      
+      // 캐시 무효화하여 관심 목록 갱신
+      invalidateCache(`liked_campaigns_${user?.id}`)
       
       toast({
         title: data.liked ? '관심 캠페인 추가' : '관심 캠페인 제거',
@@ -363,6 +329,9 @@ export default function CampaignDetailPage() {
 
       const data = await response.json()
       
+      // 캐시 무효화하여 지원 목록 갱신
+      invalidateCache(`influencer_applications_${user?.id}`)
+      
       toast({
         title: '지원 완료',
         description: '캠페인 지원이 완료되었습니다.'
@@ -380,8 +349,9 @@ export default function CampaignDetailPage() {
       setSelectedTemplate('')
       setUseProfileInfo(false)
       
-      // 페이지 새로고침 또는 지원 상태 업데이트
-      fetchCampaign()
+      // 캠페인 캐시 무효화 및 새로고침 (사용자별 캐시)
+      invalidateCache(`campaign_${params.id}_${user?.id}`)
+      await refetchCampaign()
     } catch (error) {
       console.error('Error applying to campaign:', error)
       toast({
@@ -488,7 +458,21 @@ export default function CampaignDetailPage() {
       <div className="min-h-screen bg-gray-50">
       {/* 헤더 이미지 */}
       <div className="relative h-96 bg-gray-900">
-        {campaign.imageUrl ? (
+        {campaign.headerImageUrl ? (
+          <Image
+            src={campaign.headerImageUrl}
+            alt={campaign.title}
+            fill
+            className="object-cover opacity-80"
+          />
+        ) : campaign.thumbnailImageUrl ? (
+          <Image
+            src={campaign.thumbnailImageUrl}
+            alt={campaign.title}
+            fill
+            className="object-cover opacity-80"
+          />
+        ) : campaign.imageUrl ? (
           <Image
             src={campaign.imageUrl}
             alt={campaign.title}
@@ -581,52 +565,95 @@ export default function CampaignDetailPage() {
                 </div>
               </Link>
 
-              {/* 캠페인 설명 */}
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-3">캠페인 소개</h2>
-                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{campaign.description}</p>
-              </div>
+              {/* 탭 메뉴 */}
+              <Tabs defaultValue="product" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="product" className="flex items-center gap-2">
+                    <Package className="w-4 h-4" />
+                    제품 소개
+                  </TabsTrigger>
+                  <TabsTrigger value="campaign" className="flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    캠페인 내용
+                  </TabsTrigger>
+                </TabsList>
 
-              {/* 요구사항 */}
-              {campaign.requirements && (
-                <div className="pt-6 border-t">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-3">요구사항</h2>
-                  <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{campaign.requirements}</p>
-                </div>
-              )}
-
-              {/* 해시태그 */}
-              {campaign.hashtags && Array.isArray(campaign.hashtags) && campaign.hashtags.length > 0 && (
-                <div className="pt-6 border-t">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-3">해시태그</h2>
-                  <div className="flex flex-wrap gap-2">
-                    {campaign.hashtags.map((tag, index) => (
-                      <span key={index} className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-sm">
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* 상세 이미지 */}
-              {campaign.detailImages && Array.isArray(campaign.detailImages) && campaign.detailImages.length > 0 && (
-                <div className="pt-6 border-t">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-3">상세 이미지</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {campaign.detailImages.map((image, index) => (
-                      <div key={index} className="relative aspect-video rounded-lg overflow-hidden">
-                        <Image
-                          src={image}
-                          alt={`상세 이미지 ${index + 1}`}
-                          fill
-                          className="object-cover"
-                        />
+                {/* 제품 소개 탭 */}
+                <TabsContent value="product" className="mt-6">
+                  {campaign.productImages && campaign.productImages.length > 0 ? (
+                    <div className="space-y-6">
+                      <h2 className="text-xl font-semibold text-gray-900">제품 소개</h2>
+                      <div className="grid grid-cols-1 gap-6">
+                        {campaign.productImages.map((image, index) => (
+                          <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
+                            <Image
+                              src={image}
+                              alt={`제품 이미지 ${index + 1}`}
+                              fill
+                              className="object-contain bg-gray-50"
+                            />
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-gray-500">
+                      <Package className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                      <p>제품 이미지가 없습니다.</p>
+                    </div>
+                  )}
+                </TabsContent>
+
+                {/* 캠페인 내용 탭 */}
+                <TabsContent value="campaign" className="mt-6 space-y-6">
+                  {/* 캠페인 설명 */}
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900 mb-3">캠페인 소개</h2>
+                    <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{campaign.description}</p>
                   </div>
-                </div>
-              )}
+
+                  {/* 요구사항 */}
+                  {campaign.requirements && (
+                    <div className="pt-6 border-t">
+                      <h2 className="text-xl font-semibold text-gray-900 mb-3">요구사항</h2>
+                      <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{campaign.requirements}</p>
+                    </div>
+                  )}
+
+                  {/* 해시태그 */}
+                  {campaign.hashtags && Array.isArray(campaign.hashtags) && campaign.hashtags.length > 0 && (
+                    <div className="pt-6 border-t">
+                      <h2 className="text-xl font-semibold text-gray-900 mb-3">해시태그</h2>
+                      <div className="flex flex-wrap gap-2">
+                        {campaign.hashtags.map((tag, index) => (
+                          <span key={index} className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-sm">
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 상세 이미지 */}
+                  {campaign.detailImages && Array.isArray(campaign.detailImages) && campaign.detailImages.length > 0 && (
+                    <div className="pt-6 border-t">
+                      <h2 className="text-xl font-semibold text-gray-900 mb-3">상세 이미지</h2>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {campaign.detailImages.map((image, index) => (
+                          <div key={index} className="relative aspect-video rounded-lg overflow-hidden">
+                            <Image
+                              src={image}
+                              alt={`상세 이미지 ${index + 1}`}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
 
             </div>
           </div>
@@ -706,12 +733,22 @@ export default function CampaignDetailPage() {
               <div className="mt-6 space-y-3">
                 {user?.type === 'INFLUENCER' && (
                   <>
-                    {campaign.hasApplied ? (
+                    {/* 디버깅용 로그 */}
+                    {process.env.NODE_ENV === 'development' && console.log('Application Status Debug:', {
+                      userId: user?.id,
+                      campaignId: params.id,
+                      hasApplied: campaign.hasApplied,
+                      applicationStatus: campaign.applicationStatus,
+                      rawCampaignData: campaign
+                    })}
+                    
+                    {campaign.hasApplied === true ? (
                       <div className="text-center">
                         <Badge className="bg-green-100 text-green-800">
                           {campaign.applicationStatus === 'PENDING' && '지원 완료 (검토 중)'}
                           {campaign.applicationStatus === 'APPROVED' && '승인됨'}
                           {campaign.applicationStatus === 'REJECTED' && '거절됨'}
+                          {!campaign.applicationStatus && '상태 확인 중...'}
                         </Badge>
                       </div>
                     ) : (
@@ -930,7 +967,7 @@ export default function CampaignDetailPage() {
             <Textarea
               id="message"
               placeholder="왜 이 캠페인에 적합한지, 어떤 콘텐츠를 만들 계획인지 등을 자유롭게 작성해주세요."
-              className="h-32"
+              className="h-64"
               value={applyForm.message}
               onChange={(e) => {
                 setApplyForm(prev => ({ ...prev, message: e.target.value }))

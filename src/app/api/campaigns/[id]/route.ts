@@ -27,6 +27,11 @@ export async function GET(
   try {
     const campaignId = params.id;
     const user = await authenticate(request);
+    
+    console.log('User authentication:', {
+      user: user ? { id: user.id, type: user.type } : null,
+      campaignId
+    });
 
     // DB에서 캠페인 상세 정보 조회
     const campaign = await prisma.campaign.findUnique({
@@ -106,6 +111,14 @@ export async function GET(
         }
       });
       
+      console.log('Application check:', {
+        campaignId,
+        userId: user.id,
+        userType: user.type,
+        existingApplication,
+        hasApplied: !!existingApplication
+      });
+      
       if (existingApplication) {
         hasApplied = true;
         applicationStatus = existingApplication.status;
@@ -150,7 +163,10 @@ export async function GET(
           return [];
         })(),
         imageUrl: campaign.imageUrl,
+        headerImageUrl: campaign.headerImageUrl,
+        thumbnailImageUrl: campaign.thumbnailImageUrl,
         detailImages: campaign.detailImages ? (typeof campaign.detailImages === 'string' ? JSON.parse(campaign.detailImages) : campaign.detailImages) : [],
+        productImages: campaign.productImages ? (typeof campaign.productImages === 'string' ? JSON.parse(campaign.productImages) : campaign.productImages) : [],
         status: campaign.status,
         createdAt: campaign.createdAt,
         _count: {

@@ -18,7 +18,7 @@ export function useCampaignData(campaignId: string) {
       return data.campaign
     },
     {
-      key: `campaign_${campaignId}`,
+      key: `campaign_${campaignId}_${user?.id || 'anonymous'}`, // 사용자별 캐시 키
       ttl: 10 * 60 * 1000, // 10분
       staleWhileRevalidate: true
     }
@@ -146,6 +146,125 @@ export function useCampaignList(filters: any = {}) {
     {
       key: `campaigns_${filterKey}`,
       ttl: 3 * 60 * 1000, // 3분 (자주 변경되는 데이터)
+      staleWhileRevalidate: true
+    }
+  )
+}
+
+// 인플루언서 지원 목록 캐싱
+export function useInfluencerApplications() {
+  const { user } = useAuth()
+  
+  return useCachedData(
+    async () => {
+      const response = await fetch('/api/influencer/applications', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
+        }
+      })
+      
+      if (!response.ok) throw new Error('Failed to fetch applications')
+      const data = await response.json()
+      return data.applications || []
+    },
+    {
+      key: `influencer_applications_${user?.id}`,
+      ttl: 5 * 60 * 1000, // 5분
+      staleWhileRevalidate: true
+    }
+  )
+}
+
+// 인플루언서 출금 정보 캐싱
+export function useInfluencerWithdrawals() {
+  const { user } = useAuth()
+  
+  return useCachedData(
+    async () => {
+      const response = await fetch('/api/influencer/withdrawals', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
+        }
+      })
+      
+      if (!response.ok) throw new Error('Failed to fetch withdrawals')
+      return response.json()
+    },
+    {
+      key: `influencer_withdrawals_${user?.id}`,
+      ttl: 5 * 60 * 1000, // 5분
+      staleWhileRevalidate: true
+    }
+  )
+}
+
+// 비즈니스 캠페인 목록 캐싱
+export function useBusinessCampaigns() {
+  const { user } = useAuth()
+  
+  return useCachedData(
+    async () => {
+      const response = await fetch('/api/business/campaigns', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
+        }
+      })
+      
+      if (!response.ok) throw new Error('Failed to fetch business campaigns')
+      const data = await response.json()
+      return data.campaigns || []
+    },
+    {
+      key: `business_campaigns_${user?.id}`,
+      ttl: 5 * 60 * 1000, // 5분
+      staleWhileRevalidate: true
+    }
+  )
+}
+
+// 비즈니스 지원서 목록 캐싱
+export function useBusinessApplications() {
+  const { user } = useAuth()
+  
+  return useCachedData(
+    async () => {
+      const response = await fetch('/api/business/applications', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
+        }
+      })
+      
+      if (!response.ok) throw new Error('Failed to fetch business applications')
+      const data = await response.json()
+      return data.applications || []
+    },
+    {
+      key: `business_applications_${user?.id}`,
+      ttl: 5 * 60 * 1000, // 5분
+      staleWhileRevalidate: true
+    }
+  )
+}
+
+// 비즈니스 통계 캐싱
+export function useBusinessStats() {
+  const { user } = useAuth()
+  
+  return useCachedData(
+    async () => {
+      const response = await fetch('/api/business/stats', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
+        }
+      })
+      
+      if (!response.ok) throw new Error('Failed to fetch business stats')
+      const data = await response.json()
+      return data.stats
+    },
+    {
+      key: `business_stats_${user?.id}`,
+      ttl: 5 * 60 * 1000, // 5분
       staleWhileRevalidate: true
     }
   )

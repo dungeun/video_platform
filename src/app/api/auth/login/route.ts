@@ -57,7 +57,9 @@ export async function POST(request: NextRequest) {
 
     // 비밀번호 확인
     console.log('User found:', user.email, 'Type:', user.type, 'Status:', user.status)
-    const isValidPassword = await bcrypt.compare(password, user.password)
+    
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    
     console.log('Password validation result:', isValidPassword)
     if (!isValidPassword) {
       return NextResponse.json(
@@ -84,6 +86,7 @@ export async function POST(request: NextRequest) {
     const token = jwt.sign(
       {
         id: user.id,
+        userId: user.id, // 호환성을 위해 추가
         email: user.email,
         type: user.type,
         name: user.name
@@ -108,6 +111,15 @@ export async function POST(request: NextRequest) {
 
     // 쿠키 설정
     response.cookies.set('auth-token', token, {
+      httpOnly: true,
+      secure: false, // HTTP 환경에서도 작동하도록 수정
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7, // 7일
+      path: '/'
+    })
+    
+    // accessToken 쿠키도 설정 (호환성)
+    response.cookies.set('accessToken', token, {
       httpOnly: true,
       secure: false, // HTTP 환경에서도 작동하도록 수정
       sameSite: 'lax',

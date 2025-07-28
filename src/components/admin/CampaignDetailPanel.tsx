@@ -29,6 +29,7 @@ interface CampaignDetail {
   imageUrl?: string
   status: string
   isPaid: boolean
+  platformFeeRate: number
   reviewFeedback?: string
   reviewedAt?: string
   createdAt: string
@@ -68,6 +69,8 @@ export default function CampaignDetailPanel({
   const [campaign, setCampaign] = useState<CampaignDetail | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [isEditingFeeRate, setIsEditingFeeRate] = useState(false)
+  const [tempFeeRate, setTempFeeRate] = useState<number>(0.2)
 
   useEffect(() => {
     if (isOpen && campaignId) {
@@ -136,6 +139,27 @@ export default function CampaignDetailPanel({
     } catch (error) {
       console.error('상태 변경 실패:', error)
       alert('상태 변경 중 오류가 발생했습니다.')
+    }
+  }
+
+  const handleFeeRateSave = async () => {
+    if (!campaignId || !campaign) return
+
+    try {
+      const response = await adminApi.put(`/api/admin/campaigns/${campaignId}/fee-rate`, {
+        platformFeeRate: tempFeeRate
+      })
+
+      if (response.ok) {
+        setCampaign(prev => prev ? { ...prev, platformFeeRate: tempFeeRate } : null)
+        setIsEditingFeeRate(false)
+        alert('수수료율이 변경되었습니다.')
+      } else {
+        alert('수수료율 변경에 실패했습니다.')
+      }
+    } catch (error) {
+      console.error('수수료율 변경 실패:', error)
+      alert('수수료율 변경 중 오류가 발생했습니다.')
     }
   }
 
@@ -264,6 +288,58 @@ export default function CampaignDetailPanel({
                     </button>
                   </div>
                 </div>
+              </div>
+
+              {/* Platform Fee Rate */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">플랫폼 수수료율</label>
+                {isEditingFeeRate ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      value={tempFeeRate * 100}
+                      onChange={(e) => setTempFeeRate(Number(e.target.value) / 100)}
+                      min="0"
+                      max="100"
+                      step="1"
+                      className="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <span className="text-sm text-gray-600">%</span>
+                    <button
+                      onClick={handleFeeRateSave}
+                      className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    >
+                      저장
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditingFeeRate(false)
+                        setTempFeeRate(campaign.platformFeeRate || 0.2)
+                      }}
+                      className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                    >
+                      취소
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm text-gray-600">
+                      {((campaign.platformFeeRate || 0.2) * 100).toFixed(0)}%
+                    </p>
+                    <button
+                      onClick={() => {
+                        setIsEditingFeeRate(true)
+                        setTempFeeRate(campaign.platformFeeRate || 0.2)
+                      }}
+                      className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-gray-700"
+                    >
+                      수정
+                    </button>
+                  </div>
+                )}
+                <p className="text-xs text-gray-500">
+                  예상 수수료: {formatCurrency(campaign.budget * (campaign.platformFeeRate || 0.2))}
+                </p>
               </div>
 
               {/* Dates */}

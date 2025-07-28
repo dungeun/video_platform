@@ -4,6 +4,14 @@ import { useState, useEffect } from 'react'
 import { User } from '@/lib/auth'
 import { apiGet } from '@/lib/api/client'
 import { parseCategories } from '@/lib/utils/parse-categories'
+import { useUserData } from '@/contexts/UserDataContext'
+import { 
+  useInfluencerStats, 
+  useLikedCampaigns,
+  useInfluencerApplications,
+  useInfluencerWithdrawals
+} from '@/hooks/useSharedData'
+import { invalidateCache } from '@/hooks/useCachedData'
 import { 
   Clock, CheckCircle, XCircle, AlertCircle, Calendar, DollarSign, 
   Eye, FileText, Upload, MessageSquare, TrendingUp, Star, User as UserIcon
@@ -16,14 +24,12 @@ interface InfluencerMyPageProps {
 }
 
 export default function InfluencerMyPage({ user, activeTab, setActiveTab }: InfluencerMyPageProps) {
-  const [stats, setStats] = useState({
-    totalCampaigns: 0,
-    activeCampaigns: 0,
-    totalEarnings: 0,
-    averageRating: 0,
-    totalViews: 0,
-    followers: 0
-  })
+  // 캐싱된 데이터 사용
+  const { profileData, refreshProfile } = useUserData()
+  const { data: statsData, isLoading: loadingStats, refetch: refetchStats } = useInfluencerStats()
+  const { data: likedCampaignsData, isLoading: loadingSavedCampaigns, refetch: refetchLikedCampaigns } = useLikedCampaigns()
+  const { data: applicationsData, isLoading: loadingApplications } = useInfluencerApplications()
+  const { data: withdrawalsData, isLoading: loadingWithdrawals } = useInfluencerWithdrawals()
   
   const [showEditModal, setShowEditModal] = useState(false)
   const [socialLinks, setSocialLinks] = useState({
@@ -33,15 +39,23 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
     tiktok: ''
   })
   const [loadingFollowers, setLoadingFollowers] = useState(false)
-  const [loadingStats, setLoadingStats] = useState(true)
   const [ratings, setRatings] = useState<number[]>([])
   const [newRating, setNewRating] = useState('')
 
-  const [activeCampaigns, setActiveCampaigns] = useState<any[]>([])
-  const [recentEarnings, setRecentEarnings] = useState<any[]>([])
+  // 통계 데이터
+  const stats = statsData?.stats || {
+    totalCampaigns: 0,
+    activeCampaigns: 0,
+    totalEarnings: 0,
+    averageRating: 0,
+    totalViews: 0,
+    followers: 0
+  }
+  const activeCampaigns = statsData?.activeCampaigns || []
+  const recentEarnings = statsData?.recentEarnings || []
   
-  // 출금 관련 상태
-  const [withdrawals, setWithdrawals] = useState<any>({ withdrawableAmount: 0, settlements: [] })
+  // 출금 관련 상태 - 캐싱된 데이터 사용
+  const withdrawals = withdrawalsData || { withdrawableAmount: 0, settlements: [] }
   const [withdrawalForm, setWithdrawalForm] = useState({
     amount: '',
     bankName: '',
@@ -56,212 +70,122 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
   })
   const [submittingWithdrawal, setSubmittingWithdrawal] = useState(false)
   
-  // 프로필 관련 상태
-  const [profileData, setProfileData] = useState<any>(null)
+  // 프로필 폼 상태
   const [profileForm, setProfileForm] = useState({
-    name: user.name || '',
-    email: user.email || '',
-    bio: '',
-    phone: '',
-    instagram: '',
-    youtube: '',
-    tiktok: '',
-    naverBlog: '',
-    categories: []
+    name: profileData?.name || user.name || '',
+    email: profileData?.email || user.email || '',
+    bio: profileData?.profile?.bio || '',
+    phone: profileData?.profile?.phone || '',
+    instagram: profileData?.profile?.instagram || '',
+    youtube: profileData?.profile?.youtube || '',
+    tiktok: profileData?.profile?.tiktok || '',
+    naverBlog: profileData?.profile?.naverBlog || '',
+    categories: profileData?.profile?.categories ? parseCategories(profileData.profile.categories) : []
   })
   const [savingProfile, setSavingProfile] = useState(false)
   
-  // 지원 목록과 관심 목록 상태
-  const [applications, setApplications] = useState<any[]>([])
-  const [savedCampaigns, setSavedCampaigns] = useState<any[]>([])
-  const [loadingApplications, setLoadingApplications] = useState(false)
-  const [loadingSavedCampaigns, setLoadingSavedCampaigns] = useState(false)
+  // 지원 목록과 관심 목록 상태 - 캐싱된 데이터 사용
+  const applications = applicationsData || []
+  const savedCampaigns = likedCampaignsData?.campaigns || []
   
   // 내 캠페인 관련 상태
   const [myCampaigns, setMyCampaigns] = useState<any[]>([])
   const [campaignActiveTab, setCampaignActiveTab] = useState<'all' | 'pending' | 'active' | 'completed' | 'reviewing' | 'rejected'>('all')
-  const [loadingMyCampaigns, setLoadingMyCampaigns] = useState(false)
 
-  // 통계 데이터 가져오기
+  // 초기 데이터 로드
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        setLoadingStats(true)
-        const response = await apiGet('/api/influencer/stats')
-        
-        if (response.ok) {
-          const data = await response.json()
-          setStats(data.stats)
-          setActiveCampaigns(data.activeCampaigns || [])
-          setRecentEarnings(data.recentEarnings || [])
-          
-          // 평점 개수에 맞게 임시 평점 데이터 생성
-          const ratingCount = data.stats.totalCampaigns || 0
-          const tempRatings = Array.from({ length: ratingCount }, () => 
-            Math.random() > 0.3 ? 5 : 4.5
-          )
-          setRatings(tempRatings)
-        }
-      } catch (error) {
-        console.error('통계 데이터 조회 실패:', error)
-      } finally {
-        setLoadingStats(false)
-      }
+    // 평점 데이터 생성
+    if (statsData) {
+      const ratingCount = statsData.stats.totalCampaigns || 0
+      const tempRatings = Array.from({ length: ratingCount }, () => 
+        Math.random() > 0.3 ? 5 : 4.5
+      )
+      setRatings(tempRatings)
     }
-
-    fetchStats()
-    fetchWithdrawals()
-    fetchProfile()
-    fetchApplications()
-    fetchSavedCampaigns()
-    fetchMyCampaigns()
-  }, [])
+  }, [statsData])
   
-  // 지원 목록 가져오기
-  const fetchApplications = async () => {
-    try {
-      setLoadingApplications(true)
-      const response = await apiGet('/api/influencer/applications')
-      if (response.ok) {
-        const data = await response.json()
-        console.log('지원 목록 API 응답:', data)
-        setApplications(data.applications || [])
-      } else {
-        console.error('지원 목록 API 오류:', response.status, response.statusText)
-      }
-    } catch (error) {
-      console.error('지원 목록 조회 오류:', error)
-    } finally {
-      setLoadingApplications(false)
-    }
-  }
-  
-  // 관심 캠페인 목록 가져오기 (좋아요한 캠페인)
-  const fetchSavedCampaigns = async () => {
-    try {
-      setLoadingSavedCampaigns(true)
-      const response = await apiGet('/api/mypage/liked-campaigns')
-      if (response.ok) {
-        const data = await response.json()
-        console.log('Liked campaigns data:', data)
-        setSavedCampaigns(data.campaigns || [])
-      } else {
-        const errorData = await response.json()
-        console.error('관심 캠페인 API 오류:', response.status, errorData)
-      }
-    } catch (error) {
-      console.error('관심 캠페인 조회 오류:', error)
-    } finally {
-      setLoadingSavedCampaigns(false)
-    }
-  }
-  
-  // 내 캠페인 목록 가져오기
-  const fetchMyCampaigns = async () => {
-    try {
-      setLoadingMyCampaigns(true)
-      const response = await apiGet('/api/influencer/applications')
-      if (response.ok) {
-        const data = await response.json()
-        console.log('전체 지원 목록:', data.applications)
-        
-        // APPROVED 상태의 지원만 필터링하여 캠페인으로 표시
-        const approvedApplications = (data.applications || [])
-          .filter((app: any) => app.status === 'APPROVED')
-          .map((app: any) => {
-            // 콘텐츠 제출 상태에 따라 캠페인 상태 결정
-            let campaignStatus = 'in_progress'
-            if (app.submittedContent) {
-              if (app.submittedContent.status === 'APPROVED') {
-                campaignStatus = 'completed'
-              } else if (app.submittedContent.status === 'PENDING_REVIEW') {
-                campaignStatus = 'submitted'
-              }
+  // applications 데이터로 myCampaigns 생성
+  useEffect(() => {
+    if (applications) {
+      // APPROVED 상태의 지원만 필터링하여 캠페인으로 표시
+      const approvedApplications = applications
+        .filter((app: any) => app.status === 'APPROVED')
+        .map((app: any) => {
+          // 콘텐츠 제출 상태에 따라 캠페인 상태 결정
+          let campaignStatus = 'in_progress'
+          if (app.submittedContent) {
+            if (app.submittedContent.status === 'APPROVED') {
+              campaignStatus = 'completed'
+            } else if (app.submittedContent.status === 'PENDING_REVIEW') {
+              campaignStatus = 'submitted'
             }
-            
-            return {
-              id: app.campaignId,
-              applicationId: app.id,
-              title: app.title,
-              brand: app.brand,
-              status: campaignStatus,
-              appliedDate: app.appliedAt,
-              deadline: app.endDate,
-              budget: app.budget,
-              requirements: ['캠페인 요구사항을 확인해주세요'],
-              submittedContent: app.submittedContent
-            }
-          })
-        
-        console.log('승인된 캠페인:', approvedApplications)
-        setMyCampaigns(approvedApplications)
-      }
-    } catch (error) {
-      console.error('내 캠페인 조회 오류:', error)
-    } finally {
-      setLoadingMyCampaigns(false)
-    }
-  }
-  
-  // 출금 내역 가져오기
-  const fetchWithdrawals = async () => {
-    try {
-      const response = await apiGet('/api/influencer/withdrawals')
-      if (response.ok) {
-        const data = await response.json()
-        setWithdrawals(data)
-      }
-    } catch (error) {
-      console.error('Error fetching withdrawals:', error)
-    }
-  }
-  
-  // 프로필 정보 가져오기
-  const fetchProfile = async () => {
-    try {
-      const response = await apiGet('/api/influencer/profile')
-      if (response.ok) {
-        const data = await response.json()
-        setProfileData(data)
-        if (data.profile) {
-          setProfileForm(prev => ({
-            ...prev,
-            name: data.name || '',
-            email: data.email || '',
-            bio: data.profile.bio || '',
-            phone: data.profile.phone || '',
-            instagram: data.profile.instagram || '',
-            youtube: data.profile.youtube || '',
-            tiktok: data.profile.tiktok || '',
-            naverBlog: data.profile.naverBlog || '',
-            categories: parseCategories(data.profile.categories)
-          }))
-          // 은행 정보 설정
-          if (data.profile.bankName) {
-            setBankInfo({
-              bankName: data.profile.bankName || '',
-              bankAccountNumber: data.profile.bankAccountNumber || '',
-              bankAccountHolder: data.profile.bankAccountHolder || ''
-            })
-            setWithdrawalForm(prev => ({
-              ...prev,
-              bankName: data.profile.bankName || '',
-              accountNumber: data.profile.bankAccountNumber || '',
-              accountHolder: data.profile.bankAccountHolder || ''
-            }))
           }
-          setSocialLinks({
-            instagram: data.profile.instagram || '',
-            youtube: data.profile.youtube || '',
-            naverBlog: data.profile.naverBlog || '',
-            tiktok: data.profile.tiktok || ''
-          })
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching profile:', error)
+          
+          return {
+            id: app.campaignId,
+            applicationId: app.id,
+            title: app.title,
+            brand: app.brand,
+            status: campaignStatus,
+            appliedDate: app.appliedAt,
+            deadline: app.endDate,
+            budget: app.budget,
+            requirements: ['캠페인 요구사항을 확인해주세요'],
+            submittedContent: app.submittedContent
+          }
+        })
+      
+      setMyCampaigns(approvedApplications)
     }
-  }
+  }, [applications])
+  
+  // 프로필 데이터로 폼 업데이트
+  useEffect(() => {
+    if (profileData) {
+      setProfileForm({
+        name: profileData.name || user.name || '',
+        email: profileData.email || user.email || '',
+        bio: profileData.profile?.bio || '',
+        phone: profileData.profile?.phone || '',
+        instagram: profileData.profile?.instagram || '',
+        youtube: profileData.profile?.youtube || '',
+        tiktok: profileData.profile?.tiktok || '',
+        naverBlog: profileData.profile?.naverBlog || '',
+        categories: profileData.profile?.categories ? parseCategories(profileData.profile.categories) : []
+      })
+    }
+  }, [profileData, user])
+  
+  // fetch 함수들 제거 - 캐싱된 데이터 사용
+  // fetchApplications, fetchMyCampaigns, fetchWithdrawals 함수들은 이제 불필요
+  
+  // fetchProfile 함수 제거 - useUserData로 대체됨
+  
+  // 프로필 데이터로 은행 정보 및 소셜 링크 설정
+  useEffect(() => {
+    if (profileData?.profile) {
+      // 은행 정보 설정
+      if (profileData.profile.bankName) {
+        setBankInfo({
+          bankName: profileData.profile.bankName || '',
+          bankAccountNumber: profileData.profile.bankAccountNumber || '',
+          bankAccountHolder: profileData.profile.bankAccountHolder || ''
+        })
+        setWithdrawalForm(prev => ({
+          ...prev,
+          bankName: profileData.profile.bankName || '',
+          accountNumber: profileData.profile.bankAccountNumber || '',
+          accountHolder: profileData.profile.bankAccountHolder || ''
+        }))
+      }
+      setSocialLinks({
+        instagram: profileData.profile.instagram || '',
+        youtube: profileData.profile.youtube || '',
+        naverBlog: profileData.profile.naverBlog || '',
+        tiktok: profileData.profile.tiktok || ''
+      })
+    }
+  }, [profileData])
   
   // 출금 신청
   const handleWithdrawal = async () => {
@@ -295,7 +219,8 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
       if (response.ok) {
         alert('출금 신청이 완료되었습니다.')
         setWithdrawalForm({ amount: '', bankName: '', accountNumber: '', accountHolder: '' })
-        fetchWithdrawals()
+        // 캐시 무효화하여 자동으로 데이터 갱신
+        invalidateCache('influencer_withdrawals')
       } else {
         const error = await response.json()
         alert(error.error || '출금 신청에 실패했습니다.')
@@ -323,7 +248,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
       
       if (response.ok) {
         alert('프로필이 저장되었습니다.')
-        fetchProfile()
+        // refreshProfile이 자동으로 캐시를 갱신함
       } else {
         alert('프로필 저장에 실패했습니다.')
       }
@@ -604,7 +529,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
               </div>
 
               {/* 캠페인 리스트 */}
-              {loadingMyCampaigns || loadingApplications ? (
+              {loadingApplications ? (
                 <div className="text-center py-8">
                   <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-600"></div>
                 </div>
@@ -1029,7 +954,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                                     }
                                   })
                                   if (response.ok) {
-                                    fetchSavedCampaigns()
+                                    refetchLikedCampaigns()
                                   }
                                 } catch (error) {
                                   console.error('관심 제거 오류:', error)
@@ -1399,7 +1324,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                     if (response.ok) {
                       setShowEditModal(false)
                       alert('SNS 계정이 업데이트되었습니다.')
-                      fetchProfile()
+                      refreshProfile() // 캐시 갱신
                     } else {
                       alert('SNS 계정 업데이트에 실패했습니다.')
                     }

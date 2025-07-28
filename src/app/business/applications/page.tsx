@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { AuthService } from '@/lib/auth'
 import { apiGet, apiPost } from '@/lib/api/client'
+import { useBusinessApplications, useBusinessCampaigns } from '@/hooks/useSharedData'
+import { invalidateCache } from '@/hooks/useCachedData'
 import { Search, Filter, Check, X, Eye, MessageSquare } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
@@ -13,11 +15,15 @@ export default function BusinessApplicationsPage() {
   const { toast } = useToast()
   const [user, setUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [applications, setApplications] = useState<any[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterCampaign, setFilterCampaign] = useState('all')
-  const [campaigns, setCampaigns] = useState<any[]>([])
+  
+  // 캐싱된 데이터 사용
+  const { data: applicationsData, isLoading: loadingApplications, refetch: refetchApplications } = useBusinessApplications()
+  const { data: campaignsData, isLoading: loadingCampaigns } = useBusinessCampaigns()
+  const applications = applicationsData || []
+  const campaigns = campaignsData || []
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -46,8 +52,6 @@ export default function BusinessApplicationsPage() {
         }
         
         setIsLoading(false)
-        fetchApplications()
-        fetchCampaigns()
       } catch (error) {
         console.error('Auth check error:', error)
         router.push('/login')
@@ -57,35 +61,7 @@ export default function BusinessApplicationsPage() {
     checkAuth()
   }, [])
 
-  const fetchApplications = async () => {
-    try {
-      const response = await apiGet('/api/business/applications')
-      
-      if (response.ok) {
-        const data = await response.json()
-        setApplications(data.applications || [])
-      } else {
-        console.error('Applications API Error:', response.status, response.statusText)
-      }
-    } catch (error) {
-      console.error('지원서 데이터 조회 실패:', error)
-    }
-  }
-
-  const fetchCampaigns = async () => {
-    try {
-      const response = await apiGet('/api/business/campaigns')
-      
-      if (response.ok) {
-        const data = await response.json()
-        setCampaigns(data.campaigns || [])
-      } else {
-        console.error('Campaigns API Error:', response.status, response.statusText)
-      }
-    } catch (error) {
-      console.error('캠페인 데이터 조회 실패:', error)
-    }
-  }
+  // fetch 함수들 제거 - 캐싱된 데이터 사용
 
   const handleStatusChange = async (applicationId: string, status: 'approved' | 'rejected') => {
     try {
@@ -98,7 +74,9 @@ export default function BusinessApplicationsPage() {
           title: '성공',
           description: status === 'approved' ? '지원서가 승인되었습니다.' : '지원서가 거절되었습니다.'
         })
-        fetchApplications() // 목록 새로고침
+        // 캐시 무효화하여 목록 갱신
+        invalidateCache(`business_applications_${user?.id}`)
+        refetchApplications()
       } else {
         throw new Error('상태 변경 실패')
       }
@@ -120,7 +98,7 @@ export default function BusinessApplicationsPage() {
     return matchesSearch && matchesStatus && matchesCampaign
   })
 
-  if (isLoading) {
+  if (isLoading || loadingApplications || loadingCampaigns) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">

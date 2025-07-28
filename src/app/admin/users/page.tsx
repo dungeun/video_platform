@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { AuthService } from '@/lib/auth'
+import { useAuth } from '@/hooks/useAuth'
 import { apiGet, apiPut } from '@/lib/api/client'
 import AdminLayout from '@/components/admin/AdminLayout'
 
@@ -35,6 +35,7 @@ interface User {
 
 export default function AdminUsersPage() {
   const router = useRouter()
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [filters, setFilters] = useState({
@@ -53,17 +54,17 @@ export default function AdminUsersPage() {
   })
 
   useEffect(() => {
-    const checkAuth = () => {
-      const user = AuthService.getCurrentUser()
-      if (!user || user.type !== 'ADMIN') {
-        router.push('/login')
-        return
-      }
+    if (!authLoading && (!isAuthenticated || user?.type !== 'ADMIN')) {
+      router.push('/login')
+      return
     }
+  }, [authLoading, isAuthenticated, user, router])
 
-    checkAuth()
-    fetchUsers()
-  }, [pagination.page, filters.type, filters.status, filters.search])
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && user?.type === 'ADMIN') {
+      fetchUsers()
+    }
+  }, [authLoading, isAuthenticated, user, pagination.page, filters.type, filters.status, filters.search])
 
   const fetchUsers = async () => {
     try {
@@ -196,7 +197,7 @@ export default function AdminUsersPage() {
     }
   }
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center h-64">

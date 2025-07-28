@@ -7,15 +7,32 @@
 function getAuthToken(): string | null {
   if (typeof window === 'undefined') return null;
   
-  // 우선순위: accessToken -> auth-token
-  return localStorage.getItem('accessToken') || 
-         localStorage.getItem('auth-token') ||
-         null;
+  // localStorage에서 먼저 확인
+  let token = localStorage.getItem('accessToken') || localStorage.getItem('auth-token');
+  
+  // localStorage에 없으면 쿠키에서 확인
+  if (!token) {
+    const cookies = document.cookie.split(';');
+    for (const cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === 'accessToken' || name === 'auth-token') {
+        token = value;
+        break;
+      }
+    }
+  }
+  
+  return token || null;
 }
 
 // 관리자 API 요청을 위한 fetch 래퍼
 export async function adminFetch(url: string, options: RequestInit = {}): Promise<Response> {
   const token = getAuthToken();
+  
+  console.log('[adminFetch] Token found:', !!token);
+  if (token) {
+    console.log('[adminFetch] Token prefix:', token.substring(0, 20) + '...');
+  }
   
   const headers = new Headers(options.headers);
   
