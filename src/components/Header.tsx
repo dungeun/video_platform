@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { AuthService, User } from '@/lib/auth'
+import { useAuth } from '@/hooks/useAuth'
 import { ChevronDown, User as UserIcon, LogOut, Settings } from 'lucide-react'
 import { useUIConfigStore } from '@/lib/stores/ui-config.store'
 
@@ -15,11 +15,11 @@ export default function Header({ variant = 'default' }: HeaderProps) {
   const router = useRouter()
   const pathname = usePathname()
   const [scrolled, setScrolled] = useState(false)
-  const [user, setUser] = useState<User | null>(null)
   const [showDropdown, setShowDropdown] = useState(false)
   const [profileImage, setProfileImage] = useState<string | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const { config, loadSettingsFromAPI } = useUIConfigStore()
+  const { user, isAuthenticated, logout } = useAuth()
   
   const isTransparent = variant === 'transparent'
   
@@ -38,12 +38,8 @@ export default function Header({ variant = 'default' }: HeaderProps) {
       window.addEventListener('scroll', handleScroll)
     }
     
-    // 로그인 상태 확인
-    const currentUser = AuthService.getCurrentUser()
-    setUser(currentUser)
-    
     // 프로필 이미지 로드
-    if (currentUser) {
+    if (user) {
       // localStorage에서 프로필 이미지 가져오기
       const savedProfile = localStorage.getItem('userProfile')
       if (savedProfile) {
@@ -65,7 +61,7 @@ export default function Header({ variant = 'default' }: HeaderProps) {
         window.removeEventListener('scroll', handleScroll)
       }
     }
-  }, [isTransparent])
+  }, [isTransparent, user])
 
   // 드롭다운 외부 클릭 감지
   useEffect(() => {
@@ -82,9 +78,7 @@ export default function Header({ variant = 'default' }: HeaderProps) {
   }, [])
 
   const handleLogout = () => {
-    AuthService.logout()
-    setUser(null)
-    router.push('/login')
+    logout()
   }
 
   const isActive = (path: string) => pathname === path
@@ -166,7 +160,7 @@ export default function Header({ variant = 'default' }: HeaderProps) {
               )}
             </div>
             
-            {user ? (
+            {isAuthenticated && user ? (
               <>
                 {/* 인플루언서가 아니고 비즈니스도 아닌 경우에만 마이 메뉴 표시 */}
                 {!isInfluencer && !isBusiness && (
