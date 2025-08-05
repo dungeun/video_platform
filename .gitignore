@@ -100,4 +100,4 @@ apps/*/yarn.lock
 apps/*/pnpm-lock.yaml
 
 # Keep only the important files
-!.gitkeep
+!.gitkeepvideo/SuperClaude_Framework/
