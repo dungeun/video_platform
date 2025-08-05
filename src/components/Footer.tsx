@@ -6,7 +6,51 @@ import { useUIConfigStore } from '@/lib/stores/ui-config.store'
 
 export default function Footer() {
   const { config, websiteSettings, loadSettingsFromAPI } = useUIConfigStore()
-  const { columns, social, copyright } = config.footer
+  
+  // 기본 Footer 설정 (config가 아직 로드되지 않았을 때 사용)
+  const defaultFooter = {
+    columns: [
+      {
+        id: '1',
+        title: '서비스',
+        order: 1,
+        links: [
+          { id: '1-1', label: '비디오 둘러보기', href: '/videos', order: 1, visible: true },
+          { id: '1-2', label: '크리에이터 찾기', href: '/channels', order: 2, visible: true },
+          { id: '1-3', label: '스튜디오', href: '/studio', order: 3, visible: true },
+        ],
+      },
+      {
+        id: '2',
+        title: '회사',
+        order: 2,
+        links: [
+          { id: '2-1', label: '회사 소개', href: '/about', order: 1, visible: true },
+          { id: '2-2', label: '블로그', href: '/blog', order: 2, visible: true },
+          { id: '2-3', label: '채용', href: '/careers', order: 3, visible: true },
+        ],
+      },
+      {
+        id: '3',
+        title: '지원',
+        order: 3,
+        links: [
+          { id: '3-1', label: '도움말', href: '/help', order: 1, visible: true },
+          { id: '3-2', label: '문의하기', href: '/contact', order: 2, visible: true },
+          { id: '3-3', label: '이용약관', href: '/terms', order: 3, visible: true },
+        ],
+      },
+    ],
+    social: [
+      { platform: 'twitter', url: 'https://twitter.com/videopick', visible: true },
+      { platform: 'facebook', url: 'https://facebook.com/videopick', visible: true },
+      { platform: 'instagram', url: 'https://instagram.com/videopick', visible: true },
+      { platform: 'youtube', url: 'https://youtube.com/@videopick', visible: true },
+    ],
+    copyright: '© 2024 비디오픽. All rights reserved.',
+  };
+
+  const { columns, social, copyright } = config.footer || defaultFooter
 
   useEffect(() => {
     loadSettingsFromAPI()
@@ -26,7 +70,7 @@ export default function Footer() {
           {/* 브랜드 정보 */}
           <div className="col-span-1">
             <h3 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent mb-4">
-              {config.header.logo.text}
+              {config.header?.logo?.text || '비디오픽'}
             </h3>
             <p className="text-gray-400 mb-4">
               크리에이터와 시청자를 연결하는 차세대 비디오 플랫폼

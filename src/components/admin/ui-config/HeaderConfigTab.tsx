@@ -20,10 +20,11 @@ export function HeaderConfigTab() {
     const { active, over } = event;
 
     if (active.id !== over.id) {
-      const oldIndex = config.header.menus.findIndex((item) => item.id === active.id);
-      const newIndex = config.header.menus.findIndex((item) => item.id === over.id);
+      const menus = config.header?.menus || [];
+      const oldIndex = menus.findIndex((item) => item.id === active.id);
+      const newIndex = menus.findIndex((item) => item.id === over.id);
       
-      const newMenus = arrayMove(config.header.menus, oldIndex, newIndex).map((item, index) => ({
+      const newMenus = arrayMove(menus, oldIndex, newIndex).map((item, index) => ({
         ...item,
         order: index + 1,
       }));
@@ -33,7 +34,7 @@ export function HeaderConfigTab() {
   };
 
   const handleMenuUpdate = (id: string, updates: Partial<MenuItem>) => {
-    const newMenus = config.header.menus.map((item) =>
+    const newMenus = (config.header?.menus || []).map((item) =>
       item.id === id ? { ...item, ...updates } : item
     );
     updateHeaderMenus(newMenus);
@@ -44,14 +45,14 @@ export function HeaderConfigTab() {
       id: `menu-${Date.now()}`,
       label: '새 메뉴',
       href: '#',
-      order: config.header.menus.length + 1,
+      order: (config.header?.menus || []).length + 1,
       visible: true,
     };
-    updateHeaderMenus([...config.header.menus, newMenu]);
+    updateHeaderMenus([...(config.header?.menus || []), newMenu]);
   };
 
   const handleDeleteMenu = (id: string) => {
-    updateHeaderMenus(config.header.menus.filter((item) => item.id !== id));
+    updateHeaderMenus((config.header?.menus || []).filter((item) => item.id !== id));
   };
 
   return (
@@ -69,9 +70,9 @@ export function HeaderConfigTab() {
         </div>
         
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleHeaderDragEnd}>
-          <SortableContext items={config.header.menus} strategy={verticalListSortingStrategy}>
+          <SortableContext items={config.header?.menus || []} strategy={verticalListSortingStrategy}>
             <div className="space-y-2">
-              {config.header.menus.map((menu) => (
+              {(config.header?.menus || []).map((menu) => (
                 <SortableMenuItem
                   key={menu.id}
                   menu={menu}

@@ -32,6 +32,7 @@ export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [videos, setVideos] = useState<Video[]>([])
+  const [youtubeVideos, setYoutubeVideos] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   
   // UI 설정 가져오기
@@ -50,7 +51,8 @@ export default function HomePage() {
     { id: 'quicklinks', type: 'quicklinks', order: 3, visible: true },
     { id: 'promo', type: 'promo', order: 4, visible: true },
     { id: 'ranking', type: 'ranking', order: 5, visible: true },
-    { id: 'recommended', type: 'recommended', order: 6, visible: true },
+    { id: 'youtube', type: 'youtube', order: 6, visible: true },
+    { id: 'recommended', type: 'recommended', order: 7, visible: true },
   ]
   
   // 커스텀 섹션들도 순서에 추가
@@ -63,13 +65,12 @@ export default function HomePage() {
       visible: section.visible,
     }))
   
-  // 모든 섹션 합치고 정렬
+  // 모든 섹션 합치고 정렬 - 기존 섹션은 유지하고 커스텀 섹션만 추가
   const allSections = [...sectionOrder]
   customSectionOrders.forEach(customOrder => {
     const existingIndex = allSections.findIndex(s => s.id === customOrder.id)
-    if (existingIndex > -1) {
-      allSections[existingIndex] = customOrder
-    } else {
+    if (existingIndex === -1) {
+      // 기존에 없는 커스텀 섹션만 추가
       allSections.push(customOrder)
     }
   })
@@ -78,6 +79,14 @@ export default function HomePage() {
   const visibleSections = allSections
     .filter(s => s.visible)
     .sort((a, b) => a.order - b.order)
+  
+  // 디버깅: 기본 정보만 로깅
+  if (process.env.NODE_ENV === 'development') {
+    console.log('All sections:', allSections.map(s => `${s.id}(order:${s.order}, visible:${s.visible})`))
+    console.log('Visible sections:', visibleSections.map(s => `${s.id}(${s.order})`))
+    console.log('bannerSlides count:', bannerSlides.length)
+    console.log('menuCategories count:', menuCategories.length)
+  }
   
   // 카테고리별 기본 픽토그램
   const defaultCategoryIcons: Record<string, React.ReactNode> = {
@@ -138,7 +147,7 @@ export default function HomePage() {
     ),
   }
 
-  // 샘플 비디오 데이터
+  // 샘플 비디오 데이터 (부동산 카테고리 포함)
   const getSampleVideos = (): Video[] => [
     {
       id: '1',
@@ -235,8 +244,78 @@ export default function HomePage() {
         profileImage: 'https://i.pravatar.cc/32?img=24'
       },
       category: 'game'
+    },
+    {
+      id: '7',
+      title: '강남 재건축 대박! 새 아파트 분양 정보',
+      description: '강남 재건축 단지의 최신 분양 정보와 투자 포인트',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&h=300&fit=crop',
+      duration: 865, // 14:25 in seconds
+      viewCount: 156000,
+      likeCount: 2800,
+      createdAt: '2024-01-16T00:00:00Z',
+      creator: {
+        id: 'creator7',
+        name: '부동산왕',
+        profileImage: 'https://i.pravatar.cc/32?img=15'
+      },
+      category: 'realestate'
+    },
+    {
+      id: '8',
+      title: '전세대출 금리 변화! 지금이 기회?',
+      description: '최근 전세대출 금리 동향과 대출 받기 좋은 타이밍 분석',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=300&fit=crop',
+      duration: 720, // 12:00 in seconds
+      viewCount: 98000,
+      likeCount: 1650,
+      createdAt: '2024-01-14T00:00:00Z',
+      creator: {
+        id: 'creator8',
+        name: '대출전문가',
+        profileImage: 'https://i.pravatar.cc/32?img=16'
+      },
+      category: 'realestate'
+    },
+    {
+      id: '9',
+      title: '인천 청라 신도시 현장 리포트',
+      description: '청라 신도시의 현재 상황과 향후 전망을 현장에서 직접 확인',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop',
+      duration: 980, // 16:20 in seconds
+      viewCount: 67000,
+      likeCount: 1200,
+      createdAt: '2024-01-11T00:00:00Z',
+      creator: {
+        id: 'creator9',
+        name: '현장탐방러',
+        profileImage: 'https://i.pravatar.cc/32?img=17'
+      },
+      category: 'realestate'
     }
   ]
+
+  // YouTube 비디오 로드
+  const loadYouTubeVideos = async () => {
+    try {
+      console.log('Loading YouTube videos...')
+      const response = await fetch('/api/admin/youtube')
+      if (response.ok) {
+        const data = await response.json()
+        console.log('YouTube videos loaded:', data)
+        if (data.videos && data.videos.length > 0) {
+          setYoutubeVideos(data.videos)
+          console.log('Set YouTube videos:', data.videos.length)
+        } else {
+          console.log('No YouTube videos found')
+        }
+      } else {
+        console.error('Failed to fetch YouTube videos:', response.status)
+      }
+    } catch (error) {
+      console.error('Failed to load YouTube videos:', error)
+    }
+  }
 
   // 비디오 데이터 로드 (캠페인을 비디오로 변환)
   const loadVideos = async () => {
@@ -294,7 +373,9 @@ export default function HomePage() {
 
     // 비디오 데이터 로드
     loadVideos()
-  }, [router, loadSettingsFromAPI])
+    // YouTube 비디오 로드
+    loadYouTubeVideos()
+  }, [router])
 
 
   const handleSearch = (e: React.FormEvent) => {
@@ -545,15 +626,15 @@ export default function HomePage() {
               
             case 'ranking':
               // 인기 비디오 섹션
-              return config.mainPage?.rankingSection?.visible ? (
+              return (
                 <section key={section.id} className="mb-12">
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h2 className="text-2xl font-bold text-white">{config.mainPage.rankingSection.title || '인기 비디오'}</h2>
-                      {config.mainPage.rankingSection.subtitle && (
+                      <h2 className="text-2xl font-bold text-white">{config.mainPage?.rankingSection?.title || '인기 비디오'}</h2>
+                      {config.mainPage?.rankingSection?.subtitle && (
                         <p className="text-gray-400 mt-1">{config.mainPage.rankingSection.subtitle}</p>
                       )}
-                      {!config.mainPage.rankingSection.subtitle && (
+                      {!config.mainPage?.rankingSection?.subtitle && (
                         <p className="text-gray-400 mt-1">가장 많이 시청된 비디오들을 확인해보세요</p>
                       )}
                     </div>
@@ -566,21 +647,25 @@ export default function HomePage() {
                     videos={loading ? [] : videos
                       .sort((a, b) => {
                         // 랭킹 기준에 따른 정렬
-                        switch (config.mainPage.rankingSection.criteria) {
+                        switch (config.mainPage?.rankingSection?.criteria) {
                           case 'views':
                           case 'popular':
                           default:
                             return b.viewCount - a.viewCount; // 조회수 높은 순
                         }
                       })
-                      .slice(0, config.mainPage.rankingSection.count || 5)
+                      .slice(0, config.mainPage?.rankingSection?.count || 5)
                     }
                     loading={loading}
                     variant="default"
-                    columns={5}
+                    columns={4}
                   />
                 </section>
-              ) : null;
+              );
+              
+            case 'youtube':
+              // YouTube 섹션 삭제됨 - 최신 부동산 섹션에서 표시
+              return null;
               
             case 'recommended':
               // 추천 비디오
@@ -597,7 +682,7 @@ export default function HomePage() {
                     videos={loading ? [] : videos.slice(0, 10)}
                     loading={loading}
                     variant="default"
-                    columns={5}
+                    columns={4}
                   />
                 </section>
               );
@@ -624,10 +709,70 @@ export default function HomePage() {
                   </div>
                   
                   {(() => {
-                    // 필터링된 캠페인 가져오기
-                    let filteredCampaigns = [...campaigns];
+                    // 표시할 개수
+                    const displayCount = customSection.columns * customSection.rows;
                     
                     if (customSection.type === 'auto' && customSection.filter) {
+                      // 부동산 카테고리인 경우 YouTube 비디오 표시
+                      if (customSection.filter.category === 'realestate') {
+                        console.log('Rendering realestate section, youtubeVideos:', youtubeVideos.length)
+                        return youtubeVideos.length > 0 ? (
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {youtubeVideos.slice(0, displayCount).map((video) => (
+                              <div key={video.id} className="group cursor-pointer">
+                                <Link 
+                                  href={`/videos/youtube/${video.id}`}
+                                  className="block"
+                                >
+                                  <div className="relative aspect-video bg-gray-800 rounded-lg overflow-hidden mb-3">
+                                    <img 
+                                      src={video.thumbnailUrl} 
+                                      alt={video.title}
+                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                    />
+                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                                    <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
+                                      {Math.floor((video.duration || 0) / 60)}:{((video.duration || 0) % 60).toString().padStart(2, '0')}
+                                    </div>
+                                    {video.featured && (
+                                      <div className="absolute top-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded">
+                                        추천
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div>
+                                    <h3 className="text-white font-medium line-clamp-2 mb-1 group-hover:text-indigo-400 transition-colors">
+                                      {video.title}
+                                    </h3>
+                                    <div className="flex items-center gap-2 text-sm text-gray-400">
+                                      <span>{video.channelTitle}</span>
+                                    </div>
+                                    <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
+                                      <span>조회수 {parseInt(video.viewCount || '0').toLocaleString()}</span>
+                                      {video.assignedUser && (
+                                        <span className="text-indigo-400">@{video.assignedUser.name}</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </Link>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-12">
+                            <div className="w-24 h-24 mx-auto mb-4 bg-gray-800 rounded-full flex items-center justify-center">
+                              <svg className="w-12 h-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                            </div>
+                            <p className="text-gray-400">비디오가 업로드되면 여기에 표시됩니다.</p>
+                          </div>
+                        );
+                      }
+                      
+                      // 다른 카테고리인 경우 기존 캠페인 필터링 로직
+                      let filteredCampaigns = [...campaigns];
+                      
                       // 카테고리 필터링
                       if (customSection.filter.category) {
                         filteredCampaigns = filteredCampaigns.filter(c => 
@@ -657,20 +802,30 @@ export default function HomePage() {
                           filteredCampaigns.sort((a, b) => parseInt(b.budget) - parseInt(a.budget));
                           break;
                       }
+                      
+                      // 캠페인을 비디오로 변환
+                      const convertedCustomVideos = filteredCampaigns.slice(0, displayCount).map(transformCampaignToVideo)
+                      
+                      return (
+                        <VideoList
+                          videos={convertedCustomVideos}
+                          loading={loading}
+                          variant="default"
+                          columns={customSection.columns || 4}
+                        />
+                      );
                     }
                     
-                    // 표시할 개수만큼 자르기
-                    const displayCount = customSection.columns * customSection.rows;
-                    // 캠페인을 비디오로 변환
-                    const convertedCustomVideos = filteredCampaigns.slice(0, displayCount).map(transformCampaignToVideo)
-                    
+                    // 수동 타입이거나 필터가 없는 경우
                     return (
-                      <VideoList
-                        videos={convertedCustomVideos}
-                        loading={loading}
-                        variant="default"
-                        columns={customSection.columns || 5}
-                      />
+                      <div className="text-center py-12">
+                        <div className="w-24 h-24 mx-auto mb-4 bg-gray-800 rounded-full flex items-center justify-center">
+                          <svg className="w-12 h-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <p className="text-gray-400">콘텐츠를 준비중입니다.</p>
+                      </div>
                     );
                   })()}
                 </section>

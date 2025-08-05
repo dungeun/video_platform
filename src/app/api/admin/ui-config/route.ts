@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { getServerSession } from '@/lib/auth-server';
+import fs from 'fs';
+import path from 'path';
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
+
+const CONFIG_FILE_PATH = path.join(process.cwd(), 'public/config/ui-config.json');
 
 export async function GET(request: NextRequest) {
   try {
@@ -174,6 +178,9 @@ export async function POST(request: NextRequest) {
     }
 
     const { config } = await request.json();
+    
+    console.log('💾 Admin saving config...');
+    console.log('📋 SectionOrder to save:', config.mainPage?.sectionOrder);
 
     // 중복 섹션 ID 정리
     if (config.mainPage?.sectionOrder) {
@@ -204,14 +211,27 @@ export async function POST(request: NextRequest) {
       config.mainPage.customSections = cleanedCustomSections;
     }
 
-    // DB에 UI 설정 저장 - JSON을 문자열로 변환
-    await prisma.siteConfig.upsert({
-      where: { key: 'ui-config' },
-      update: { value: JSON.stringify(config) },
-      create: { key: 'ui-config', value: JSON.stringify(config) }
-    });
+    // 1. JSON 파일에 즉시 저장
+    try {
+      fs.writeFileSync(CONFIG_FILE_PATH, JSON.stringify(config, null, 2));
+      console.log('✅ Config saved to JSON file');
+    } catch (jsonError) {
+      console.error('❌ Failed to save JSON file:', jsonError);
+    }
 
-    return NextResponse.json({ success: true });
+    // 2. DB에 백업 저장
+    try {
+      await prisma.siteConfig.upsert({
+        where: { key: 'ui-config' },
+        update: { value: JSON.stringify(config) },
+        create: { key: 'ui-config', value: JSON.stringify(config) }
+      });
+      console.log('✅ Config backed up to database');
+    } catch (dbError) {
+      console.warn('⚠️ Database backup failed:', dbError);
+    }
+
+    return NextResponse.json({ success: true, source: 'json' });
   } catch (error) {
     console.error('UI config save error:', error);
     return NextResponse.json({ 

@@ -103,11 +103,15 @@ export function SectionOrderTab() {
     },
     ranking: {
       name: '실시간 랭킹',
-      description: '인기/마감임박 캠페인'
+      description: '인기/마감임박 비디오'
     },
     recommended: {
-      name: '추천 캠페인',
-      description: '큐레이션된 캠페인 목록'
+      name: '추천 비디오',
+      description: '큐레이션된 비디오 목록'
+    },
+    youtube: {
+      name: 'YouTube 비디오',
+      description: '관리자가 추가한 YouTube 비디오'
     },
     cta: {
       name: '하단 CTA',
@@ -158,14 +162,13 @@ export function SectionOrderTab() {
     const usedIds = new Set(convertedSections.map(s => s.id));
     
     const customSections = uniqueCustomSections.map((cs, index) => {
-      let finalId = cs.id || `custom-${index}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      
-      // ID가 이미 사용 중이면 새로운 ID 생성
-      if (usedIds.has(finalId)) {
-        finalId = `${finalId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        console.warn(`Duplicate custom section ID detected: ${cs.id}, using new ID: ${finalId}`);
+      // 기존 ID 유지, 없으면 생성
+      let finalId = cs.id;
+      if (!finalId) {
+        finalId = `custom-${index}-${Date.now()}`;
       }
       
+      // 더 이상 ID 변경하지 않음 - 기존 ID 그대로 사용
       usedIds.add(finalId);
       
       return {
@@ -179,27 +182,9 @@ export function SectionOrderTab() {
       };
     });
     
-    // 중복 ID 제거 및 정렬
-    const sectionMap = new Map<string, Section>();
-    
-    // 기본 섹션 먼저 추가
-    convertedSections.forEach(section => {
-      sectionMap.set(section.id, section);
-    });
-    
-    // 커스텀 섹션 추가 (중복 ID는 덮어쓰기 방지)
-    customSections.forEach(section => {
-      if (!sectionMap.has(section.id)) {
-        sectionMap.set(section.id, section);
-      } else {
-        // 중복된 ID가 있으면 새로운 ID로 변경
-        const newId = `${section.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        console.warn(`Duplicate section ID found: ${section.id}, changing to ${newId}`);
-        sectionMap.set(newId, { ...section, id: newId });
-      }
-    });
-    
-    const allSections = Array.from(sectionMap.values()).sort((a, b) => a.order - b.order);
+    // 모든 섹션 합치기 (중복 처리 단순화)
+    const allSections = [...convertedSections, ...customSections]
+      .sort((a, b) => a.order - b.order);
     
     // 디버깅용 로그
     if (process.env.NODE_ENV === 'development') {
@@ -239,15 +224,41 @@ export function SectionOrderTab() {
         });
       });
 
-      // Store에 업데이트
-      const sectionOrder = newSections.map(section => ({
-        id: section.id,
-        type: section.type,
-        order: section.order,
-        visible: section.visible
-      }));
+      // Store에 업데이트 - 기본 섹션과 커스텀 섹션 분리
+      const baseSectionOrder = newSections
+        .filter(section => section.type !== 'custom')
+        .map(section => ({
+          id: section.id,
+          type: section.type,
+          order: section.order,
+          visible: section.visible
+        }));
       
-      updateSectionOrder(sectionOrder);
+      const customSectionsUpdate = newSections
+        .filter(section => section.type === 'custom')
+        .map(section => {
+          // 기존 customSection에서 찾아서 업데이트
+          const existingCustom = config.mainPage?.customSections?.find(cs => cs.id === section.id);
+          return existingCustom ? {
+            ...existingCustom,
+            order: section.order,
+            visible: section.visible
+          } : {
+            id: section.id,
+            title: section.name,
+            subtitle: section.description,
+            type: 'auto' as const,
+            visible: section.visible,
+            order: section.order,
+            layout: 'grid' as const,
+            columns: 4,
+            rows: 1,
+            filter: { category: 'realestate', sortBy: 'latest' as const }
+          };
+        });
+      
+      updateSectionOrder(baseSectionOrder);
+      updateMainPageCustomSections(customSectionsUpdate);
       
       // API 호출하여 즉시 저장
       try {
@@ -283,15 +294,41 @@ export function SectionOrderTab() {
     
     setSections(updatedSections);
     
-    // Store에 업데이트
-    const sectionOrder = updatedSections.map(section => ({
-      id: section.id,
-      type: section.type,
-      order: section.order,
-      visible: section.visible
-    }));
+    // Store에 업데이트 - 기본 섹션과 커스텀 섹션 분리
+    const baseSectionOrder = updatedSections
+      .filter(section => section.type !== 'custom')
+      .map(section => ({
+        id: section.id,
+        type: section.type,
+        order: section.order,
+        visible: section.visible
+      }));
     
-    updateSectionOrder(sectionOrder);
+    const customSectionsUpdate = updatedSections
+      .filter(section => section.type === 'custom')
+      .map(section => {
+        // 기존 customSection에서 찾아서 업데이트
+        const existingCustom = config.mainPage?.customSections?.find(cs => cs.id === section.id);
+        return existingCustom ? {
+          ...existingCustom,
+          order: section.order,
+          visible: section.visible
+        } : {
+          id: section.id,
+          title: section.name,
+          subtitle: section.description,
+          type: 'auto' as const,
+          visible: section.visible,
+          order: section.order,
+          layout: 'grid' as const,
+          columns: 4,
+          rows: 1,
+          filter: { category: 'realestate', sortBy: 'latest' as const }
+        };
+      });
+    
+    updateSectionOrder(baseSectionOrder);
+    updateMainPageCustomSections(customSectionsUpdate);
     
     // API 호출하여 즉시 저장
     try {
@@ -329,14 +366,26 @@ export function SectionOrderTab() {
       { id: 'recommended', type: 'recommended' as const, order: 6, visible: true }
     ];
     
-    // 커스텀 섹션은 중복 제거하여 유지
+    // 커스텀 섹션은 중복 제거하여 유지 - latest-realestate는 하나만 남기기
     const existingCustomSections = config.mainPage?.customSections || [];
-    const seenCustomIds = new Set<string>();
+    const seenCustomTypes = new Set<string>();
     const cleanedCustomSections = existingCustomSections.filter((section: any) => {
-      if (seenCustomIds.has(section.id)) {
+      // latest-realestate 타입은 하나만 남기기
+      if (section.id.includes('latest-realestate')) {
+        if (seenCustomTypes.has('latest-realestate')) {
+          return false;
+        }
+        seenCustomTypes.add('latest-realestate');
+        // 첫 번째 것은 고정 ID로 변경
+        section.id = 'latest-realestate';
+        return true;
+      }
+      
+      // 다른 커스텀 섹션은 ID 중복 제거
+      if (seenCustomTypes.has(section.id)) {
         return false;
       }
-      seenCustomIds.add(section.id);
+      seenCustomTypes.add(section.id);
       return true;
     });
     

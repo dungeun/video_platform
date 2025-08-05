@@ -23,6 +23,15 @@ export default function Header({ variant = 'default', onSidebarToggle, onMobileS
   const { config, loadSettingsFromAPI } = useUIConfigStore()
   const { user, isAuthenticated, logout } = useAuth()
   
+  // 기본 메뉴 설정 (config가 아직 로드되지 않았을 때 사용)
+  const defaultMenus = [
+    { id: '1', label: '홈', href: '/', order: 1, visible: true },
+    { id: '2', label: '인기', href: '/videos?sort=popular', order: 2, visible: true },
+    { id: '3', label: '구독', href: '/subscriptions', order: 3, visible: true },
+    { id: '4', label: '라이브', href: '/live', order: 4, visible: true },
+    { id: '5', label: '커뮤니티', href: '/community', order: 5, visible: true },
+  ]
+  
   const isTransparent = variant === 'transparent'
   
   // 사용자 타입 확인
@@ -120,7 +129,7 @@ export default function Header({ variant = 'default', onSidebarToggle, onMobileS
             
             {/* 공통 메뉴 */}
             <nav className="hidden lg:flex items-center gap-6">
-              {config.header.menus
+              {(config.header?.menus || defaultMenus)
                 .filter(menu => menu.visible)
                 .sort((a, b) => a.order - b.order)
                 .map(menu => (

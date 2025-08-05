@@ -78,6 +78,8 @@ model User {
   videoComments        VideoComment[]
   liveChatMessages     LiveChatMessage[]
   superChats           SuperChat[]
+  assignedYouTubeVideos YouTubeVideo[]       @relation("AssignedYouTubeVideos")
+  importedYouTubeVideos YouTubeVideo[]       @relation("ImportedYouTubeVideos")
 
   @@map("users")
 }
@@ -806,4 +808,45 @@ model SettlementRequest {
   @@index([channelId])
   @@index([status])
   @@map("settlement_requests")
+}
+
+// YouTube imported videos
+model YouTubeVideo {
+  id                String         @id @default(cuid())
+  youtubeId         String         @unique // YouTube video ID
+  youtubeUrl        String         // Full YouTube URL
+  title             String
+  description       String?
+  thumbnailUrl      String
+  channelTitle      String         // YouTube channel name
+  channelId         String?        // YouTube channel ID
+  duration          String?        // Duration in ISO 8601 format
+  viewCount         BigInt         @default(0)
+  likeCount         Int            @default(0)
+  commentCount      Int            @default(0)
+  publishedAt       DateTime
+  tags              String?        // Comma-separated tags
+  category          String?
+  embedHtml         String?        // YouTube embed code
+  
+  // Assignment to user
+  assignedUserId    String?
+  assignedAt        DateTime?
+  
+  // Import metadata
+  importedBy        String         // Admin user ID who imported
+  importedAt        DateTime       @default(now())
+  status            String         @default("imported") // imported, published, hidden
+  featured          Boolean        @default(false) // For main page display
+  displayOrder      Int            @default(0) // For ordering in sections
+  
+  // Relations
+  assignedUser      User?          @relation("AssignedYouTubeVideos", fields: [assignedUserId], references: [id], onDelete: SetNull)
+  importedByUser    User           @relation("ImportedYouTubeVideos", fields: [importedBy], references: [id])
+  
+  @@index([youtubeId])
+  @@index([assignedUserId])
+  @@index([status])
+  @@index([featured])
+  @@map("youtube_videos")
 }

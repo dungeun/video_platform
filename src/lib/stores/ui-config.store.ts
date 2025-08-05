@@ -370,10 +370,10 @@ const defaultConfig: UIConfig = {
     },
     rankingSection: {
       visible: true,
-      title: '🔥 인기 비디오 TOP 5',
+      title: '🔥 인기 비디오 TOP 4',
       subtitle: '지금 가장 많이 시청되는 비디오를 만나보세요',
       criteria: 'popular' as const,
-      count: 5,
+      count: 4,
       showBadge: true,
     },
     customSections: [],
@@ -594,10 +594,20 @@ export const useUIConfigStore = create<UIConfigStore>()(
           if (uiConfigResponse.ok) {
             const uiData = await uiConfigResponse.json()
             console.log('UI config loaded:', uiData.config);
-            if (uiData.config) {
+            console.log('SectionOrder from API:', uiData.config?.mainPage?.sectionOrder);
+            // API로부터 받은 config가 유효한지 검증
+            if (uiData.config && 
+                uiData.config.mainPage && 
+                uiData.config.mainPage.heroSlides && 
+                uiData.config.mainPage.categoryMenus &&
+                uiData.config.mainPage.heroSlides.length > 0 &&
+                uiData.config.mainPage.categoryMenus.length > 0) {
+              console.log('Using valid API config');
+              console.log('Final sectionOrder:', uiData.config.mainPage.sectionOrder);
               set({ config: uiData.config })
             } else {
-              console.log('No config data, using default');
+              console.log('API config incomplete, using default');
+              console.log('Default sectionOrder:', defaultConfig.mainPage.sectionOrder);
               set({ config: defaultConfig })
             }
           } else {
