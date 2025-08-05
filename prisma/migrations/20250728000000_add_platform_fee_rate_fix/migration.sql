@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "campaigns" ADD COLUMN "platformFeeRate" DOUBLE PRECISION NOT NULL DEFAULT 0.2;

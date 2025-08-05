@@ -1,0 +1,852 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserType {
+  ADMIN
+  BUSINESS
+  INFLUENCER
+  CREATOR  // For video creators (transformed from BUSINESS)
+  VIEWER   // For video viewers (transformed from INFLUENCER)
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+  PARTIAL_REFUNDED
+  REFUNDED
+}
+
+model User {
+  id                   String                @id @default(cuid())
+  email                String                @unique
+  password             String
+  name                 String
+  type                 String
+  status               String                @default("ACTIVE")
+  statusReason         String?
+  statusUpdatedAt      DateTime?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  lastLogin            DateTime?
+  verified             Boolean               @default(false)
+  applicationTemplates ApplicationTemplate[]
+  businessProfile      BusinessProfile?
+  applications         CampaignApplication[]
+  campaignTemplates    CampaignTemplate[]
+  campaigns            Campaign[]
+  comments             Comment[]
+  files                File[]
+  followers            Follow[]              @relation("UserFollowers")
+  following            Follow[]              @relation("UserFollowing")
+  notificationSettings NotificationSettings?
+  notifications        Notification[]
+  payments             Payment[]
+  postLikes            PostLike[]
+  posts                Post[]
+  profile              Profile?
+  savedCampaigns       SavedCampaign[]
+  settlements          Settlement[]
+  campaignLikes        CampaignLike[]
+  reports              Report[]
+  
+  // Video platform relations
+  channel              Channel?
+  subscriptions        Subscription[]        @relation("UserSubscriptions")
+  watchHistory         WatchHistory[]
+  videoLikes           VideoLike[]
+  videoComments        VideoComment[]
+  liveChatMessages     LiveChatMessage[]
+  superChats           SuperChat[]
+  assignedYouTubeVideos YouTubeVideo[]       @relation("AssignedYouTubeVideos")
+  importedYouTubeVideos YouTubeVideo[]       @relation("ImportedYouTubeVideos")
+
+  @@map("users")
+}
+
+model Profile {
+  id                    String    @id @default(cuid())
+  userId                String    @unique
+  bio                   String?
+  profileImage          String?
+  profileImageId        String?
+  phone                 String?
+  birthYear             Int?
+  gender                String?
+  instagram             String?
+  instagramFollowers    Int?
+  youtube               String?
+  youtubeSubscribers    Int?
+  tiktok                String?
+  tiktokFollowers       Int?
+  averageEngagementRate Float?
+  categories            String?
+  isVerified            Boolean   @default(false)
+  verificationNotes     String?
+  verifiedAt            DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  followerCount         Int       @default(0)
+  naverBlog             String?
+  address               String?
+  bankName              String?
+  bankAccountNumber     String?
+  bankAccountHolder     String?
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model BusinessProfile {
+  id                   String    @id @default(cuid())
+  userId               String    @unique
+  companyName          String
+  businessNumber       String
+  representativeName   String
+  businessAddress      String
+  businessCategory     String
+  businessRegistration String?   // 사업자등록증 파일 URL
+  businessFileName     String?   // 원본 파일명
+  businessFileSize     Int?      // 파일 크기 (bytes)
+  isVerified           Boolean   @default(false)
+  verificationNotes    String?
+  verifiedAt           DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("business_profiles")
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  follower    User     @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@map("follows")
+}
+
+model Campaign {
+  id                   String                @id @default(cuid())
+  businessId           String
+  title                String
+  description          String
+  platform             String
+  budget               Float
+  targetFollowers      Int
+  startDate            DateTime
+  endDate              DateTime
+  requirements         String?
+  hashtags             String?
+  imageUrl             String?               // 기존 필드 (호환성 유지)
+  imageId              String?
+  headerImageUrl       String?               // 상세페이지 헤더 배경 이미지
+  thumbnailImageUrl    String?               // 썸네일 이미지
+  announcementDate     DateTime?             // 지원자 발표일
+  status               String                @default("DRAFT")
+  isPaid               Boolean               @default(false)
+  reviewFeedback       String?
+  reviewedAt           DateTime?
+  maxApplicants        Int                   @default(100)
+  rewardAmount         Float                 @default(0)
+  detailImages         Json?                 // 상세 이미지 배열
+  productImages        Json?                 // 상품소개 이미지 배열
+  questions            Json?                 // 추가 질문 JSON
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  deliverables         String?
+  detailedRequirements String?
+  platformFeeRate      Float                 @default(0.2) // 플랫폼 수수료율 (기본 20%)
+  location             String                @default("전국")
+  productIntro         String?
+  viewCount            Int                   @default(0)
+  platforms            String?
+  
+  // Video platform fields (nullable for backward compatibility)
+  videoUrl             String?               // Video file URL
+  duration             Int?                  // Video duration in seconds
+  likeCount            Int                   @default(0)
+  dislikeCount         Int                   @default(0)
+  isLive               Boolean               @default(false)
+  streamKey            String?               // For live streaming
+  channelId            String?               // Link to channel
+  
+  applications         CampaignApplication[]
+  business             User                  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  payments             Payment[]
+  savedByUsers         SavedCampaign[]
+  campaignLikes        CampaignLike[]
+  
+  // Video platform relations
+  channel              Channel?              @relation(fields: [channelId], references: [id])
+  videoComments        VideoComment[]
+  videoLikes           VideoLike[]
+  watchHistory         WatchHistory[]
+  superChats           SuperChat[]          @relation("VideoSuperChats")
+
+  @@map("campaigns")
+}
+
+model CampaignApplication {
+  id              String           @id @default(cuid())
+  campaignId      String
+  influencerId    String
+  message         String
+  proposedPrice   Float?
+  status          String           @default("PENDING")
+  reviewedAt      DateTime?
+  rejectionReason String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  campaign        Campaign         @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  influencer      User             @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  contents        Content[]
+  settlementItems SettlementItem[]
+
+  @@unique([campaignId, influencerId])
+  @@map("campaign_applications")
+}
+
+model Content {
+  id            String              @id @default(cuid())
+  applicationId String
+  contentUrl    String
+  description   String?
+  platform      String
+  status        String              @default("PENDING_REVIEW")
+  feedback      String?
+  reviewedAt    DateTime?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  media         ContentMedia[]
+  application   CampaignApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("contents")
+}
+
+model ContentMedia {
+  id        String   @id @default(cuid())
+  contentId String
+  fileId    String
+  type      String
+  order     Int
+  createdAt DateTime @default(now())
+  content   Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  file      File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@map("content_media")
+}
+
+model Payment {
+  id             String    @id @default(cuid())
+  orderId        String    @unique
+  campaignId     String?
+  userId         String
+  amount         Float
+  type           String
+  status         String    @default("PENDING")
+  paymentMethod  String
+  paymentKey     String?
+  approvedAt     DateTime?
+  failedAt       DateTime?
+  failReason     String?
+  receipt        String?
+  refundedAmount Float     @default(0)
+  metadata       String    @default("{}")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  campaign       Campaign? @relation(fields: [campaignId], references: [id])
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refunds        Refund[]
+  superChats     SuperChat[]
+
+  @@map("payments")
+}
+
+model Refund {
+  id          String   @id @default(cuid())
+  paymentId   String
+  amount      Float
+  reason      String
+  status      String
+  processedAt DateTime
+  metadata    String   @default("{}")
+  createdAt   DateTime @default(now())
+  payment     Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@map("refunds")
+}
+
+model Settlement {
+  id           String           @id @default(cuid())
+  influencerId String
+  totalAmount  Float
+  status       String
+  bankAccount  String
+  adminNotes   String?
+  processedAt  DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  items        SettlementItem[]
+  influencer   User             @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+
+  @@map("settlements")
+}
+
+model SettlementItem {
+  id            String              @id @default(cuid())
+  settlementId  String
+  applicationId String
+  amount        Float
+  campaignTitle String
+  application   CampaignApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  settlement    Settlement          @relation(fields: [settlementId], references: [id], onDelete: Cascade)
+
+  @@map("settlement_items")
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  message   String
+  actionUrl String?
+  readAt    DateTime?
+  metadata  String    @default("{}")
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model NotificationSettings {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  email              Boolean  @default(true)
+  push               Boolean  @default(true)
+  sms                Boolean  @default(false)
+  campaignUpdates    Boolean  @default(true)
+  applicationUpdates Boolean  @default(true)
+  paymentUpdates     Boolean  @default(true)
+  marketing          Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_settings")
+}
+
+model SavedCampaign {
+  id         String   @id @default(cuid())
+  userId     String
+  campaignId String
+  createdAt  DateTime @default(now())
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, campaignId])
+  @@map("saved_campaigns")
+}
+
+model File {
+  id           String         @id @default(cuid())
+  userId       String
+  filename     String
+  originalName String
+  mimetype     String
+  size         Int
+  path         String
+  url          String
+  type         String
+  metadata     String         @default("{}")
+  createdAt    DateTime       @default(now())
+  contentMedia ContentMedia[]
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("files")
+}
+
+model SiteConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@index([key])
+  @@map("site_config")
+}
+
+model Post {
+  id        String     @id @default(cuid())
+  title     String
+  content   String
+  authorId  String
+  category  String
+  status    String     @default("PUBLISHED")
+  views     Int        @default(0)
+  likes     Int        @default(0)
+  isPinned  Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  comments  Comment[]
+  postLikes PostLike[]
+  author    User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("posts")
+}
+
+model Comment {
+  id        String    @id @default(cuid())
+  postId    String
+  authorId  String
+  content   String
+  parentId  String?
+  status    String    @default("PUBLISHED")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReplies")
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model PostLike {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@map("post_likes")
+}
+
+model ApplicationTemplate {
+  id        String   @id @default(cuid())
+  name      String
+  content   String
+  userId    String?
+  isPublic  Boolean  @default(true)
+  category  String?
+  useCount  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([isPublic])
+  @@index([category])
+  @@map("application_templates")
+}
+
+model CampaignTemplate {
+  id          String   @id @default(cuid())
+  businessId  String
+  name        String
+  description String?
+  data        Json
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  business    User     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId])
+  @@map("campaign_templates")
+}
+
+model CampaignLike {
+  id         String   @id @default(cuid())
+  campaignId String
+  userId     String
+  createdAt  DateTime @default(now())
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([campaignId, userId])
+  @@map("campaign_likes")
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  reporterId  String
+  type        String   // 'content', 'user', 'campaign', 'payment'
+  targetId    String
+  reason      String
+  description String?
+  status      String   @default("pending") // 'pending', 'investigating', 'resolved', 'dismissed'
+  priority    String   @default("medium") // 'low', 'medium', 'high', 'urgent'
+  adminNotes  String?
+  resolvedAt  DateTime?
+  resolvedBy  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  reporter    User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@map("reports")
+}
+
+model Revenue {
+  id           String   @id @default(cuid())
+  type         String   // 'campaign_fee', 'premium_subscription', 'featured_listing'
+  amount       Float
+  referenceId  String?  // Related campaign, user, or payment ID
+  description  String?
+  metadata     Json?
+  date         DateTime @default(now())
+  createdAt    DateTime @default(now())
+  
+  @@index([type])
+  @@index([date])
+  @@map("revenues")
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  type        String   // 'influencer_payment', 'refund', 'operational'
+  amount      Float
+  referenceId String?  // Related settlement, refund, or payment ID
+  description String?
+  metadata    Json?
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  
+  @@index([type])
+  @@index([date])
+  @@map("expenses")
+}
+
+// =============================================
+// VIDEO PLATFORM MODELS
+// =============================================
+
+model Channel {
+  id              String         @id @default(cuid())
+  userId          String         @unique
+  name            String
+  handle          String         @unique // Unique channel handle (@channelname)
+  description     String?
+  bannerUrl       String?        // Channel banner image
+  avatarUrl       String?        // Channel avatar
+  isVerified      Boolean        @default(false)
+  subscriberCount Int            @default(0)
+  videoCount      Int            @default(0)
+  totalViews      BigInt         @default(0)
+  totalSuperChatAmount Float     @default(0)
+  totalEarnings   Float          @default(0)
+  pendingSettlement Float        @default(0)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  // Relations
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaigns       Campaign[]     // Videos (campaigns with video content)
+  videos          Video[]        // Direct video model (future)
+  liveStreams     LiveStream[]
+  subscribers     Subscription[] @relation("ChannelSubscriptions")
+  superChats      SuperChat[]
+  creatorEarnings CreatorEarnings[]
+  settlementRequests SettlementRequest[]
+  
+  @@index([handle])
+  @@map("channels")
+}
+
+// Future video model (currently using Campaign)
+model Video {
+  id              String         @id @default(cuid())
+  channelId       String
+  title           String
+  description     String?
+  thumbnailUrl    String
+  videoUrl        String
+  duration        Int            // Duration in seconds
+  viewCount       BigInt         @default(0)
+  likeCount       Int            @default(0)
+  dislikeCount    Int            @default(0)
+  status          String         @default("processing") // processing, published, private, deleted
+  publishedAt     DateTime?
+  tags            String?        // Comma-separated tags
+  category        String?
+  isShort         Boolean        @default(false) // For YouTube Shorts-like videos
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  // Relations
+  channel         Channel        @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  likes           VideoLike[]     @relation("VideoLikes")
+  watchHistory    WatchHistory[]  @relation("VideoWatchHistory")
+  superChats      SuperChat[]     @relation("DirectVideoSuperChats")
+  
+  @@index([channelId])
+  @@index([status])
+  @@map("videos")
+}
+
+model LiveStream {
+  id              String         @id @default(cuid())
+  channelId       String
+  title           String
+  description     String?
+  thumbnailUrl    String?
+  streamKey       String         @unique
+  rtmpUrl         String
+  webrtcUrl       String?
+  hlsUrl          String?
+  status          String         @default("preparing") // preparing, live, ended
+  viewerCount     Int            @default(0)
+  peakViewers     Int            @default(0)
+  startedAt       DateTime?
+  endedAt         DateTime?
+  recordingUrl    String?        // VOD URL after stream ends
+  isRecording     Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  // Relations
+  channel         Channel        @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  liveChatMessages LiveChatMessage[]
+  superChats      SuperChat[]     @relation("StreamSuperChats")
+  
+  @@index([channelId])
+  @@index([status])
+  @@map("live_streams")
+}
+
+model Subscription {
+  id              String         @id @default(cuid())
+  userId          String         // Subscriber
+  channelId       String         // Channel being subscribed to
+  tier            String         @default("free") // free, member, premium
+  notificationsOn Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  // Relations
+  user            User           @relation("UserSubscriptions", fields: [userId], references: [id], onDelete: Cascade)
+  channel         Channel        @relation("ChannelSubscriptions", fields: [channelId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, channelId])
+  @@index([channelId])
+  @@map("subscriptions")
+}
+
+model VideoComment {
+  id              String         @id @default(cuid())
+  videoId         String         // Can be Campaign ID for now
+  userId          String
+  content         String
+  parentId        String?        // For reply threads
+  likeCount       Int            @default(0)
+  isPinned        Boolean        @default(false)
+  isHearted       Boolean        @default(false) // Creator's heart
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  // Relations
+  campaign        Campaign       @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent          VideoComment?  @relation("VideoCommentReplies", fields: [parentId], references: [id])
+  replies         VideoComment[] @relation("VideoCommentReplies")
+  
+  @@index([videoId])
+  @@map("video_comments")
+}
+
+model VideoLike {
+  id              String         @id @default(cuid())
+  videoId         String         // Can be Campaign ID for now
+  userId          String
+  isLike          Boolean        // true = like, false = dislike
+  createdAt       DateTime       @default(now())
+  
+  // Relations
+  campaign        Campaign       @relation(fields: [videoId], references: [id], onDelete: Cascade, map: "video_likes_campaign_fkey")
+  videoModel      Video?         @relation("VideoLikes", fields: [videoId], references: [id], onDelete: Cascade, map: "video_likes_video_fkey")
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([videoId, userId])
+  @@map("video_likes")
+}
+
+model WatchHistory {
+  id              String         @id @default(cuid())
+  userId          String
+  videoId         String         // Can be Campaign ID for now
+  watchedAt       DateTime       @default(now())
+  watchTime       Int            @default(0) // Seconds watched
+  completed       Boolean        @default(false)
+  
+  // Relations
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaign        Campaign       @relation(fields: [videoId], references: [id], onDelete: Cascade, map: "watch_history_campaign_fkey")
+  videoModel      Video?         @relation("VideoWatchHistory", fields: [videoId], references: [id], onDelete: Cascade, map: "watch_history_video_fkey")
+  
+  @@unique([userId, videoId])
+  @@index([userId])
+  @@map("watch_history")
+}
+
+model LiveChatMessage {
+  id              String         @id @default(cuid())
+  streamId        String
+  userId          String
+  content         String
+  type            String         @default("message") // message, superchat, announcement
+  amount          Float?         // For super chats
+  isPinned        Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+  
+  // Relations
+  stream          LiveStream     @relation(fields: [streamId], references: [id], onDelete: Cascade)
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([streamId])
+  @@map("live_chat_messages")
+}
+
+// SuperChat model for tracking super chat donations
+model SuperChat {
+  id              String         @id @default(cuid())
+  userId          String
+  channelId       String
+  videoId         String?        // Can be Campaign ID (temporary)
+  directVideoId   String?        // For direct Video model (future)
+  streamId        String?        // For live streams
+  amount          Float
+  currency        String         @default("KRW")
+  message         String?
+  color           String?        // Color tier based on amount
+  isPaid          Boolean        @default(false)
+  paymentId       String?
+  createdAt       DateTime       @default(now())
+  readAt          DateTime?
+  
+  // Relations
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel         Channel        @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  campaign        Campaign?      @relation("VideoSuperChats", fields: [videoId], references: [id], onDelete: Cascade)
+  directVideo     Video?         @relation("DirectVideoSuperChats", fields: [directVideoId], references: [id], onDelete: Cascade)
+  stream          LiveStream?    @relation("StreamSuperChats", fields: [streamId], references: [id], onDelete: Cascade)
+  payment         Payment?       @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  
+  @@index([userId])
+  @@index([channelId])
+  @@index([createdAt])
+  @@map("super_chats")
+}
+
+// Creator earnings table
+model CreatorEarnings {
+  id              String         @id @default(cuid())
+  channelId       String
+  type            String         // 'superchat', 'membership', 'ads', 'sponsorship'
+  amount          Float
+  fee             Float          @default(0) // Platform fee
+  netAmount       Float          // Amount after fee
+  referenceId     String?        // SuperChat ID, Membership ID, etc.
+  description     String?
+  month           Int
+  year            Int
+  createdAt       DateTime       @default(now())
+  
+  // Relations
+  channel         Channel        @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  
+  @@index([channelId])
+  @@index([month, year])
+  @@index([type])
+  @@map("creator_earnings")
+}
+
+// Settlement requests table
+model SettlementRequest {
+  id              String         @id @default(cuid())
+  channelId       String
+  amount          Float
+  status          String         @default("pending") // 'pending', 'processing', 'completed', 'rejected'
+  bankName        String?
+  bankAccount     String?
+  accountHolder   String?
+  requestedAt     DateTime       @default(now())
+  processedAt     DateTime?
+  completedAt     DateTime?
+  rejectionReason String?
+  adminNotes      String?
+  proofUrl        String?        // Transfer proof document
+  
+  // Relations
+  channel         Channel        @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  
+  @@index([channelId])
+  @@index([status])
+  @@map("settlement_requests")
+}
+
+// YouTube imported videos
+model YouTubeVideo {
+  id                String         @id @default(cuid())
+  youtubeId         String         @unique // YouTube video ID
+  youtubeUrl        String         // Full YouTube URL
+  title             String
+  description       String?
+  thumbnailUrl      String
+  channelTitle      String         // YouTube channel name
+  channelId         String?        // YouTube channel ID
+  duration          String?        // Duration in ISO 8601 format
+  viewCount         BigInt         @default(0)
+  likeCount         Int            @default(0)
+  commentCount      Int            @default(0)
+  publishedAt       DateTime
+  tags              String?        // Comma-separated tags
+  category          String?
+  embedHtml         String?        // YouTube embed code
+  
+  // Assignment to user
+  assignedUserId    String?
+  assignedAt        DateTime?
+  
+  // Import metadata
+  importedBy        String         // Admin user ID who imported
+  importedAt        DateTime       @default(now())
+  status            String         @default("imported") // imported, published, hidden
+  featured          Boolean        @default(false) // For main page display
+  displayOrder      Int            @default(0) // For ordering in sections
+  
+  // Relations
+  assignedUser      User?          @relation("AssignedYouTubeVideos", fields: [assignedUserId], references: [id], onDelete: SetNull)
+  importedByUser    User           @relation("ImportedYouTubeVideos", fields: [importedBy], references: [id])
+  
+  @@index([youtubeId])
+  @@index([assignedUserId])
+  @@index([status])
+  @@index([featured])
+  @@map("youtube_videos")
+}
