@@ -299,7 +299,7 @@ export default function HomePage() {
   const loadYouTubeVideos = async () => {
     try {
       console.log('Loading YouTube videos...')
-      const response = await fetch('/api/admin/youtube')
+      const response = await fetch('/api/videos/youtube?limit=4')
       if (response.ok) {
         const data = await response.json()
         console.log('YouTube videos loaded:', data)

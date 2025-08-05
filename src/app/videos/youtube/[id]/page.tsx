@@ -1,0 +1,366 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import PageLayout from '@/components/layouts/PageLayout'
+import VideoPlayer from '@/components/video/VideoPlayer'
+// import { formatDistanceToNow } from 'date-fns'
+// import { ko } from 'date-fns/locale'
+
+interface YouTubeVideo {
+  id: string
+  title: string
+  description: string
+  thumbnailUrl: string
+  youtubeUrl: string
+  youtubeId: string
+  channelTitle: string
+  publishedAt: string
+  duration: number
+  viewCount: string
+  likeCount: string
+  commentCount: string
+  category: string
+  featured: boolean
+  videoUrl?: string | null
+  assignedUser?: {
+    id: string
+    name: string
+    profile?: {
+      profileImage?: string
+    }
+  }
+}
+
+interface Comment {
+  id: string
+  author: string
+  content: string
+  createdAt: string
+  profileImage?: string
+  likeCount: number
+}
+
+export default function YouTubeVideoPage() {
+  const params = useParams()
+  const router = useRouter()
+  const [video, setVideo] = useState<YouTubeVideo | null>(null)
+  const [relatedVideos, setRelatedVideos] = useState<YouTubeVideo[]>([])
+  const [comments, setComments] = useState<Comment[]>([])
+  const [loading, setLoading] = useState(true)
+  const [commentText, setCommentText] = useState('')
+  const [isLiked, setIsLiked] = useState(false)
+
+  useEffect(() => {
+    if (params.id) {
+      loadVideo(params.id as string)
+      loadRelatedVideos()
+    }
+  }, [params.id])
+
+  const loadVideo = async (videoId: string) => {
+    try {
+      setLoading(true)
+      const response = await fetch(`/api/videos/youtube/${videoId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setVideo(data.video)
+        
+        // TODO: 실제 댓글 API 구현 후 연결
+        setComments([])
+      } else {
+        console.error('Failed to load video:', response.status)
+      }
+    } catch (error) {
+      console.error('Failed to load video:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadRelatedVideos = async () => {
+    try {
+      const response = await fetch('/api/videos/youtube?limit=10')
+      if (response.ok) {
+        const data = await response.json()
+        // 현재 영상 제외하고 설정
+        setRelatedVideos(data.videos.filter((v: YouTubeVideo) => v.id !== params.id))
+      }
+    } catch (error) {
+      console.error('Failed to load related videos:', error)
+    }
+  }
+
+  const handleComment = () => {
+    if (!commentText.trim()) return
+
+    // TODO: 실제 사용자 정보와 댓글 API 연결 필요
+    const newComment: Comment = {
+      id: Date.now().toString(),
+      author: '사용자', // 실제 로그인한 사용자 정보 필요
+      content: commentText,
+      createdAt: new Date().toISOString(),
+      profileImage: '/images/default-avatar.png',
+      likeCount: 0
+    }
+
+    setComments([newComment, ...comments])
+    setCommentText('')
+  }
+
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+    
+    if (diffInSeconds < 60) return '방금 전'
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}분 전`
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}시간 전`
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}일 전`
+    if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 604800)}주 전`
+    if (diffInSeconds < 31536000) return `${Math.floor(diffInSeconds / 2592000)}달 전`
+    return `${Math.floor(diffInSeconds / 31536000)}년 전`
+  }
+
+  const handleLike = () => {
+    setIsLiked(!isLiked)
+  }
+
+  const formatDuration = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    const secs = seconds % 60
+
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+    }
+    return `${minutes}:${secs.toString().padStart(2, '0')}`
+  }
+
+  if (loading) {
+    return (
+      <PageLayout>
+        <div className="w-full px-6 py-6">
+          <div className="animate-pulse">
+            <div className="aspect-video bg-gray-700 rounded-lg mb-4"></div>
+            <div className="h-6 bg-gray-700 rounded mb-2"></div>
+            <div className="h-4 bg-gray-700 rounded w-1/3"></div>
+          </div>
+        </div>
+      </PageLayout>
+    )
+  }
+
+  if (!video) {
+    return (
+      <PageLayout>
+        <div className="w-full px-6 py-6">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-white mb-4">영상을 찾을 수 없습니다</h1>
+            <button
+              onClick={() => router.back()}
+              className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition"
+            >
+              돌아가기
+            </button>
+          </div>
+        </div>
+      </PageLayout>
+    )
+  }
+
+  return (
+    <PageLayout>
+      <div className="w-full px-6 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* 메인 비디오 및 댓글 영역 */}
+          <div className="lg:col-span-2">
+            {/* 비디오 플레이어 */}
+            <div className="aspect-video bg-black rounded-lg overflow-hidden mb-6">
+              {video.videoUrl ? (
+                <VideoPlayer
+                  videoUrl={video.videoUrl}
+                  thumbnailUrl={video.thumbnailUrl}
+                  title={video.title}
+                  duration={video.duration}
+                  className="w-full h-full"
+                />
+              ) : (
+                // 실제 비디오 파일이 없으면 YouTube iframe 사용
+                <iframe
+                  src={`https://www.youtube.com/embed/${video.youtubeId}?autoplay=0&rel=0`}
+                  title={video.title}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              )}
+            </div>
+
+            {/* 비디오 정보 */}
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold text-white mb-4">{video.title}</h1>
+              
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-medium">
+                        {video.channelTitle.charAt(0)}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-white font-medium">{video.channelTitle}</p>
+                      <p className="text-gray-400 text-sm">
+                        {new Date(video.publishedAt).toLocaleDateString('ko-KR')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={handleLike}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full transition ${
+                      isLiked 
+                        ? 'bg-red-600 text-white' 
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    }`}
+                  >
+                    <svg className="w-5 h-5" fill={isLiked ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                    좋아요
+                  </button>
+                  
+                  <button className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-gray-300 rounded-full hover:bg-gray-600 transition">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                    </svg>
+                    공유
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-gray-800 rounded-lg p-4">
+                <div className="flex items-center gap-4 text-sm text-gray-300 mb-3">
+                  <span>조회수 {parseInt(video.viewCount).toLocaleString()}</span>
+                  <span>좋아요 {parseInt(video.likeCount).toLocaleString()}</span>
+                  <span>댓글 {parseInt(video.commentCount).toLocaleString()}</span>
+                </div>
+                <p className="text-gray-300 leading-relaxed">{video.description}</p>
+              </div>
+            </div>
+
+            {/* 댓글 섹션 */}
+            <div className="mb-8">
+              <h3 className="text-xl font-bold text-white mb-6">댓글 {comments.length}</h3>
+              
+              {/* 댓글 작성 */}
+              <div className="mb-6">
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm">U</span>
+                  </div>
+                  <div className="flex-1">
+                    <textarea
+                      value={commentText}
+                      onChange={(e) => setCommentText(e.target.value)}
+                      placeholder="댓글을 입력하세요..."
+                      className="w-full bg-gray-800 text-white p-3 rounded-lg border border-gray-700 focus:border-indigo-500 focus:outline-none resize-none"
+                      rows={3}
+                    />
+                    <div className="flex justify-end gap-2 mt-2">
+                      <button
+                        onClick={() => setCommentText('')}
+                        className="px-4 py-2 text-gray-400 hover:text-white transition"
+                      >
+                        취소
+                      </button>
+                      <button
+                        onClick={handleComment}
+                        disabled={!commentText.trim()}
+                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                      >
+                        댓글 달기
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 댓글 목록 */}
+              <div className="space-y-4">
+                {comments.map((comment) => (
+                  <div key={comment.id} className="flex gap-3">
+                    <img
+                      src={comment.profileImage}
+                      alt={comment.author}
+                      className="w-8 h-8 rounded-full"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-white font-medium text-sm">{comment.author}</span>
+                        <span className="text-gray-500 text-xs">
+                          {formatTimeAgo(comment.createdAt)}
+                        </span>
+                      </div>
+                      <p className="text-gray-300 text-sm mb-2">{comment.content}</p>
+                      <div className="flex items-center gap-4">
+                        <button className="flex items-center gap-1 text-gray-500 hover:text-white transition">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                          </svg>
+                          <span className="text-xs">{comment.likeCount}</span>
+                        </button>
+                        <button className="text-gray-500 hover:text-white text-xs transition">
+                          답글
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* 추천 영상 사이드바 */}
+          <div className="lg:col-span-1">
+            <h3 className="text-xl font-bold text-white mb-4">추천 영상</h3>
+            <div className="space-y-4">
+              {relatedVideos.slice(0, 8).map((relatedVideo) => (
+                <div
+                  key={relatedVideo.id}
+                  onClick={() => router.push(`/videos/youtube/${relatedVideo.id}`)}
+                  className="flex gap-3 cursor-pointer group"
+                >
+                  <div className="relative w-32 h-20 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0">
+                    <img
+                      src={relatedVideo.thumbnailUrl}
+                      alt={relatedVideo.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute bottom-1 right-1 bg-black/80 text-white text-xs px-1 py-0.5 rounded">
+                      {formatDuration(relatedVideo.duration)}
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-white text-sm font-medium line-clamp-2 mb-1 group-hover:text-indigo-400 transition-colors">
+                      {relatedVideo.title}
+                    </h4>
+                    <p className="text-gray-400 text-xs mb-1">{relatedVideo.channelTitle}</p>
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <span>조회수 {parseInt(relatedVideo.viewCount).toLocaleString()}</span>
+                      <span>•</span>
+                      <span>{formatTimeAgo(relatedVideo.publishedAt)}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </PageLayout>
+  )
+}
