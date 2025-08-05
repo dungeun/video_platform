@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Showcase TV</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="left-section">
+            <button class="menu-toggle" onclick="toggleSidebar()">
+                <span class="material-icons">menu</span>
+            </button>
+            <h1 class="logo-text">Showcase TV</h1>
+        </div>
+        <div class="middle-section">
+            <input type="text" placeholder="검색" class="search-bar">
+            <button class="search-button material-icons">search</button>
+        </div>
+        <div class="right-section">
+            <div class="user-menu">
+                <img src="https://i.pravatar.cc/40?img=1" alt="User" class="user-avatar">
+                <span class="user-name">코드비</span>
+                <span class="material-icons">arrow_drop_down</span>
+            </div>
+            <div class="notification-badge">
+                <span class="badge-count">1</span>
+            </div>
+        </div>
+    </header>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-content">
+            <div class="menu-section">
+                <a href="#" class="sidebar-item active">
+                    <span class="material-icons">home</span>
+                    <span class="sidebar-text">홈</span>
+                </a>
+                <a href="#" class="sidebar-item">
+                    <span class="material-icons">live_tv</span>
+                    <span class="sidebar-text">라이브</span>
+                </a>
+                <a href="#" class="sidebar-item">
+                    <span class="material-icons">video_library</span>
+                    <span class="sidebar-text">동영상</span>
+                </a>
+                <a href="#" class="sidebar-item">
+                    <span class="material-icons">whatshot</span>
+                    <span class="sidebar-text">인기 영상</span>
+                </a>
+                <a href="#" class="sidebar-item">
+                    <span class="material-icons">fiber_new</span>
+                    <span class="sidebar-text">신규 영상</span>
+                </a>
+            </div>
+            
+            <div class="menu-divider"></div>
+            
+            <div class="menu-section">
+                <p class="menu-label">카테고리</p>
+                <a href="#" class="sidebar-item">
+                    <span class="material-icons">apartment</span>
+                    <span class="sidebar-text">부동산</span>
+                </a>
+                <a href="#" class="sidebar-item">
+                    <span class="material-icons">trending_up</span>
+                    <span class="sidebar-text">주식</span>
+                </a>
+                <a href="#" class="sidebar-item">
+                    <span class="material-icons">directions_car</span>
+                    <span class="sidebar-text">자동차</span>
+                </a>
+                <a href="#" class="sidebar-item">
+                    <span class="material-icons">restaurant</span>
+                    <span class="sidebar-text">음식</span>
+                </a>
+                <a href="#" class="sidebar-item">
+                    <span class="material-icons">flight</span>
+                    <span class="sidebar-text">여행</span>
+                </a>
+                <a href="#" class="sidebar-item">
+                    <span class="material-icons">sports_esports</span>
+                    <span class="sidebar-text">게임</span>
+                </a>
+            </div>
+            
+            <div class="menu-divider"></div>
+            
+            <div class="menu-section">
+                <a href="#" class="sidebar-item">
+                    <span class="material-icons">settings</span>
+                    <span class="sidebar-text">설정</span>
+                </a>
+                <a href="#" class="sidebar-item">
+                    <span class="material-icons">help_outline</span>
+                    <span class="sidebar-text">도움말</span>
+                </a>
+                <a href="#" class="sidebar-item">
+                    <span class="material-icons">feedback</span>
+                    <span class="sidebar-text">의견 보내기</span>
+                </a>
+            </div>
+            
+            <div class="menu-divider"></div>
+            
+            <div class="menu-section">
+                <p class="menu-label">구독 채널</p>
+                <a href="#" class="sidebar-item channel-item">
+                    <img src="https://i.pravatar.cc/24?img=2" alt="지창경" class="channel-avatar">
+                    <span class="sidebar-text">지창경</span>
+                    <span class="live-indicator"></span>
+                </a>
+                <a href="#" class="sidebar-item channel-item">
+                    <img src="https://i.pravatar.cc/24?img=3" alt="자랑맨" class="channel-avatar">
+                    <span class="sidebar-text">자랑맨</span>
+                </a>
+                <a href="#" class="sidebar-item channel-item">
+                    <img src="https://i.pravatar.cc/24?img=4" alt="인순효그" class="channel-avatar">
+                    <span class="sidebar-text">인순효그</span>
+                </a>
+                <a href="#" class="sidebar-item channel-item">
+                    <img src="https://i.pravatar.cc/24?img=5" alt="주식왕" class="channel-avatar">
+                    <span class="sidebar-text">주식왕</span>
+                </a>
+                <a href="#" class="sidebar-item">
+                    <span class="material-icons">expand_more</span>
+                    <span class="sidebar-text">더보기</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <h2 class="section-title">라이브</h2>
+        
+        <section class="hero-section">
+            <div class="hero-item">
+                <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=600&fit=crop" alt="Live Stream 1">
+                <div class="live-badge">LIVE</div>
+                <div class="hero-info">
+                    <h3>[LIVE]내 집 마련 성공기!<br>초보도 따라하는<br>부동산 꿀팁 대방출!</h3>
+                    <div class="hero-user">
+                        <img src="https://i.pravatar.cc/32?img=2" alt="지창경">
+                        <div>
+                            <p class="user-name">지창경</p>
+                            <p class="stats">63K 시청중 • 구독자수 11k</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="duration">7 min</div>
+            </div>
+            <div class="hero-item">
+                <img src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=600&fit=crop" alt="Live Stream 2">
+                <div class="live-badge">LIVE</div>
+                <div class="hero-info">
+                    <h3>[LIVE]꿀 팁출! 전<br>세 탈출! 부동산 투<br>자 성공의 모든 것!</h3>
+                    <div class="hero-user">
+                        <img src="https://i.pravatar.cc/32?img=3" alt="자랑맨">
+                        <div>
+                            <p class="user-name">자랑맨</p>
+                            <p class="stats">53K 시청중 • 구독자수 11k</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="duration">10 min</div>
+            </div>
+            <div class="hero-item">
+                <img src="https://images.unsplash.com/photo-1579532537598-459ecdaf39cc?w=800&h=600&fit=crop" alt="Live Stream 3">
+                <div class="live-badge">LIVE</div>
+                <div class="hero-info">
+                    <h3>[LIVE]주식 투자 실전!<br>오늘의 추천 종목<br>실시간 분석!</h3>
+                    <div class="hero-user">
+                        <img src="https://i.pravatar.cc/32?img=8" alt="주식분석가">
+                        <div>
+                            <p class="user-name">주식분석가</p>
+                            <p class="stats">45K 시청중 • 구독자수 8k</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="duration">15 min</div>
+            </div>
+        </section>
+
+        <section class="video-grid-section">
+            <h2 class="section-title">인기 영상</h2>
+            <div class="video-grid">
+                <div class="video-card">
+                    <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=400&h=300&fit=crop" alt="부동산 영상">
+                    <div class="duration">7 min</div>
+                    <div class="video-info">
+                        <div class="user-avatar-small">
+                            <img src="https://i.pravatar.cc/32?img=4" alt="인순효그">
+                        </div>
+                        <div>
+                            <h3>부동산 경매로 싸게 건물 사는 비법!</h3>
+                            <p class="channel-name">인순효그 <span class="verified">•</span></p>
+                            <p class="views-time">53K views • 2 weeks ago</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="video-card">
+                    <img src="https://images.unsplash.com/photo-1535320903710-d993d3d77d29?w=400&h=300&fit=crop" alt="주식 영상">
+                    <div class="duration">7 min</div>
+                    <div class="video-info">
+                        <div class="user-avatar-small">
+                            <img src="https://i.pravatar.cc/32?img=5" alt="주식왕">
+                        </div>
+                        <div>
+                            <h3>원금 2배! 소소하지만 확실한 나의 주식 수익률 '지방' 타임!</h3>
+                            <p class="channel-name">주식왕 <span class="verified">•</span></p>
+                            <p class="views-time">53K views • 2 weeks ago</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="video-card">
+                    <img src="https://images.unsplash.com/photo-1554469384-e58fac16e23a?w=400&h=300&fit=crop" alt="부동산 영상">
+                    <div class="duration">7 min</div>
+                    <div class="video-info">
+                        <div class="user-avatar-small">
+                            <img src="https://i.pravatar.cc/32?img=6" alt="부동산 마스터">
+                        </div>
+                        <div>
+                            <h3>상가 주택 마스터! 숨겨진 부동산 보물 찾는 나만의 노하우!</h3>
+                            <p class="channel-name">부동산 마스터 <span class="verified">•</span></p>
+                            <p class="views-time">53K views • 2 weeks ago</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="video-card">
+                    <img src="https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=400&h=300&fit=crop" alt="투자 영상">
+                    <div class="duration">7 min</div>
+                    <div class="video-info">
+                        <div class="user-avatar-small">
+                            <img src="https://i.pravatar.cc/32?img=7" alt="개미대장">
+                        </div>
+                        <div>
+                            <h3>나만의 주식 투자 원칙 & 성공 경험 공유!</h3>
+                            <p class="channel-name">개미대장 <span class="verified">•</span></p>
+                            <p class="views-time">53K views • 2 weeks ago</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <section class="ad-section">
+        <div class="ad-wrapper">
+            <div class="ad-container">
+                <div class="ad-banner">
+                    <svg width="100%" height="100%" viewBox="0 0 100 60" preserveAspectRatio="xMidYMid meet">
+                        <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#ffffff" font-size="16" font-weight="600">배너광고 1</text>
+                    </svg>
+                </div>
+                <div class="ad-banner">
+                    <svg width="100%" height="100%" viewBox="0 0 100 60" preserveAspectRatio="xMidYMid meet">
+                        <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#ffffff" font-size="16" font-weight="600">배너광고 2</text>
+                    </svg>
+                </div>
+                <div class="ad-banner">
+                    <svg width="100%" height="100%" viewBox="0 0 100 60" preserveAspectRatio="xMidYMid meet">
+                        <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#ffffff" font-size="16" font-weight="600">배너광고 3</text>
+                    </svg>
+                </div>
+                <div class="ad-banner">
+                    <svg width="100%" height="100%" viewBox="0 0 100 60" preserveAspectRatio="xMidYMid meet">
+                        <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#ffffff" font-size="16" font-weight="600">배너광고 4</text>
+                    </svg>
+                </div>
+                <div class="ad-banner">
+                    <svg width="100%" height="100%" viewBox="0 0 100 60" preserveAspectRatio="xMidYMid meet">
+                        <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#ffffff" font-size="16" font-weight="600">배너광고 5</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <main class="main-content">
+        <section class="video-grid-section">
+            <h2 class="section-title">부동산</h2>
+            <div class="video-grid">
+                <div class="video-card">
+                    <img src="https://images.unsplash.com/photo-1565043666747-69f6646db940?w=400&h=300&fit=crop" alt="부동산 영상">
+                    <div class="duration">12 min</div>
+                    <div class="video-info">
+                        <div class="user-avatar-small">
+                            <img src="https://i.pravatar.cc/32?img=10" alt="부동산박사">
+                        </div>
+                        <div>
+                            <h3>서울 아파트 투자 전략! 2024년 유망 지역 분석</h3>
+                            <p class="channel-name">부동산박사 <span class="verified">•</span></p>
+                            <p class="views-time">87K views • 5 days ago</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="video-card">
+                    <img src="https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=400&h=300&fit=crop" alt="부동산 영상">
+                    <div class="duration">15 min</div>
+                    <div class="video-info">
+                        <div class="user-avatar-small">
+                            <img src="https://i.pravatar.cc/32?img=11" alt="임대왕">
+                        </div>
+                        <div>
+                            <h3>월세 수익률 200%! 원룸 임대 사업 시작하기</h3>
+                            <p class="channel-name">임대왕 <span class="verified">•</span></p>
+                            <p class="views-time">65K views • 1 week ago</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="video-card">
+                    <img src="https://images.unsplash.com/photo-1494526585095-c41746248156?w=400&h=300&fit=crop" alt="부동산 영상">
+                    <div class="duration">9 min</div>
+                    <div class="video-info">
+                        <div class="user-avatar-small">
+                            <img src="https://i.pravatar.cc/32?img=12" alt="재테크멘토">
+                        </div>
+                        <div>
+                            <h3>신혼부부 내집마련! 대출 한도 최대로 받는 방법</h3>
+                            <p class="channel-name">재테크멘토 <span class="verified">•</span></p>
+                            <p class="views-time">93K views • 3 days ago</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="video-card">
+                    <img src="https://images.unsplash.com/photo-1448630360428-65456885c650?w=400&h=300&fit=crop" alt="부동산 영상">
+                    <div class="duration">11 min</div>
+                    <div class="video-info">
+                        <div class="user-avatar-small">
+                            <img src="https://i.pravatar.cc/32?img=13" alt="건물주클럽">
+                        </div>
+                        <div>
+                            <h3>상가 투자의 정석! 수익형 부동산 고르는 법</h3>
+                            <p class="channel-name">건물주클럽 <span class="verified">•</span></p>
+                            <p class="views-time">76K views • 6 days ago</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="video-grid-section">
+            <h2 class="section-title">주식</h2>
+            <div class="video-grid">
+                <div class="video-card">
+                    <img src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&h=300&fit=crop" alt="주식 영상">
+                    <div class="duration">18 min</div>
+                    <div class="video-info">
+                        <div class="user-avatar-small">
+                            <img src="https://i.pravatar.cc/32?img=14" alt="주식천재">
+                        </div>
+                        <div>
+                            <h3>삼성전자 매수 타이밍! 반도체 사이클 분석</h3>
+                            <p class="channel-name">주식천재 <span class="verified">•</span></p>
+                            <p class="views-time">124K views • 2 days ago</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="video-card">
+                    <img src="https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=400&h=300&fit=crop" alt="주식 영상">
+                    <div class="duration">14 min</div>
+                    <div class="video-info">
+                        <div class="user-avatar-small">
+                            <img src="https://i.pravatar.cc/32?img=15" alt="투자의정석">
+                        </div>
+                        <div>
+                            <h3>미국 주식 vs 한국 주식! 어디에 투자할까?</h3>
+                            <p class="channel-name">투자의정석 <span class="verified">•</span></p>
+                            <p class="views-time">89K views • 4 days ago</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="video-card">
+                    <img src="https://images.unsplash.com/photo-1535320903710-d993d3d77d29?w=400&h=300&fit=crop" alt="주식 영상">
+                    <div class="duration">20 min</div>
+                    <div class="video-info">
+                        <div class="user-avatar-small">
+                            <img src="https://i.pravatar.cc/32?img=16" alt="차트분석가">
+                        </div>
+                        <div>
+                            <h3>기술적 분석 마스터! 차트 보는 법 완벽 정리</h3>
+                            <p class="channel-name">차트분석가 <span class="verified">•</span></p>
+                            <p class="views-time">67K views • 1 week ago</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="video-card">
+                    <img src="https://images.unsplash.com/photo-1642790106117-e829e14a795f?w=400&h=300&fit=crop" alt="주식 영상">
+                    <div class="duration">16 min</div>
+                    <div class="video-info">
+                        <div class="user-avatar-small">
+                            <img src="https://i.pravatar.cc/32?img=17" alt="배당투자왕">
+                        </div>
+                        <div>
+                            <h3>월 300만원 배당금! 배당주 포트폴리오 공개</h3>
+                            <p class="channel-name">배당투자왕 <span class="verified">•</span></p>
+                            <p class="views-time">102K views • 3 days ago</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="video-grid-section">
+            <h2 class="section-title">자동차</h2>
+            <div class="video-grid">
+                <div class="video-card">
+                    <img src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=400&h=300&fit=crop" alt="자동차 영상">
+                    <div class="duration">25 min</div>
+                    <div class="video-info">
+                        <div class="user-avatar-small">
+                            <img src="https://i.pravatar.cc/32?img=18" alt="카마스터">
+                        </div>
+                        <div>
+                            <h3>2024 신차 총정리! 올해 꼭 사야할 차는?</h3>
+                            <p class="channel-name">카마스터 <span class="verified">•</span></p>
+                            <p class="views-time">156K views • 1 day ago</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="video-card">
+                    <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&h=300&fit=crop" alt="자동차 영상">
+                    <div class="duration">19 min</div>
+                    <div class="video-info">
+                        <div class="user-avatar-small">
+                            <img src="https://i.pravatar.cc/32?img=19" alt="전기차전문가">
+                        </div>
+                        <div>
+                            <h3>테슬라 vs 현대 아이오닉! 전기차 비교 시승기</h3>
+                            <p class="channel-name">전기차전문가 <span class="verified">•</span></p>
+                            <p class="views-time">98K views • 5 days ago</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="video-card">
+                    <img src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&h=300&fit=crop" alt="자동차 영상">
+                    <div class="duration">13 min</div>
+                    <div class="video-info">
+                        <div class="user-avatar-small">
+                            <img src="https://i.pravatar.cc/32?img=20" alt="중고차딜러">
+                        </div>
+                        <div>
+                            <h3>중고차 사기 피하는 법! 체크리스트 대공개</h3>
+                            <p class="channel-name">중고차딜러 <span class="verified">•</span></p>
+                            <p class="views-time">134K views • 2 weeks ago</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="video-card">
+                    <img src="https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=400&h=300&fit=crop" alt="자동차 영상">
+                    <div class="duration">22 min</div>
+                    <div class="video-info">
+                        <div class="user-avatar-small">
+                            <img src="https://i.pravatar.cc/32?img=21" alt="슈퍼카매니아">
+                        </div>
+                        <div>
+                            <h3>람보르기니 우라칸 시승! 꿈의 슈퍼카 리뷰</h3>
+                            <p class="channel-name">슈퍼카매니아 <span class="verified">•</span></p>
+                            <p class="views-time">245K views • 1 week ago</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.querySelector('.main-content');
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('sidebar-collapsed');
+        }
+    </script>
+</body>
+</html>

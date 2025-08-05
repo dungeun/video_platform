@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { cacheService, CACHE_TTL } from '@/lib/cache/cache-service'
+import { cache, cacheKeys } from '@/lib/simple-cache'
 import { setCacheHeaders } from '@/lib/cache/cache-middleware'
+
+// 캐시 TTL 상수
+const CACHE_TTL = {
+  SHORT: 60, // 1분
+  MEDIUM: 300, // 5분
+  LONG: 3600, // 1시간
+  DAY: 86400, // 1일
+} as const
 
 export interface CacheConfig {
   key: string | ((req: NextRequest) => string)
@@ -22,7 +30,7 @@ export function withCache<T = any>(
 
     // GET 요청에 대해서만 캐시 확인
     if (req.method === 'GET') {
-      const cached = await cacheService.get<T>(cacheKey)
+      const cached = await cache.get<T>(cacheKey)
       if (cached) {
         const response = NextResponse.json(cached)
         setCacheHeaders(response, {
@@ -41,7 +49,7 @@ export function withCache<T = any>(
     // 성공 응답인 경우 캐시 저장
     if (response.ok && req.method === 'GET') {
       const data = await response.clone().json()
-      await cacheService.set(cacheKey, data, config.ttl || CACHE_TTL.MEDIUM)
+      await cache.set(cacheKey, data, config.ttl || CACHE_TTL.MEDIUM)
       
       // 캐시 헤더 설정
       setCacheHeaders(response, {

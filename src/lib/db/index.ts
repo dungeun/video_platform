@@ -1,6 +1,6 @@
 // Database connection and utilities
 import { PrismaClient } from '@prisma/client'
-import { redis } from './redis'
+// import { redis } from './redis' // Redis 제거
 
 // Global is used here to maintain a cached connection across hot reloads
 // in development. This prevents connections growing exponentially
@@ -16,9 +16,10 @@ if (process.env.NODE_ENV === 'production') {
   prisma = (global as any).prisma
 }
 
-export function getRedis() {
-  return redis
-}
+// Redis 제거 - 더 이상 사용하지 않음
+// export function getRedis() {
+//   return redis
+// }
 
 export async function withTransaction<T>(fn: (tx: Omit<PrismaClient, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">) => Promise<T>): Promise<T> {
   return await prisma.$transaction(fn)

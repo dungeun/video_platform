@@ -140,7 +140,7 @@ export default function LoginPage() {
       const credentials = {
         user: { email: 'user@example.com', password: 'password123' },
         business: { email: 'business@company.com', password: 'password123' },
-        admin: { email: 'admin@linkpick.co.kr', password: 'password123' }
+        admin: { email: 'admin@videopick.co.kr', password: 'password123' }
       }
       email = credentials[userType].email
     }
@@ -219,7 +219,7 @@ export default function LoginPage() {
           <div className="text-center mb-8">
             <Link href="/" className="inline-block">
               <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
-                LinkPick
+                비디오픽
               </h1>
             </Link>
             <h2 className="text-xl text-gray-600">다시 만나서 반가워요!</h2>

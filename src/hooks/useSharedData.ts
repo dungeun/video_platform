@@ -269,3 +269,27 @@ export function useBusinessStats() {
     }
   )
 }
+
+// 비즈니스 비디오 통계 캐싱
+export function useBusinessVideoStats() {
+  const { user } = useAuth()
+  
+  return useCachedData(
+    async () => {
+      const response = await fetch('/api/business/video-stats', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
+        }
+      })
+      
+      if (!response.ok) throw new Error('Failed to fetch video stats')
+      const data = await response.json()
+      return data.stats
+    },
+    {
+      key: `business_video_stats_${user?.id}`,
+      ttl: 5 * 60 * 1000, // 5분
+      staleWhileRevalidate: true
+    }
+  )
+}

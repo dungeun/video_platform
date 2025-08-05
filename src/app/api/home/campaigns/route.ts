@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
-import { cacheService, cacheKeys, CACHE_TTL } from '@/lib/cache/cache-service';
+import { cache, cacheKeys } from '@/lib/simple-cache';
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -12,10 +12,10 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     
     // 캐시 키 생성
-    const cacheKey = cacheKeys.homeCampaigns(filter);
+    const cacheKey = cacheKeys.videoList({ filter, limit });
     
     // 캐시된 데이터 확인
-    const cached = await cacheService.get(cacheKey);
+    const cached = await cache.get(cacheKey);
     if (cached) {
       return NextResponse.json({
         success: true,
@@ -144,7 +144,7 @@ export async function GET(request: NextRequest) {
     });
     
     // 캐시에 저장 (5분 TTL)
-    await cacheService.set(cacheKey, formattedCampaigns, CACHE_TTL.MEDIUM);
+    await cache.set(cacheKey, formattedCampaigns, 300); // 5분 TTL
 
     return NextResponse.json({
       success: true,

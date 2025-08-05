@@ -4,14 +4,16 @@ import Link from 'next/link'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
-import { ChevronDown, User as UserIcon, LogOut, Settings } from 'lucide-react'
+import { ChevronDown, User as UserIcon, LogOut, Settings, Menu } from 'lucide-react'
 import { useUIConfigStore } from '@/lib/stores/ui-config.store'
 
 interface HeaderProps {
   variant?: 'default' | 'transparent'
+  onSidebarToggle?: () => void
+  onMobileSidebarToggle?: () => void
 }
 
-export default function Header({ variant = 'default' }: HeaderProps) {
+export default function Header({ variant = 'default', onSidebarToggle, onMobileSidebarToggle }: HeaderProps) {
   const router = useRouter()
   const pathname = usePathname()
   const [scrolled, setScrolled] = useState(false)
@@ -85,16 +87,34 @@ export default function Header({ variant = 'default' }: HeaderProps) {
 
 
   // 사용자 타입별 대시보드 링크
-  const dashboardLink = isAdmin ? '/admin' : isBusiness ? '/business/dashboard' : '/mypage'
+  const dashboardLink = isAdmin ? '/admin' : isBusiness ? '/studio/dashboard' : '/mypage'
 
   return (
-    <header className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white sticky top-0 z-50">
-      <div className="container mx-auto px-6 py-3">
+    <header className="bg-gray-800 border-b border-gray-700 text-white fixed top-0 left-0 right-0 z-50">
+      <div className="w-full px-6 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-8 flex-1">
+            {/* Sidebar Toggle Button - Desktop */}
+            <button
+              onClick={onSidebarToggle}
+              className="hidden lg:block p-2 hover:bg-gray-800 rounded-lg transition-colors duration-200"
+              aria-label="Toggle sidebar"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+            
+            {/* Mobile Hamburger Menu */}
+            <button
+              onClick={onMobileSidebarToggle}
+              className="lg:hidden p-2 hover:bg-gray-800 rounded-lg transition-colors duration-200"
+              aria-label="Toggle mobile sidebar"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+            
             <Link href="/">
               <h1 className="text-3xl font-black text-white">
-                {config.header.logo.text}
+                비디오픽
               </h1>
             </Link>
             
@@ -127,8 +147,8 @@ export default function Header({ variant = 'default' }: HeaderProps) {
                   <Link href="/admin/users" className="hover:opacity-80 transition font-medium text-white text-sm">
                     사용자 관리
                   </Link>
-                  <Link href="/admin/campaigns" className="hover:opacity-80 transition font-medium text-white text-sm">
-                    캠페인 관리
+                  <Link href="/admin/videos" className="hover:opacity-80 transition font-medium text-white text-sm">
+                    비디오 관리
                   </Link>
                 </>
               )}
@@ -150,11 +170,11 @@ export default function Header({ variant = 'default' }: HeaderProps) {
               {isBusiness && (
                 <>
                   <div className="h-4 w-px bg-white/30" />
-                  <Link href="/business/dashboard" className="flex flex-col items-center gap-1 hover:opacity-80 transition">
+                  <Link href="/studio/dashboard" className="flex flex-col items-center gap-1 hover:opacity-80 transition">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
-                    <span className="text-xs">대시보드</span>
+                    <span className="text-xs">스튜디오</span>
                   </Link>
                 </>
               )}

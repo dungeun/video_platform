@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!type || !['profile', 'campaign', 'content', 'document'].includes(type)) {
+    if (!type || !['profile', 'campaign', 'content', 'document', 'video'].includes(type)) {
       return NextResponse.json(
         { error: '유효하지 않은 파일 타입입니다.' },
         { status: 400 }

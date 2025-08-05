@@ -227,17 +227,17 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">전체 캠페인</p>
+                <p className="text-sm font-medium text-gray-600">총 동영상</p>
                 <p className="text-2xl font-bold text-gray-900 mt-1">
                   {stats.totalCampaigns}
                 </p>
                 <p className="text-sm text-gray-500 mt-1">
-                  진행중: {stats.activeCampaigns}개
+                  신규: {stats.activeCampaigns}개
                 </p>
               </div>
               <div className="p-3 bg-green-100 rounded-full">
                 <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
               </div>
             </div>
@@ -250,12 +250,12 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">월 매출</p>
+                <p className="text-sm font-medium text-gray-600">슈퍼챗 수익</p>
                 <p className="text-2xl font-bold text-gray-900 mt-1">
                   ₩{stats.revenue.toLocaleString()}
                 </p>
                 <p className="text-sm text-gray-500 mt-1">
-                  목표 달성률: 87%
+                  정산 대기: ₩{Math.floor(stats.revenue * 0.15).toLocaleString()}
                 </p>
               </div>
               <div className="p-3 bg-yellow-100 rounded-full">
@@ -273,23 +273,23 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">대기중 승인</p>
+                <p className="text-sm font-medium text-gray-600">라이브 스트림</p>
                 <p className="text-2xl font-bold text-gray-900 mt-1">
                   {stats.pendingApprovals}
                 </p>
                 <p className="text-sm text-gray-500 mt-1">
-                  즉시 처리 필요
+                  현재 진행중
                 </p>
               </div>
               <div className="p-3 bg-red-100 rounded-full">
                 <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
                 </svg>
               </div>
             </div>
             <div className="mt-4">
-              <a href="/admin/approvals" className="text-blue-600 text-sm font-medium hover:text-blue-700">
-                승인 관리 →
+              <a href="/admin/live-streams" className="text-blue-600 text-sm font-medium hover:text-blue-700">
+                라이브 관리 →
               </a>
             </div>
           </div>
@@ -516,7 +516,7 @@ export default function AdminDashboard() {
               <h2 className="text-lg font-semibold text-gray-900">빠른 작업</h2>
             </div>
             <div className="p-6">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 <a
                   href="/admin/users"
                   className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-colors"
@@ -530,14 +530,26 @@ export default function AdminDashboard() {
                 </a>
 
                 <a
-                  href="/admin/campaigns"
+                  href="/admin/videos"
                   className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-colors"
                 >
                   <div className="text-center">
                     <svg className="w-8 h-8 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
-                    <p className="mt-2 text-sm font-medium text-gray-600">캠페인 관리</p>
+                    <p className="mt-2 text-sm font-medium text-gray-600">동영상 관리</p>
+                  </div>
+                </a>
+
+                <a
+                  href="/admin/creators"
+                  className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="text-center">
+                    <svg className="w-8 h-8 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    <p className="mt-2 text-sm font-medium text-gray-600">크리에이터 관리</p>
                   </div>
                 </a>
 
@@ -562,6 +574,30 @@ export default function AdminDashboard() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
                     <p className="mt-2 text-sm font-medium text-gray-600">통계 분석</p>
+                  </div>
+                </a>
+
+                <a
+                  href="/admin/live-streams"
+                  className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="text-center">
+                    <svg className="w-8 h-8 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
+                    </svg>
+                    <p className="mt-2 text-sm font-medium text-gray-600">라이브 관리</p>
+                  </div>
+                </a>
+
+                <a
+                  href="/admin/superchat-settlement"
+                  className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="text-center">
+                    <svg className="w-8 h-8 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="mt-2 text-sm font-medium text-gray-600">슈퍼챗 정산</p>
                   </div>
                 </a>
               </div>

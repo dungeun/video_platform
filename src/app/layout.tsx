@@ -7,8 +7,8 @@ import { Toaster } from '@/components/ui/toaster'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'LinkPick - 비즈니스와 인플루언서의 완벽한 연결',
-  description: 'AI 기반 매칭으로 최적의 인플루언서를 찾고, 안전한 에스크로 시스템으로 캠페인을 진행하세요.',
+  title: '비디오픽 - 비디오 콘텐츠 플랫폼',
+  description: '다양한 비디오 콘텐츠를 시청하고 공유하는 플랫폼입니다.',
 }
 
 export default function RootLayout({

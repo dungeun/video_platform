@@ -29,7 +29,7 @@ export default function Footer() {
               {config.header.logo.text}
             </h3>
             <p className="text-gray-400 mb-4">
-              브랜드와 인플루언서를 연결하는 스마트한 마케팅 플랫폼
+              크리에이터와 시청자를 연결하는 차세대 비디오 플랫폼
             </p>
             <div className="flex space-x-4">
               {social && social
@@ -106,9 +106,9 @@ export default function Footer() {
             <div className="text-gray-400 text-sm mb-4 md:mb-0">
               <p>{copyright}</p>
               <p className="mt-1">
-                사업자등록번호: 123-45-67890 | 대표: 홍길동 | 
+                사업자등록번호: 123-45-67890 | 대표: 김비디오 | 
                 <br className="md:hidden" />
-                주소: 서울특별시 강남구 테헤란로 123, 456호
+                주소: 서울특별시 강남구 테헤란로 456, 789호
               </p>
             </div>
             

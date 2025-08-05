@@ -1,0 +1,170 @@
+'use client'
+
+import React from 'react'
+import { Loader2, AlertCircle } from 'lucide-react'
+import VideoCard from './VideoCard'
+import { cn } from '@/lib/utils'
+import type { VideoListProps } from '@/types/video'
+
+export default function VideoList({
+  videos,
+  loading = false,
+  onVideoClick,
+  variant = 'default',
+  columns = 4,
+  className
+}: VideoListProps) {
+  // 로딩 상태
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="flex items-center gap-2 text-gray-600">
+          <Loader2 className="w-5 h-5 animate-spin" />
+          <span>비디오를 불러오는 중...</span>
+        </div>
+      </div>
+    )
+  }
+
+  // 비디오가 없는 경우
+  if (!videos || videos.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-center">
+        <AlertCircle className="w-12 h-12 text-gray-400 mb-4" />
+        <h3 className="text-lg font-medium text-gray-900 mb-2">
+          표시할 비디오가 없습니다
+        </h3>
+        <p className="text-gray-600">
+          비디오가 업로드되면 여기에 표시됩니다.
+        </p>
+      </div>
+    )
+  }
+
+  // 그리드 컬럼 클래스 매핑
+  const gridClasses = {
+    1: 'grid-cols-1',
+    2: 'grid-cols-1 md:grid-cols-2',
+    3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+    4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
+    5: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5',
+    6: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6'
+  }
+
+  // 갭 크기 (variant에 따라 조정)
+  const gapClasses = {
+    compact: 'gap-3',
+    default: 'gap-6',
+    large: 'gap-8'
+  }
+
+  return (
+    <div className={cn(
+      'grid',
+      gridClasses[columns as keyof typeof gridClasses] || gridClasses[4],
+      gapClasses[variant],
+      className
+    )}>
+      {videos.map((video) => (
+        <VideoCard
+          key={video.id}
+          video={video}
+          variant={variant}
+          onClick={onVideoClick}
+          showDescription={variant === 'large'}
+          showCreator={true}
+        />
+      ))}
+    </div>
+  )
+}
+
+// 특정 레이아웃을 위한 편의 컴포넌트들
+export function VideoGrid({ videos, loading, onVideoClick, className }: Omit<VideoListProps, 'columns' | 'variant'>) {
+  return (
+    <VideoList
+      videos={videos}
+      loading={loading}
+      onVideoClick={onVideoClick}
+      variant="default"
+      columns={4}
+      className={className}
+    />
+  )
+}
+
+export function CompactVideoGrid({ videos, loading, onVideoClick, className }: Omit<VideoListProps, 'columns' | 'variant'>) {
+  return (
+    <VideoList
+      videos={videos}
+      loading={loading}
+      onVideoClick={onVideoClick}
+      variant="compact"
+      columns={6}
+      className={className}
+    />
+  )
+}
+
+export function LargeVideoGrid({ videos, loading, onVideoClick, className }: Omit<VideoListProps, 'columns' | 'variant'>) {
+  return (
+    <VideoList
+      videos={videos}
+      loading={loading}
+      onVideoClick={onVideoClick}
+      variant="large"
+      columns={3}
+      className={className}
+    />
+  )
+}
+
+// 사이드바나 관련 비디오를 위한 세로 목록 컴포넌트
+export function VideoListVertical({ videos, loading, onVideoClick, className }: Omit<VideoListProps, 'columns' | 'variant'>) {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="flex items-center gap-2 text-gray-600">
+          <Loader2 className="w-4 h-4 animate-spin" />
+          <span className="text-sm">로딩 중...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (!videos || videos.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-sm text-gray-600">표시할 비디오가 없습니다.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className={cn('space-y-3', className)}>
+      {videos.map((video) => (
+        <div key={video.id} className="flex gap-3">
+          <div className="flex-shrink-0">
+            <VideoCard
+              video={video}
+              variant="compact"
+              onClick={onVideoClick}
+              showDescription={false}
+              showCreator={false}
+              className="w-40"
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h4 className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
+              {video.title}
+            </h4>
+            <p className="text-xs text-gray-600 mb-1">{video.creator.name}</p>
+            <p className="text-xs text-gray-500">
+              조회수 {video.viewCount.toLocaleString()}회
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}

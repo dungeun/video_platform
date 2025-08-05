@@ -14,7 +14,8 @@ import {
 import { invalidateCache } from '@/hooks/useCachedData'
 import { 
   Clock, CheckCircle, XCircle, AlertCircle, Calendar, DollarSign, 
-  Eye, FileText, Upload, MessageSquare, TrendingUp, Star, User as UserIcon
+  Eye, FileText, Upload, MessageSquare, TrendingUp, Star, User as UserIcon,
+  Users, CreditCard
 } from 'lucide-react'
 
 interface InfluencerMyPageProps {
@@ -261,9 +262,9 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
   }
 
   const tabs = [
-    { id: 'campaigns', name: '캠페인', icon: '📢' },
-    { id: 'saved', name: '관심 목록', icon: '⭐' },
-    { id: 'earnings', name: '수익 관리', icon: '💰' },
+    { id: 'subscriptions', name: '구독', icon: '📺' },
+    { id: 'superchat', name: '슈퍼챗', icon: '💬' },
+    { id: 'payments', name: '결제 내역', icon: '💳' },
     { id: 'profile', name: '프로필', icon: '👤' }
   ]
 
@@ -394,7 +395,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{user.name}</h1>
-            <p className="text-gray-600">인플루언서</p>
+            <p className="text-gray-600">시청자</p>
           </div>
           <button
             onClick={() => setShowEditModal(true)}
@@ -409,32 +410,32 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
           <div className="bg-blue-50 p-4 rounded-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-blue-600">총 캠페인</p>
-                <p className="text-2xl font-bold text-blue-900">{stats.totalCampaigns}</p>
+                <p className="text-sm text-blue-600">구독 채널</p>
+                <p className="text-2xl font-bold text-blue-900">{stats.subscriptionCount || 0}</p>
               </div>
-              <div className="text-blue-500 text-2xl">📝</div>
+              <div className="text-blue-500 text-2xl">📺</div>
             </div>
           </div>
           <div className="bg-green-50 p-4 rounded-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-green-600">총 수익</p>
+                <p className="text-sm text-green-600">슈퍼챗 발송</p>
                 <p className="text-2xl font-bold text-green-900">
-                  ₩{stats.totalEarnings.toLocaleString()}
+                  {stats.superChatsSent || 0}회
                 </p>
               </div>
-              <div className="text-green-500 text-2xl">💰</div>
+              <div className="text-green-500 text-2xl">💬</div>
             </div>
           </div>
           <div className="bg-purple-50 p-4 rounded-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-purple-600">총 조회수</p>
+                <p className="text-sm text-purple-600">결제 금액</p>
                 <p className="text-2xl font-bold text-purple-900">
-                  {stats.totalViews.toLocaleString()}
+                  ₩{(stats.totalPayments || 0).toLocaleString()}
                 </p>
               </div>
-              <div className="text-purple-500 text-2xl">👁️</div>
+              <div className="text-purple-500 text-2xl">💳</div>
             </div>
           </div>
         </div>
@@ -468,7 +469,241 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
           )}
           
 
-          {!loadingStats && activeTab === 'campaigns' && (
+          {!loadingStats && activeTab === 'subscriptions' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">구독 채널</h3>
+                <span className="text-sm text-gray-500">총 {stats.subscriptionCount || 0}개</span>
+              </div>
+              
+              <div className="grid gap-4">
+                {/* 구독 채널 목록 */}
+                <div className="bg-white border border-gray-200 rounded-lg p-4 hover:border-cyan-300 transition-colors">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold text-lg">K</span>
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-900">Kidult's Playground</h4>
+                      <p className="text-sm text-gray-600">구독자 125K명 • 비디오 84개</p>
+                      <p className="text-xs text-gray-500 mt-1">구독일: 2024년 6월 15일</p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <button className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200">
+                        알림 설정
+                      </button>
+                      <button className="px-3 py-1 bg-red-100 text-red-700 text-sm rounded hover:bg-red-200">
+                        구독 취소
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white border border-gray-200 rounded-lg p-4 hover:border-cyan-300 transition-colors">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold text-lg">T</span>
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-900">Tech Review Studio</h4>
+                      <p className="text-sm text-gray-600">구독자 89K명 • 비디오 156개</p>
+                      <p className="text-xs text-gray-500 mt-1">구독일: 2024년 5월 28일</p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <button className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200">
+                        알림 설정
+                      </button>
+                      <button className="px-3 py-1 bg-red-100 text-red-700 text-sm rounded hover:bg-red-200">
+                        구독 취소
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* 빈 상태 메시지 (구독 채널이 없을 때) */}
+                {(stats.subscriptionCount || 0) === 0 && (
+                  <div className="text-center py-16 bg-white rounded-lg">
+                    <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">구독한 채널이 없습니다</h3>
+                    <p className="text-gray-600 mb-4">관심 있는 채널을 구독해보세요</p>
+                    <a
+                      href="/videos"
+                      className="inline-flex items-center px-4 py-2 bg-cyan-600 text-white text-sm font-medium rounded-lg hover:bg-cyan-700"
+                    >
+                      비디오 탐색하기
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {!loadingStats && activeTab === 'superchat' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">슈퍼챗 내역</h3>
+                <span className="text-sm text-gray-500">총 {stats.superChatsSent || 0}회</span>
+              </div>
+              
+              <div className="space-y-4">
+                {/* 슈퍼챗 내역 */}
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-8 bg-red-500 rounded-full"></div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900">Kidult's Playground</h4>
+                        <p className="text-sm text-gray-600">"멋진 리뷰 감사합니다! 응원합니다 🎉"</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-red-600">₩50,000</p>
+                      <p className="text-xs text-gray-500">2024.07.15 14:30</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-8 bg-orange-500 rounded-full"></div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900">Tech Review Studio</h4>
+                        <p className="text-sm text-gray-600">"좋은 정보 감사해요!"</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-orange-600">₩10,000</p>
+                      <p className="text-xs text-gray-500">2024.07.10 20:15</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-8 bg-yellow-500 rounded-full"></div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900">Cook With Me</h4>
+                        <p className="text-sm text-gray-600">"레시피 정말 도움됐어요"</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-yellow-600">₩5,000</p>
+                      <p className="text-xs text-gray-500">2024.07.08 18:45</p>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* 빈 상태 메시지 (슈퍼챗이 없을 때) */}
+                {(stats.superChatsSent || 0) === 0 && (
+                  <div className="text-center py-16 bg-white rounded-lg">
+                    <DollarSign className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">슈퍼챗 내역이 없습니다</h3>
+                    <p className="text-gray-600 mb-4">좋아하는 크리에이터에게 슈퍼챗을 보내보세요</p>
+                    <a
+                      href="/videos"
+                      className="inline-flex items-center px-4 py-2 bg-cyan-600 text-white text-sm font-medium rounded-lg hover:bg-cyan-700"
+                    >
+                      비디오 보러가기
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {!loadingStats && activeTab === 'payments' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">결제 내역</h3>
+                <span className="text-sm text-gray-500">총 ₩{(stats.totalPayments || 0).toLocaleString()}</span>
+              </div>
+              
+              <div className="space-y-4">
+                {/* 결제 내역 */}
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                        <DollarSign className="h-5 w-5 text-red-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900">슈퍼챗</h4>
+                        <p className="text-sm text-gray-600">Kidult's Playground</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-gray-900">₩50,000</p>
+                      <p className="text-xs text-gray-500">2024.07.15 14:30</p>
+                      <span className="inline-block px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full mt-1">
+                        결제완료
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                        <DollarSign className="h-5 w-5 text-orange-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900">슈퍼챗</h4>
+                        <p className="text-sm text-gray-600">Tech Review Studio</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-gray-900">₩10,000</p>
+                      <p className="text-xs text-gray-500">2024.07.10 20:15</p>
+                      <span className="inline-block px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full mt-1">
+                        결제완료
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                        <DollarSign className="h-5 w-5 text-yellow-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900">슈퍼챗</h4>
+                        <p className="text-sm text-gray-600">Cook With Me</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-gray-900">₩5,000</p>
+                      <p className="text-xs text-gray-500">2024.07.08 18:45</p>
+                      <span className="inline-block px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full mt-1">
+                        결제완료
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* 빈 상태 메시지 (결제 내역이 없을 때) */}
+                {(stats.totalPayments || 0) === 0 && (
+                  <div className="text-center py-16 bg-white rounded-lg">
+                    <CreditCard className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">결제 내역이 없습니다</h3>
+                    <p className="text-gray-600 mb-4">슈퍼챗으로 크리에이터를 응원해보세요</p>
+                    <a
+                      href="/videos"
+                      className="inline-flex items-center px-4 py-2 bg-cyan-600 text-white text-sm font-medium rounded-lg hover:bg-cyan-700"
+                    >
+                      비디오 보러가기
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {false && activeTab === 'campaigns' && (
             <div className="space-y-6">
               {/* 탭 */}
               <div className="bg-white rounded-lg shadow-sm">

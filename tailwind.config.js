@@ -6,7 +6,12 @@ module.exports = {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      // line-clamp utilities
+      display: {
+        'webkit-box': '-webkit-box',
+      },
+    },
   },
   plugins: [],
 }

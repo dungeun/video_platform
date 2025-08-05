@@ -5,8 +5,10 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { AuthService, User } from '@/lib/auth'
 import { useUIConfigStore } from '@/lib/stores/ui-config.store'
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
+import PageLayout from '@/components/layouts/PageLayout'
+import VideoList from '@/components/video/VideoList'
+import { transformCampaignToVideo } from '@/lib/utils/video'
+import type { Video } from '@/types/video'
 
 interface Campaign {
   id: string
@@ -29,6 +31,7 @@ export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [currentSlide, setCurrentSlide] = useState(0)
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
+  const [videos, setVideos] = useState<Video[]>([])
   const [loading, setLoading] = useState(true)
   
   // UI 설정 가져오기
@@ -135,17 +138,142 @@ export default function HomePage() {
     ),
   }
 
-  // 캠페인 데이터 로드
-  const loadCampaigns = async () => {
+  // 샘플 비디오 데이터
+  const getSampleVideos = (): Video[] => [
+    {
+      id: '1',
+      title: '서울 아파트 투자 전략! 2024년 유망 지역 분석',
+      description: '부동산 전문가가 알려주는 2024년 서울 아파트 투자 핫스팟',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1565043666747-69f6646db940?w=400&h=300&fit=crop',
+      duration: 754, // 12:34 in seconds
+      viewCount: 87000,
+      likeCount: 1200,
+      createdAt: '2024-01-15T00:00:00Z',
+      creator: {
+        id: 'creator1',
+        name: '부동산박사',
+        profileImage: 'https://i.pravatar.cc/32?img=10'
+      },
+      category: 'realestate'
+    },
+    {
+      id: '2',
+      title: '삼성전자 매수 타이밍! 반도체 사이클 분석',
+      description: '반도체 업계 전망과 삼성전자 투자 포인트 완벽 분석',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&h=300&fit=crop',
+      duration: 1125, // 18:45 in seconds
+      viewCount: 124000,
+      likeCount: 2100,
+      createdAt: '2024-01-12T00:00:00Z',
+      creator: {
+        id: 'creator2',
+        name: '주식천재',
+        profileImage: 'https://i.pravatar.cc/32?img=14'
+      },
+      category: 'stock'
+    },
+    {
+      id: '3',
+      title: '2024 신형 BMW 3시리즈 시승기',
+      description: '완전히 새로워진 BMW 3시리즈의 모든 것',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=400&h=300&fit=crop',
+      duration: 920, // 15:20 in seconds
+      viewCount: 95000,
+      likeCount: 1800,
+      createdAt: '2024-01-10T00:00:00Z',
+      creator: {
+        id: 'creator3',
+        name: '카리뷰어',
+        profileImage: 'https://i.pravatar.cc/32?img=18'
+      },
+      category: 'car'
+    },
+    {
+      id: '4',
+      title: '집에서 만드는 완벽한 파스타 레시피',
+      description: '이탈리아 셰프가 알려주는 정통 파스타 만들기',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1554469384-e58fac16e23a?w=400&h=300&fit=crop',
+      duration: 510, // 8:30 in seconds
+      viewCount: 156000,
+      likeCount: 3200,
+      createdAt: '2024-01-08T00:00:00Z',
+      creator: {
+        id: 'creator4',
+        name: '요리왕',
+        profileImage: 'https://i.pravatar.cc/32?img=20'
+      },
+      category: 'food'
+    },
+    {
+      id: '5',
+      title: '제주도 숨은 맛집 투어',
+      description: '현지인만 아는 제주도 진짜 맛집들을 소개합니다',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=400&h=300&fit=crop',
+      duration: 1335, // 22:15 in seconds
+      viewCount: 203000,
+      likeCount: 4100,
+      createdAt: '2024-01-05T00:00:00Z',
+      creator: {
+        id: 'creator5',
+        name: '여행러버',
+        profileImage: 'https://i.pravatar.cc/32?img=22'
+      },
+      category: 'travel'
+    },
+    {
+      id: '6',
+      title: 'LOL 시즌14 최강 챔피언 티어리스트',
+      description: '프로게이머가 알려주는 랭크 올리는 챔피언 추천',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=300&fit=crop',
+      duration: 1000, // 16:40 in seconds
+      viewCount: 89000,
+      likeCount: 1900,
+      createdAt: '2024-01-03T00:00:00Z',
+      creator: {
+        id: 'creator6',
+        name: '게임마스터',
+        profileImage: 'https://i.pravatar.cc/32?img=24'
+      },
+      category: 'game'
+    }
+  ]
+
+  // 비디오 데이터 로드 (캠페인을 비디오로 변환)
+  const loadVideos = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/home/campaigns?limit=10')
-      if (response.ok) {
-        const data = await response.json()
-        setCampaigns(data.campaigns || [])
+      
+      // 먼저 비디오 API 시도
+      const videoResponse = await fetch('/api/videos?limit=20')
+      if (videoResponse.ok) {
+        const videoData = await videoResponse.json()
+        if (videoData.videos && videoData.videos.length > 0) {
+          setVideos(videoData.videos)
+          return
+        }
       }
+      
+      // 비디오가 없으면 캠페인을 비디오로 변환하여 표시
+      const campaignResponse = await fetch('/api/home/campaigns?limit=20')
+      if (campaignResponse.ok) {
+        const campaignData = await campaignResponse.json()
+        const campaignList = campaignData.campaigns || []
+        setCampaigns(campaignList)
+        
+        // 캠페인을 비디오 형태로 변환
+        const convertedVideos = campaignList.map(transformCampaignToVideo)
+        setVideos(convertedVideos)
+        return
+      }
+      
+      // API 실패 시 샘플 데이터 사용
+      console.log('API failed, using sample video data')
+      setVideos(getSampleVideos())
+      
     } catch (error) {
-      console.error('Failed to load campaigns:', error)
+      console.error('Failed to load videos:', error)
+      // 오류 발생 시에도 샘플 데이터 표시
+      setVideos(getSampleVideos())
     } finally {
       setLoading(false)
     }
@@ -164,24 +292,21 @@ export default function HomePage() {
       router.push('/business/dashboard')
     }
 
-    // 캠페인 데이터 로드
-    loadCampaigns()
+    // 비디오 데이터 로드
+    loadVideos()
   }, [router, loadSettingsFromAPI])
 
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchTerm.trim()) {
-      router.push(`/campaigns?search=${encodeURIComponent(searchTerm)}`)
+      router.push(`/videos?search=${encodeURIComponent(searchTerm)}`)
     }
   }
 
   return (
-    <>
-      <Header />
-      <div className="min-h-screen bg-white">
-
-      <main className="w-full max-w-[1920px] mx-auto px-6 py-8">
+    <PageLayout>
+      <div className="w-full max-w-[1920px] mx-auto px-6 py-8">
         {/* 섹션들을 순서대로 렌더링 */}
         {visibleSections.map((section) => {
           switch (section.type) {
@@ -214,10 +339,15 @@ export default function HomePage() {
                                         {slide.tag}
                                       </span>
                                     )}
+                                    {!slide.tag && (
+                                      <span className="inline-block bg-white/20 backdrop-blur px-3 py-1 rounded-full text-xs font-medium mb-2">
+                                        🎬 VIDEO
+                                      </span>
+                                    )}
                                     <h2 className="text-2xl md:text-3xl font-bold mb-2 whitespace-pre-line">
-                                      {slide.title}
+                                      {slide.title || '최고의 비디오 콘텐츠를\n지금 만나보세요'}
                                     </h2>
-                                    <p className="text-base opacity-90">{slide.subtitle}</p>
+                                    <p className="text-base opacity-90">{slide.subtitle || '다양한 크리에이터들의 창의적인 비디오를 시청하고 즐겨보세요'}</p>
                                     {slide.link && !slide.backgroundImage && (
                                       <Link 
                                         href={slide.link}
@@ -275,10 +405,10 @@ export default function HomePage() {
                       {menuCategories.map((category) => (
                         <Link
                           key={category.id}
-                          href={`/campaigns?category=${category.categoryId}`}
+                          href={`/videos?category=${category.categoryId}`}
                           className="flex flex-col items-center gap-2 group"
                         >
-                          <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center text-indigo-600 group-hover:bg-gray-200 transition relative">
+                          <div className="w-16 h-16 bg-gray-800 rounded-2xl flex items-center justify-center text-indigo-400 group-hover:bg-gray-700 transition relative">
                           {category.icon && (category.icon.startsWith('data:') || category.icon.startsWith('http')) ? (
                             <img src={category.icon} alt={category.name} className="w-8 h-8 object-contain" />
                           ) : (
@@ -298,7 +428,7 @@ export default function HomePage() {
                             </span>
                           )}
                         </div>
-                        <span className="text-sm text-gray-700">{category.name}</span>
+                        <span className="text-sm text-gray-300">{category.name}</span>
                       </Link>
                     ))}
                     </div>
@@ -314,7 +444,7 @@ export default function HomePage() {
                     <Link 
                       key={link.id}
                       href={link.link} 
-                      className="bg-gray-100 rounded-xl p-5 flex items-center justify-center gap-3 hover:bg-gray-200 transition"
+                      className="bg-gray-800 rounded-xl p-5 flex items-center justify-center gap-3 hover:bg-gray-700 transition"
                     >
                       {link.icon && (
                         link.icon.startsWith('data:') || link.icon.startsWith('http') ? (
@@ -323,7 +453,7 @@ export default function HomePage() {
                           <span className="text-2xl">{link.icon}</span>
                         )
                       )}
-                      <span className="font-medium">{link.title}</span>
+                      <span className="font-medium text-white">{link.title}</span>
                     </Link>
                   ))}
                 </div>
@@ -414,173 +544,61 @@ export default function HomePage() {
               ) : null;
               
             case 'ranking':
-              // 랭킹 섹션
+              // 인기 비디오 섹션
               return config.mainPage?.rankingSection?.visible ? (
                 <section key={section.id} className="mb-12">
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h2 className="text-2xl font-bold">{config.mainPage.rankingSection.title}</h2>
+                      <h2 className="text-2xl font-bold text-white">{config.mainPage.rankingSection.title || '인기 비디오'}</h2>
                       {config.mainPage.rankingSection.subtitle && (
-                        <p className="text-gray-600 mt-1">{config.mainPage.rankingSection.subtitle}</p>
+                        <p className="text-gray-400 mt-1">{config.mainPage.rankingSection.subtitle}</p>
+                      )}
+                      {!config.mainPage.rankingSection.subtitle && (
+                        <p className="text-gray-400 mt-1">가장 많이 시청된 비디오들을 확인해보세요</p>
                       )}
                     </div>
-                    <Link href="/campaigns" className="text-indigo-600 hover:text-indigo-700 font-medium">
+                    <Link href="/videos" className="text-indigo-400 hover:text-indigo-300 font-medium">
                       전체보기 →
                     </Link>
                   </div>
                   
-                  {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                      {[...Array(config.mainPage.rankingSection.count || 5)].map((_, i) => (
-                        <div key={i} className="bg-gray-100 rounded-xl h-80 animate-pulse" />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                      {campaigns
-                        .sort((a, b) => {
-                          // 랭킹 기준에 따른 정렬
-                          switch (config.mainPage.rankingSection.criteria) {
-                            case 'deadline':
-                              return a.deadline - b.deadline; // 마감일 가까운 순
-                            case 'reward':
-                              return parseInt(b.budget) - parseInt(a.budget); // 리워드 높은 순
-                            case 'participants':
-                              return b.applicants - a.applicants; // 참여자 많은 순
-                            case 'popular':
-                            default:
-                              // 인기순 (현재는 참여자 기준으로 대체)
-                              return b.applicants - a.applicants;
-                          }
-                        })
-                        .slice(0, config.mainPage.rankingSection.count || 5)
-                        .map((campaign, index) => (
-                          <Link
-                            key={campaign.id}
-                            href={`/campaigns/${campaign.id}`}
-                            className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition group relative"
-                          >
-                            {/* 순위 뱃지 */}
-                            {config.mainPage.rankingSection.showBadge && index < 3 && (
-                              <div className={`absolute top-2 left-2 z-10 w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${
-                                index === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' :
-                                index === 1 ? 'bg-gradient-to-br from-gray-400 to-gray-600' :
-                                'bg-gradient-to-br from-orange-400 to-orange-600'
-                              }`}>
-                                {index + 1}
-                              </div>
-                            )}
-                            
-                            <div className="aspect-video bg-gradient-to-br from-indigo-100 to-purple-100 relative overflow-hidden">
-                              {campaign.imageUrl ? (
-                                <img src={campaign.imageUrl} alt={campaign.title} className="w-full h-full object-cover" />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                  <span className="text-4xl opacity-50">🏆</span>
-                                </div>
-                              )}
-                              <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
-                                {campaign.category}
-                              </div>
-                            </div>
-                            <div className="p-4">
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className="text-sm text-gray-600">{campaign.brand}</span>
-                                {campaign.platforms?.includes('instagram') && <span className="text-xs">📷</span>}
-                                {campaign.platforms?.includes('youtube') && <span className="text-xs">📹</span>}
-                              </div>
-                              <h3 className="font-semibold mb-2 line-clamp-2 group-hover:text-indigo-600 transition">
-                                {campaign.title}
-                              </h3>
-                              <div className="flex items-center justify-between text-sm text-gray-600">
-                                <span>D-{campaign.deadline}</span>
-                                <span className="font-medium text-indigo-600">{campaign.budget}</span>
-                              </div>
-                              <div className="mt-2 pt-2 border-t">
-                                <div className="flex items-center justify-between text-xs text-gray-500">
-                                  <span>신청 {campaign.applicants}/{campaign.maxApplicants}</span>
-                                  <div className="flex gap-1">
-                                    {[...Array(5)].map((_, i) => (
-                                      <div key={i} className={`w-1.5 h-1.5 rounded-full ${
-                                        i < Math.floor((campaign.applicants / campaign.maxApplicants) * 5)
-                                          ? 'bg-indigo-600'
-                                          : 'bg-gray-200'
-                                      }`} />
-                                    ))}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </Link>
-                        ))
-                      }
-                    </div>
-                  )}
+                  <VideoList
+                    videos={loading ? [] : videos
+                      .sort((a, b) => {
+                        // 랭킹 기준에 따른 정렬
+                        switch (config.mainPage.rankingSection.criteria) {
+                          case 'views':
+                          case 'popular':
+                          default:
+                            return b.viewCount - a.viewCount; // 조회수 높은 순
+                        }
+                      })
+                      .slice(0, config.mainPage.rankingSection.count || 5)
+                    }
+                    loading={loading}
+                    variant="default"
+                    columns={5}
+                  />
                 </section>
               ) : null;
               
             case 'recommended':
-              // 추천 캠페인
+              // 추천 비디오
               return (
                 <section key={section.id} className="mb-12">
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold">추천 캠페인</h2>
-                    <Link href="/campaigns" className="text-indigo-600 hover:text-indigo-700 font-medium">
+                    <h2 className="text-2xl font-bold text-white">추천 비디오</h2>
+                    <Link href="/videos" className="text-indigo-400 hover:text-indigo-300 font-medium">
                       전체보기 →
                     </Link>
                   </div>
                   
-                  {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                      {[...Array(10)].map((_, i) => (
-                        <div key={i} className="bg-gray-100 rounded-xl h-64 animate-pulse" />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                      {campaigns.slice(0, 10).map((campaign) => (
-                        <Link
-                          key={campaign.id}
-                          href={`/campaigns/${campaign.id}`}
-                          className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition group"
-                        >
-                          <div className="aspect-video bg-gradient-to-br from-indigo-100 to-purple-100 relative overflow-hidden">
-                            {campaign.imageUrl ? (
-                              <img src={campaign.imageUrl} alt={campaign.title} className="w-full h-full object-cover" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <span className="text-4xl opacity-50">📸</span>
-                              </div>
-                            )}
-                            <div className="absolute top-2 left-2">
-                              <span className="bg-white/90 backdrop-blur px-2 py-1 rounded text-xs font-medium">
-                                {campaign.category}
-                              </span>
-                            </div>
-                            <div className="absolute top-2 right-2">
-                              <span className="bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
-                                D-{campaign.deadline}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="p-4">
-                            <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-indigo-600 transition">
-                              {campaign.title}
-                            </h3>
-                            <p className="text-sm text-gray-600 mb-3">{campaign.brand}</p>
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-gray-500">
-                                지원 {campaign.applicants}/{campaign.maxApplicants}명
-                              </span>
-                              <span className="font-medium text-indigo-600">
-                                {campaign.budget}
-                              </span>
-                            </div>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
+                  <VideoList
+                    videos={loading ? [] : videos.slice(0, 10)}
+                    loading={loading}
+                    variant="default"
+                    columns={5}
+                  />
                 </section>
               );
               
@@ -593,117 +611,68 @@ export default function HomePage() {
                 <section key={section.id} className="mb-12">
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h2 className="text-2xl font-bold">{customSection.title}</h2>
+                      <h2 className="text-2xl font-bold text-white">{customSection.title}</h2>
                       {customSection.subtitle && (
-                        <p className="text-gray-600 mt-1">{customSection.subtitle}</p>
+                        <p className="text-gray-400 mt-1">{customSection.subtitle}</p>
                       )}
                     </div>
                     {customSection.showMoreButton && (
-                      <Link href={customSection.moreButtonLink || '/campaigns'} className="text-indigo-600 hover:text-indigo-700 font-medium">
+                      <Link href={customSection.moreButtonLink || '/videos'} className="text-indigo-400 hover:text-indigo-300 font-medium">
                         {customSection.moreButtonText || '더보기'} →
                       </Link>
                     )}
                   </div>
                   
-                  {loading ? (
-                    <div 
-                      className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:grid"
-                      style={{ 
-                        ['--lg-columns' as any]: customSection.columns || 5
-                      }}
-                    >
-                      {[...Array(customSection.columns * customSection.rows)].map((_, i) => (
-                        <div key={i} className="bg-gray-100 rounded-xl h-64 animate-pulse" />
-                      ))}
-                    </div>
-                  ) : (
-                    <div 
-                      className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${
-                        customSection.columns === 3 ? 'lg:grid-cols-3' :
-                        customSection.columns === 4 ? 'lg:grid-cols-4' :
-                        customSection.columns === 5 ? 'lg:grid-cols-5' :
-                        customSection.columns === 6 ? 'lg:grid-cols-6' :
-                        'lg:grid-cols-5'
-                      }`}
-                    >
-                      {(() => {
-                        // 필터링된 캠페인 가져오기
-                        let filteredCampaigns = [...campaigns];
-                        
-                        if (customSection.type === 'auto' && customSection.filter) {
-                          // 카테고리 필터링
-                          if (customSection.filter.category) {
-                            filteredCampaigns = filteredCampaigns.filter(c => 
-                              c.category === customSection.filter!.category
-                            );
-                          }
-                          
-                          // 플랫폼 필터링
-                          if (customSection.filter.platform) {
-                            filteredCampaigns = filteredCampaigns.filter(c => 
-                              c.platforms?.includes(customSection.filter!.platform!)
-                            );
-                          }
-                          
-                          // 정렬
-                          switch (customSection.filter.sortBy) {
-                            case 'latest':
-                              filteredCampaigns.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-                              break;
-                            case 'popular':
-                              filteredCampaigns.sort((a, b) => b.applicants - a.applicants);
-                              break;
-                            case 'deadline':
-                              filteredCampaigns.sort((a, b) => a.deadline - b.deadline);
-                              break;
-                            case 'budget':
-                              filteredCampaigns.sort((a, b) => parseInt(b.budget) - parseInt(a.budget));
-                              break;
-                          }
-                        }
-                        
-                        // 표시할 개수만큼 자르기
-                        const displayCount = customSection.columns * customSection.rows;
-                        return filteredCampaigns.slice(0, displayCount).map((campaign) => (
-                          <Link
-                            key={campaign.id}
-                            href={`/campaigns/${campaign.id}`}
-                            className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition group"
-                          >
-                            <div className="aspect-video bg-gradient-to-br from-indigo-100 to-purple-100 relative overflow-hidden">
-                              {campaign.imageUrl ? (
-                                <img 
-                                  src={campaign.imageUrl} 
-                                  alt={campaign.title}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                />
-                              ) : (
-                                <div className="flex items-center justify-center h-full">
-                                  <svg className="w-16 h-16 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-                                  </svg>
-                                </div>
-                              )}
-                              <div className="absolute top-2 left-2 flex flex-col gap-1">
-                                <span className="bg-indigo-600 text-white px-2 py-1 rounded text-xs">
-                                  {campaign.category}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="p-4">
-                              <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-indigo-600 transition">
-                                {campaign.title}
-                              </h3>
-                              <div className="flex items-center justify-between text-sm text-gray-600">
-                                <span>{campaign.budget}</span>
-                                <span>{campaign.deadline}일 남음</span>
-                              </div>
-                            </div>
-                          </Link>
-                        ));
-                      })()}
-                    </div>
-                  )}
+                  {(() => {
+                    // 필터링된 캠페인 가져오기
+                    let filteredCampaigns = [...campaigns];
+                    
+                    if (customSection.type === 'auto' && customSection.filter) {
+                      // 카테고리 필터링
+                      if (customSection.filter.category) {
+                        filteredCampaigns = filteredCampaigns.filter(c => 
+                          c.category === customSection.filter!.category
+                        );
+                      }
+                      
+                      // 플랫폼 필터링
+                      if (customSection.filter.platform) {
+                        filteredCampaigns = filteredCampaigns.filter(c => 
+                          c.platforms?.includes(customSection.filter!.platform!)
+                        );
+                      }
+                      
+                      // 정렬
+                      switch (customSection.filter.sortBy) {
+                        case 'latest':
+                          filteredCampaigns.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+                          break;
+                        case 'popular':
+                          filteredCampaigns.sort((a, b) => b.applicants - a.applicants);
+                          break;
+                        case 'deadline':
+                          filteredCampaigns.sort((a, b) => a.deadline - b.deadline);
+                          break;
+                        case 'budget':
+                          filteredCampaigns.sort((a, b) => parseInt(b.budget) - parseInt(a.budget));
+                          break;
+                      }
+                    }
+                    
+                    // 표시할 개수만큼 자르기
+                    const displayCount = customSection.columns * customSection.rows;
+                    // 캠페인을 비디오로 변환
+                    const convertedCustomVideos = filteredCampaigns.slice(0, displayCount).map(transformCampaignToVideo)
+                    
+                    return (
+                      <VideoList
+                        videos={convertedCustomVideos}
+                        loading={loading}
+                        variant="default"
+                        columns={customSection.columns || 5}
+                      />
+                    );
+                  })()}
                 </section>
               );
               
@@ -714,26 +683,24 @@ export default function HomePage() {
 
         {/* 하단 CTA */}
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-center text-white">
-          <h3 className="text-2xl font-bold mb-2">지금 바로 시작하세요</h3>
-          <p className="text-white/80 mb-6">5분이면 충분합니다. 복잡한 절차 없이 바로 시작할 수 있어요.</p>
+          <h3 className="text-2xl font-bold mb-2">비디오 크리에이터가 되어보세요</h3>
+          <p className="text-white/80 mb-6">창의적인 비디오 콘텐츠를 만들고 시청자들과 소통해보세요.</p>
           <div className="flex gap-4 justify-center">
             <Link
-              href="/register?type=business"
+              href="/register?type=creator"
               className="bg-white text-indigo-600 px-6 py-3 rounded-full font-medium hover:shadow-lg transition"
             >
-              브랜드로 시작하기
+              크리에이터로 시작하기
             </Link>
             <Link
-              href="/register?type=influencer"
+              href="/register?type=viewer"
               className="bg-white/20 backdrop-blur text-white px-6 py-3 rounded-full font-medium hover:bg-white/30 transition"
             >
-              인플루언서로 시작하기
+              시청자로 시작하기
             </Link>
           </div>
         </div>
-      </main>
-    </div>
-    <Footer />
-    </>
+      </div>
+    </PageLayout>
   )
 }

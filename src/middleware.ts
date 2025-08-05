@@ -15,7 +15,8 @@ const publicPaths = [
   '/api/setup', // 초기 설정 API
   '/api/home', // 홈페이지 데이터 API는 공개
   '/api/ui-config', // UI 설정은 공개
-  '/api/campaigns', // 캠페인 목록 조회는 공개
+  '/api/campaigns', // 캠페인 목록 조회는 공개 (backward compatibility)
+  '/api/videos', // 비디오 목록 조회는 공개
   '/api/home/campaigns',
   '/api/home/content',
   '/api/home/statistics',
@@ -42,14 +43,39 @@ const publicPagePaths = [
 const protectedPagePaths = [
   '/admin',
   '/business',
+  '/studio', // Studio 라우트 추가
   '/influencer',
   '/campaigns/create',
 ];
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname, search } = request.nextUrl;
 
   console.log('[Middleware] Request to:', pathname);
+
+  // Page route redirection: /studio -> /business for backward compatibility
+  if (pathname.startsWith('/studio')) {
+    // Extract the path after /studio
+    const businessPath = pathname.replace('/studio', '/business');
+    
+    // Create new URL with the business endpoint
+    const url = new URL(businessPath + search, request.url);
+    
+    console.log('[Middleware] Redirecting studio to business:', pathname, '->', businessPath);
+    return NextResponse.rewrite(url);
+  }
+
+  // API route redirection: /api/campaigns -> /api/videos for backward compatibility
+  if (pathname.startsWith('/api/campaigns')) {
+    // Extract the path after /api/campaigns
+    const videoPath = pathname.replace('/api/campaigns', '/api/videos');
+    
+    // Create new URL with the video endpoint
+    const url = new URL(videoPath + search, request.url);
+    
+    console.log('[Middleware] Redirecting campaigns API to videos:', pathname, '->', videoPath);
+    return NextResponse.rewrite(url);
+  }
 
   // Public 페이지는 인증 체크 스킵
   if (publicPagePaths.some(path => pathname === path || pathname.startsWith(path + '/'))) {
@@ -88,6 +114,11 @@ export async function middleware(request: NextRequest) {
       }
       
       if (pathname.startsWith('/business') && payload.type !== 'BUSINESS') {
+        return NextResponse.redirect(new URL('/', request.url));
+      }
+      
+      // Studio 라우트는 BUSINESS 권한 필요 (비디오 크리에이터용)
+      if (pathname.startsWith('/studio') && payload.type !== 'BUSINESS') {
         return NextResponse.redirect(new URL('/', request.url));
       }
       

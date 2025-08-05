@@ -15,7 +15,7 @@ function MyPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user, isAuthenticated, isLoading, logout } = useAuth()
-  const [activeTab, setActiveTab] = useState('campaigns')
+  const [activeTab, setActiveTab] = useState('subscriptions')
 
   useEffect(() => {
     if (isLoading) return

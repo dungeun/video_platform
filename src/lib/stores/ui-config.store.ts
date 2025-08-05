@@ -60,6 +60,30 @@ export interface QuickLink {
   visible: boolean;
 }
 
+export interface SidebarMenuItem {
+  id: string;
+  label: string;
+  href: string;
+  icon: string; // lucide-react icon name
+  order: number;
+  visible: boolean;
+  section: 'main' | 'category' | 'settings';
+}
+
+export interface SidebarConfig {
+  mainMenu: SidebarMenuItem[];
+  categoryMenu: SidebarMenuItem[];
+  settingsMenu: SidebarMenuItem[];
+  subscribedChannels: {
+    id: string;
+    name: string;
+    avatar: string;
+    isLive: boolean;
+    order: number;
+    visible: boolean;
+  }[];
+}
+
 export interface PromoBanner {
   title: string;
   subtitle: string;
@@ -133,6 +157,7 @@ export interface UIConfig {
     }[];
     copyright: string;
   };
+  sidebar: SidebarConfig;
   mainPage: {
     heroSlides: HeroSlide[]; // 히어로 배너 슬라이드
     categoryMenus: CategoryMenu[]; // 카테고리 메뉴
@@ -152,6 +177,10 @@ interface UIConfigStore {
   updateLogo: (logo: UIConfig['header']['logo']) => void;
   updateCTAButton: (cta: UIConfig['header']['ctaButton']) => void;
   updateCopyright: (copyright: string) => void;
+  updateSidebarConfig: (sidebar: SidebarConfig) => void;
+  updateSidebarMainMenu: (menus: SidebarMenuItem[]) => void;
+  updateSidebarCategoryMenu: (menus: SidebarMenuItem[]) => void;
+  updateSidebarSettingsMenu: (menus: SidebarMenuItem[]) => void;
   updateMainPageHeroSlides: (slides: HeroSlide[]) => void;
   updateMainPageCategoryMenus: (menus: CategoryMenu[]) => void;
   updateMainPageQuickLinks: (links: QuickLink[]) => void;
@@ -171,13 +200,14 @@ interface UIConfigStore {
 const defaultConfig: UIConfig = {
   header: {
     logo: {
-      text: 'LinkPick',
+      text: '비디오픽',
     },
     menus: [
-      { id: '1', label: '캠페인', href: '/campaigns', order: 1, visible: true },
-      { id: '2', label: '인플루언서', href: '/influencers', order: 2, visible: true },
-      { id: '3', label: '커뮤니티', href: '/community', order: 3, visible: true },
-      { id: '4', label: '요금제', href: '/pricing', order: 4, visible: true },
+      { id: '1', label: '홈', href: '/', order: 1, visible: true },
+      { id: '2', label: '인기', href: '/videos?sort=popular', order: 2, visible: true },
+      { id: '3', label: '구독', href: '/subscriptions', order: 3, visible: true },
+      { id: '4', label: '라이브', href: '/live', order: 4, visible: true },
+      { id: '5', label: '커뮤니티', href: '/community', order: 5, visible: true },
     ],
     ctaButton: {
       text: '무료로 시작하기',
@@ -192,9 +222,9 @@ const defaultConfig: UIConfig = {
         title: '서비스',
         order: 1,
         links: [
-          { id: '1-1', label: '캠페인 찾기', href: '/campaigns', order: 1, visible: true },
-          { id: '1-2', label: '인플루언서 찾기', href: '/influencers', order: 2, visible: true },
-          { id: '1-3', label: '요금제', href: '/pricing', order: 3, visible: true },
+          { id: '1-1', label: '비디오 둘러보기', href: '/videos', order: 1, visible: true },
+          { id: '1-2', label: '크리에이터 찾기', href: '/channels', order: 2, visible: true },
+          { id: '1-3', label: '스튜디오', href: '/studio', order: 3, visible: true },
         ],
       },
       {
@@ -219,20 +249,49 @@ const defaultConfig: UIConfig = {
       },
     ],
     social: [
-      { platform: 'twitter', url: 'https://twitter.com/linkpick', visible: true },
-      { platform: 'facebook', url: 'https://facebook.com/linkpick', visible: true },
-      { platform: 'instagram', url: 'https://instagram.com/linkpick', visible: true },
+      { platform: 'twitter', url: 'https://twitter.com/videopick', visible: true },
+      { platform: 'facebook', url: 'https://facebook.com/videopick', visible: true },
+      { platform: 'instagram', url: 'https://instagram.com/videopick', visible: true },
+      { platform: 'youtube', url: 'https://youtube.com/@videopick', visible: true },
     ],
-    copyright: '© 2024 LinkPick. All rights reserved.',
+    copyright: '© 2024 비디오픽. All rights reserved.',
+  },
+  sidebar: {
+    mainMenu: [
+      { id: 'home', label: '홈', href: '/', icon: 'Home', order: 1, visible: true, section: 'main' },
+      { id: 'live', label: '라이브', href: '/live', icon: 'Tv', order: 2, visible: true, section: 'main' },
+      { id: 'videos', label: '동영상', href: '/videos', icon: 'Video', order: 3, visible: true, section: 'main' },
+      { id: 'trending', label: '인기 영상', href: '/trending', icon: 'Fire', order: 4, visible: true, section: 'main' },
+      { id: 'new', label: '신규 영상', href: '/new', icon: 'Plus', order: 5, visible: true, section: 'main' },
+    ],
+    categoryMenu: [
+      { id: 'realestate', label: '부동산', href: '/category/realestate', icon: 'Building', order: 1, visible: true, section: 'category' },
+      { id: 'stock', label: '주식', href: '/category/stock', icon: 'TrendingUp', order: 2, visible: true, section: 'category' },
+      { id: 'car', label: '자동차', href: '/category/car', icon: 'Car', order: 3, visible: true, section: 'category' },
+      { id: 'food', label: '음식', href: '/category/food', icon: 'UtensilsCrossed', order: 4, visible: true, section: 'category' },
+      { id: 'travel', label: '여행', href: '/category/travel', icon: 'Plane', order: 5, visible: true, section: 'category' },
+      { id: 'game', label: '게임', href: '/category/game', icon: 'Gamepad2', order: 6, visible: true, section: 'category' },
+    ],
+    settingsMenu: [
+      { id: 'settings', label: '설정', href: '/settings', icon: 'Settings', order: 1, visible: true, section: 'settings' },
+      { id: 'help', label: '도움말', href: '/help', icon: 'HelpCircle', order: 2, visible: true, section: 'settings' },
+      { id: 'feedback', label: '의견 보내기', href: '/feedback', icon: 'MessageSquare', order: 3, visible: true, section: 'settings' },
+    ],
+    subscribedChannels: [
+      { id: 'channel1', name: '지창경', avatar: 'https://i.pravatar.cc/24?img=2', isLive: true, order: 1, visible: true },
+      { id: 'channel2', name: '자랑맨', avatar: 'https://i.pravatar.cc/24?img=3', isLive: false, order: 2, visible: true },
+      { id: 'channel3', name: '인순효그', avatar: 'https://i.pravatar.cc/24?img=4', isLive: false, order: 3, visible: true },
+      { id: 'channel4', name: '주식왕', avatar: 'https://i.pravatar.cc/24?img=5', isLive: false, order: 4, visible: true },
+    ],
   },
   mainPage: {
     heroSlides: [
       {
         id: 'slide-1',
         type: 'blue' as const,
-        tag: '캠페인 혜택',
-        title: '브랜드와 함께하는\n완벽한 캠페인',
-        subtitle: '최대 500만원 캠페인 참여 기회',
+        tag: '신규 콘텐츠',
+        title: '크리에이터와 함께하는\n창의적인 비디오 세상',
+        subtitle: '다양한 비디오 콘텐츠를 만나보세요',
         bgColor: 'bg-gradient-to-br from-blue-400 to-blue-600',
         order: 1,
         visible: true,
@@ -240,8 +299,8 @@ const defaultConfig: UIConfig = {
       {
         id: 'slide-2',
         type: 'dark' as const,
-        title: '이번달, 어떤 캠페인이\n당신을 기다릴까요?',
-        subtitle: '다양한 브랜드와의 만남',
+        title: '이번달 가장 핫한\n비디오 트렌드는?',
+        subtitle: '인기 크리에이터들의 최신 콘텐츠',
         bgColor: 'bg-gradient-to-br from-gray-800 to-gray-900',
         order: 2,
         visible: true,
@@ -249,8 +308,8 @@ const defaultConfig: UIConfig = {
       {
         id: 'slide-3',
         type: 'green' as const,
-        title: '인플루언서 매칭 시작',
-        subtitle: 'AI가 찾아주는 최적의 파트너',
+        title: '당신만의 채널을 시작하세요',
+        subtitle: '쉽고 빠른 비디오 업로드',
         bgColor: 'bg-gradient-to-br from-green-400 to-green-600',
         order: 3,
         visible: true,
@@ -258,9 +317,9 @@ const defaultConfig: UIConfig = {
       {
         id: 'slide-4',
         type: 'pink' as const,
-        tag: '신규 오픈',
-        title: '첫 캠페인\n특별 혜택',
-        subtitle: '수수료 50% 할인 이벤트',
+        tag: '신규 크리에이터',
+        title: '첫 비디오\n수익화 지원',
+        subtitle: '구독자 1,000명 달성 지원 프로그램',
         bgColor: 'bg-gradient-to-br from-pink-400 to-pink-600',
         order: 4,
         visible: true,
@@ -268,8 +327,8 @@ const defaultConfig: UIConfig = {
       {
         id: 'slide-5',
         type: 'blue' as const,
-        title: 'AI 매칭\n서비스 출시',
-        subtitle: '최적의 인플루언서를 찾아드립니다',
+        title: 'AI 추천\n알고리즘 도입',
+        subtitle: '당신이 좋아할 비디오를 추천합니다',
         bgColor: 'bg-gradient-to-br from-indigo-400 to-indigo-600',
         order: 5,
         visible: true,
@@ -277,9 +336,9 @@ const defaultConfig: UIConfig = {
       {
         id: 'slide-6',
         type: 'dark' as const,
-        tag: 'HOT',
-        title: '인기 브랜드\n대량 모집',
-        subtitle: '지금 바로 지원하세요',
+        tag: 'LIVE',
+        title: '실시간 스트리밍\n지금 시작',
+        subtitle: '시청자와 실시간으로 소통하세요',
         bgColor: 'bg-gradient-to-br from-gray-700 to-gray-900',
         order: 6,
         visible: true,
@@ -304,15 +363,15 @@ const defaultConfig: UIConfig = {
       { id: 'quick-3', title: '랭킹', icon: '🏆', link: '/ranking', order: 3, visible: true },
     ],
     promoBanner: {
-      title: '처음이니까, 수수료 50% 할인',
-      subtitle: '첫 캠페인을 더 가볍게 시작하세요!',
-      icon: '📦',
+      title: '크리에이터 지원 프로그램',
+      subtitle: '수익화와 성장을 위한 다양한 혜택을 제공합니다',
+      icon: '🎬',
       visible: true,
     },
     rankingSection: {
       visible: true,
-      title: '🔥 인기 캠페인 TOP 5',
-      subtitle: '지금 가장 핫한 캠페인을 만나보세요',
+      title: '🔥 인기 비디오 TOP 5',
+      subtitle: '지금 가장 많이 시청되는 비디오를 만나보세요',
       criteria: 'popular' as const,
       count: 5,
       showBadge: true,
@@ -381,6 +440,43 @@ export const useUIConfigStore = create<UIConfigStore>()(
             footer: {
               ...state.config.footer,
               copyright,
+            },
+          },
+        })),
+      updateSidebarConfig: (sidebar) =>
+        set((state) => ({
+          config: {
+            ...state.config,
+            sidebar,
+          },
+        })),
+      updateSidebarMainMenu: (menus) =>
+        set((state) => ({
+          config: {
+            ...state.config,
+            sidebar: {
+              ...state.config.sidebar,
+              mainMenu: menus,
+            },
+          },
+        })),
+      updateSidebarCategoryMenu: (menus) =>
+        set((state) => ({
+          config: {
+            ...state.config,
+            sidebar: {
+              ...state.config.sidebar,
+              categoryMenu: menus,
+            },
+          },
+        })),
+      updateSidebarSettingsMenu: (menus) =>
+        set((state) => ({
+          config: {
+            ...state.config,
+            sidebar: {
+              ...state.config.sidebar,
+              settingsMenu: menus,
             },
           },
         })),
@@ -500,9 +596,14 @@ export const useUIConfigStore = create<UIConfigStore>()(
             console.log('UI config loaded:', uiData.config);
             if (uiData.config) {
               set({ config: uiData.config })
+            } else {
+              console.log('No config data, using default');
+              set({ config: defaultConfig })
             }
           } else {
             console.error('Failed to load UI config:', uiConfigResponse.status);
+            console.log('Using default config');
+            set({ config: defaultConfig })
           }
           
           // 일반 설정 로드
