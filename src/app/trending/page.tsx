@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import PageLayout from '@/components/layouts/PageLayout'
 import { useAuth } from '@/hooks/useAuth'
-import { TrendingUp, Eye, ThumbsUp, Clock, Fire, Award, Star, Share2 } from 'lucide-react'
+import { TrendingUp, Eye, ThumbsUp, Clock, Flame, Award, Star, Share2 } from 'lucide-react'
 
 // 더미 인기 동영상 데이터
 const trendingVideos = [
@@ -153,7 +153,7 @@ export default function TrendingPage() {
 
   const getTrendingIcon = (trending: string) => {
     switch (trending) {
-      case 'hot': return <Fire className="w-4 h-4 text-red-500" />
+      case 'hot': return <Flame className="w-4 h-4 text-red-500" />
       case 'rising': return <TrendingUp className="w-4 h-4 text-green-500" />
       case 'viral': return <Star className="w-4 h-4 text-yellow-500" />
       default: return <Award className="w-4 h-4 text-blue-500" />

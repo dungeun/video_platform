@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import PageLayout from '@/components/layouts/PageLayout'
 import { useAuth } from '@/hooks/useAuth'
-import { Plus, Clock, Eye, ThumbsUp, Calendar, Filter, Sparkles, New } from 'lucide-react'
+import { Plus, Clock, Eye, ThumbsUp, Calendar, Filter, Sparkles } from 'lucide-react'
 
 // 더미 신규 동영상 데이터
 const newVideos = [
@@ -153,7 +153,7 @@ export default function NewPage() {
   const getFreshnessIcon = (freshness: string) => {
     switch (freshness) {
       case 'just-uploaded': return <Sparkles className="w-4 h-4 text-yellow-400" />
-      case 'today': return <New className="w-4 h-4 text-green-400" />
+      case 'today': return <Sparkles className="w-4 h-4 text-green-400" />
       case 'yesterday': return <Clock className="w-4 h-4 text-blue-400" />
       default: return <Plus className="w-4 h-4 text-gray-400" />
     }
@@ -228,7 +228,7 @@ export default function NewPage() {
                   }`}
                 >
                   {category === '방금 업로드' && <Sparkles className="w-4 h-4" />}
-                  {category === '오늘' && <New className="w-4 h-4" />}
+                  {category === '오늘' && <Sparkles className="w-4 h-4" />}
                   {category === '어제' && <Clock className="w-4 h-4" />}
                   {category === '이번 주' && <Calendar className="w-4 h-4" />}
                   {category}
