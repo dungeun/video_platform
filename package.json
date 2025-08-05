@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "PORT=$(node scripts/find-free-port.js) && next dev -p $PORT",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && prisma migrate deploy && next build",
     "start": "PORT=$(node scripts/find-free-port.js) && next start -p $PORT",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
