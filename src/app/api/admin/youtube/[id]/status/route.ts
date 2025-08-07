@@ -20,7 +20,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
 
-    const video = await prisma.youTubeVideo.update({
+    const video = await prisma.youtube_videos.update({
       where: { id: params.id },
       data: { status }
     })

@@ -51,7 +51,10 @@ const protectedPagePaths = [
 export async function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
-  console.log('[Middleware] Request to:', pathname);
+  // 디버그 로그는 개발환경에서만 (환경변수 제어)
+  if (process.env.NODE_ENV === 'development' && process.env.DEBUG_MIDDLEWARE === 'true') {
+    console.log('[Middleware] Request to:', pathname);
+  }
 
   // Page route redirection: /studio -> /business for backward compatibility
   if (pathname.startsWith('/studio')) {
@@ -61,7 +64,10 @@ export async function middleware(request: NextRequest) {
     // Create new URL with the business endpoint
     const url = new URL(businessPath + search, request.url);
     
-    console.log('[Middleware] Redirecting studio to business:', pathname, '->', businessPath);
+    // 리다이렉션은 중요한 정보이므로 개발환경에서만 로그
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Middleware] Redirecting studio to business:', pathname, '->', businessPath);
+    }
     return NextResponse.rewrite(url);
   }
 
@@ -73,7 +79,10 @@ export async function middleware(request: NextRequest) {
     // Create new URL with the video endpoint
     const url = new URL(videoPath + search, request.url);
     
-    console.log('[Middleware] Redirecting campaigns API to videos:', pathname, '->', videoPath);
+    // 리다이렉션은 중요한 정보이므로 개발환경에서만 로그
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Middleware] Redirecting campaigns API to videos:', pathname, '->', videoPath);
+    }
     return NextResponse.rewrite(url);
   }
 

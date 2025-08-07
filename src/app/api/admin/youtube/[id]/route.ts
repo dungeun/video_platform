@@ -13,10 +13,10 @@ export async function GET(
   try {
     console.log('Fetching YouTube video:', params.id)
     
-    const video = await prisma.youTubeVideo.findUnique({
+    const video = await prisma.youtube_videos.findUnique({
       where: { id: params.id },
       include: {
-        assignedUser: {
+        users_youtube_videos_assignedUserIdTousers: {
           select: {
             id: true,
             name: true,
@@ -53,7 +53,7 @@ export async function GET(
         commentCount: video.commentCount?.toString() || '0',
         category: video.category,
         featured: video.featured,
-        assignedUser: video.assignedUser,
+        assignedUser: video.users_youtube_videos_assignedUserIdTousers,
         videoUrl: null // YouTube videos don't have direct video files yet
       }
     })
@@ -79,7 +79,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    await prisma.youTubeVideo.delete({
+    await prisma.youtube_videos.delete({
       where: { id: params.id }
     })
 

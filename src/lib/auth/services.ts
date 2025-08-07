@@ -203,13 +203,7 @@ class AuthServiceClass {
   }
 
   async getUser(userId: string): Promise<User | null> {
-    // Mock user retrieval - in real app, this would fetch from database
-    return {
-      id: userId,
-      email: 'user@example.com',
-      name: 'Mock User',
-      type: 'business'
-    }
+    return this.getUserById(userId);
   }
 
   async logout(sessionId: string): Promise<void> {
@@ -250,11 +244,25 @@ class AuthServiceClass {
   }
 
   async refreshSession(refreshToken: string): Promise<any> {
-    const result = await this.refreshToken(refreshToken)
-    return {
-      accessToken: result.token,
-      refreshToken: result.refreshToken,
-      user: { id: '1', email: 'user@example.com', name: 'User', type: 'business' }
+    try {
+      // 토큰 검증 및 갱신
+      const decoded = jwt.verify(refreshToken, this.REFRESH_SECRET) as any
+      const result = await this.refreshToken(refreshToken)
+      
+      // 실제 사용자 정보 가져오기
+      const user = await this.getUserById(decoded.userId)
+      if (!user) {
+        throw new Error('User not found')
+      }
+      
+      return {
+        accessToken: result.token,
+        refreshToken: result.refreshToken,
+        user
+      }
+    } catch (error) {
+      console.error('Session refresh error:', error)
+      throw new Error('Failed to refresh session')
     }
   }
 }

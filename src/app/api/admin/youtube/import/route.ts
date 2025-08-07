@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
 
     // Check if video already exists
     console.log('Checking for existing video with ID:', videoInfo.youtubeId)
-    const existingVideo = await prisma.youTubeVideo.findUnique({
+    const existingVideo = await prisma.youtube_videos.findUnique({
       where: { youtubeId: videoInfo.youtubeId }
     })
     console.log('Existing video:', existingVideo)
@@ -40,8 +40,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Create video record in database
-    const video = await prisma.youTubeVideo.create({
+    const video = await prisma.youtube_videos.create({
       data: {
+        id: `yt_${videoInfo.youtubeId}_${Date.now()}`, // Generate unique ID
         youtubeId: videoInfo.youtubeId,
         youtubeUrl: videoInfo.youtubeUrl,
         title: videoInfo.title,
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
         assignedAt: assignedUserId ? new Date() : null
       },
       include: {
-        assignedUser: {
+        users_youtube_videos_assignedUserIdTousers: {
           select: {
             id: true,
             name: true,
@@ -76,7 +77,8 @@ export async function POST(request: NextRequest) {
       success: true, 
       video: {
         ...video,
-        viewCount: video.viewCount.toString()
+        viewCount: video.viewCount.toString(),
+        assignedUser: video.users_youtube_videos_assignedUserIdTousers
       }
     })
   } catch (error) {

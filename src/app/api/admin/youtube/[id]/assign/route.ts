@@ -16,14 +16,14 @@ export async function PUT(
 
     const { userId } = await request.json()
 
-    const video = await prisma.youTubeVideo.update({
+    const video = await prisma.youtube_videos.update({
       where: { id: params.id },
       data: {
         assignedUserId: userId || null,
         assignedAt: userId ? new Date() : null
       },
       include: {
-        assignedUser: {
+        users_youtube_videos_assignedUserIdTousers: {
           select: {
             id: true,
             name: true,
@@ -37,7 +37,8 @@ export async function PUT(
       success: true, 
       video: {
         ...video,
-        viewCount: video.viewCount.toString()
+        viewCount: video.viewCount.toString(),
+        assignedUser: video.users_youtube_videos_assignedUserIdTousers
       }
     })
   } catch (error) {

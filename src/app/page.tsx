@@ -33,6 +33,7 @@ export default function HomePage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [videos, setVideos] = useState<Video[]>([])
   const [youtubeVideos, setYoutubeVideos] = useState<any[]>([])
+  const [homeData, setHomeData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   
   // UI 설정 가져오기
@@ -44,16 +45,28 @@ export default function HomePage() {
   // 메뉴 카테고리 - UI 설정에서 가져오기
   const menuCategories = config.mainPage?.categoryMenus?.filter(menu => menu.visible) || []
   
-  // 섹션 순서 가져오기
-  const sectionOrder = config.mainPage?.sectionOrder || [
+  // 섹션 순서 가져오기 - 부동산 섹션 강제 추가
+  const defaultSectionOrder = [
     { id: 'hero', type: 'hero', order: 1, visible: true },
     { id: 'category', type: 'category', order: 2, visible: true },
     { id: 'quicklinks', type: 'quicklinks', order: 3, visible: true },
     { id: 'promo', type: 'promo', order: 4, visible: true },
     { id: 'ranking', type: 'ranking', order: 5, visible: true },
-    { id: 'youtube', type: 'youtube', order: 6, visible: true },
+    { id: 'realestate', type: 'realestate', order: 6, visible: true },
     { id: 'recommended', type: 'recommended', order: 7, visible: true },
   ]
+  
+  // config가 있고 sectionOrder가 있으면 사용, 아니면 defaultSectionOrder 사용
+  // 하지만 realestate 섹션은 항상 포함되도록 보장
+  let sectionOrder = config.mainPage?.sectionOrder && config.mainPage.sectionOrder.length > 0 
+    ? [...config.mainPage.sectionOrder] 
+    : [...defaultSectionOrder]
+  
+  // realestate 섹션이 없으면 추가
+  const hasRealEstate = sectionOrder.some(s => s.id === 'realestate' || s.type === 'realestate')
+  if (!hasRealEstate) {
+    sectionOrder.push({ id: 'realestate', type: 'realestate', order: 6, visible: true })
+  }
   
   // 커스텀 섹션들도 순서에 추가
   const customSectionOrders = (config.mainPage?.customSections || [])
@@ -79,14 +92,6 @@ export default function HomePage() {
   const visibleSections = allSections
     .filter(s => s.visible)
     .sort((a, b) => a.order - b.order)
-  
-  // 디버깅: 기본 정보만 로깅
-  if (process.env.NODE_ENV === 'development') {
-    console.log('All sections:', allSections.map(s => `${s.id}(order:${s.order}, visible:${s.visible})`))
-    console.log('Visible sections:', visibleSections.map(s => `${s.id}(${s.order})`))
-    console.log('bannerSlides count:', bannerSlides.length)
-    console.log('menuCategories count:', menuCategories.length)
-  }
   
   // 카테고리별 기본 픽토그램
   const defaultCategoryIcons: Record<string, React.ReactNode> = {
@@ -299,7 +304,7 @@ export default function HomePage() {
   const loadYouTubeVideos = async () => {
     try {
       console.log('Loading YouTube videos...')
-      const response = await fetch('/api/videos/youtube?limit=4')
+      const response = await fetch('/api/videos/youtube?limit=12')
       if (response.ok) {
         const data = await response.json()
         console.log('YouTube videos loaded:', data)
@@ -316,32 +321,38 @@ export default function HomePage() {
       console.error('Failed to load YouTube videos:', error)
     }
   }
+  
+  // 홈 비디오 로드
+  const loadHomeVideos = async () => {
+    try {
+      const response = await fetch('/api/home/videos?section=all&limit=12')
+      if (response.ok) {
+        const data = await response.json()
+        setHomeData(data)
+      }
+    } catch (error) {
+      console.error('Failed to load home videos:', error)
+    }
+  }
 
-  // 비디오 데이터 로드 (캠페인을 비디오로 변환)
+  // 비디오 데이터 로드 (실제 비디오 테이블에서 가져오기)
   const loadVideos = async () => {
     try {
       setLoading(true)
       
-      // 먼저 비디오 API 시도
-      const videoResponse = await fetch('/api/videos?limit=20')
-      if (videoResponse.ok) {
-        const videoData = await videoResponse.json()
-        if (videoData.videos && videoData.videos.length > 0) {
-          setVideos(videoData.videos)
-          return
-        }
-      }
-      
-      // 비디오가 없으면 캠페인을 비디오로 변환하여 표시
-      const campaignResponse = await fetch('/api/home/campaigns?limit=20')
-      if (campaignResponse.ok) {
-        const campaignData = await campaignResponse.json()
-        const campaignList = campaignData.campaigns || []
-        setCampaigns(campaignList)
+      // 새로운 비디오 API 엔드포인트 사용
+      const response = await fetch('/api/home/videos?section=all&limit=20')
+      if (response.ok) {
+        const data = await response.json()
         
-        // 캠페인을 비디오 형태로 변환
-        const convertedVideos = campaignList.map(transformCampaignToVideo)
-        setVideos(convertedVideos)
+        // 트렌딩 비디오 설정
+        if (data.sections?.trending) {
+          setVideos(data.sections.trending)
+        }
+        
+        // 홈 데이터 설정
+        setHomeData(data)
+        
         return
       }
       
@@ -375,7 +386,20 @@ export default function HomePage() {
     loadVideos()
     // YouTube 비디오 로드
     loadYouTubeVideos()
+    // 홈 비디오 로드
+    loadHomeVideos()
   }, [router])
+  
+  // 디버깅용 useEffect
+  useEffect(() => {
+    console.log('=== Main Page Debug ===')
+    console.log('All sections:', allSections.map(s => `${s.id}(order:${s.order}, visible:${s.visible}, type:${s.type})`))
+    console.log('Visible sections:', visibleSections.map(s => `${s.id}(${s.order}, type:${s.type})`))
+    console.log('homeData sections:', homeData?.sections ? Object.keys(homeData.sections) : 'none')
+    console.log('realestate videos count:', homeData?.sections?.realestate?.length || 0)
+    console.log('youtubeVideos count:', youtubeVideos.length)
+    console.log('Config sectionOrder:', config.mainPage?.sectionOrder)
+  }, [homeData, youtubeVideos, config])
 
 
   const handleSearch = (e: React.FormEvent) => {
@@ -663,9 +687,67 @@ export default function HomePage() {
                 </section>
               );
               
-            case 'youtube':
-              // YouTube 섹션 삭제됨 - 최신 부동산 섹션에서 표시
-              return null;
+            case 'realestate':
+              // 부동산 YouTube 비디오 섹션
+              const realEstateVideos = homeData?.sections?.realestate || []
+              
+              console.log('Rendering realestate section:', {
+                sectionId: section.id,
+                sectionType: section.type,
+                realEstateVideosCount: realEstateVideos.length,
+                fromHomeData: !!homeData?.sections?.realestate,
+                fromYoutubeVideos: !homeData?.sections?.realestate && youtubeVideos.length > 0
+              })
+              
+              if (realEstateVideos.length === 0) {
+                console.log('No real estate videos found, returning null')
+                return null
+              }
+              
+              return (
+                <section key={section.id} className="mb-12">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="text-2xl font-bold text-white">최신 부동산 유튜브</h2>
+                      <p className="text-gray-400 mt-1">부동산 전문 유튜버들의 최신 영상</p>
+                    </div>
+                    <Link href="/videos/youtube?category=realestate" className="text-indigo-400 hover:text-indigo-300 font-medium">
+                      전체보기 →
+                    </Link>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {realEstateVideos.slice(0, 6).map((video: any) => (
+                      <div key={video.id} className="group">
+                        <Link href={`/videos/youtube/${video.id}`} className="block">
+                          <div className="relative aspect-video bg-gray-800 rounded-lg overflow-hidden mb-3">
+                            <img 
+                              src={video.thumbnailUrl} 
+                              alt={video.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                            <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
+                              {Math.floor((video.duration || 0) / 60)}:{((video.duration || 0) % 60).toString().padStart(2, '0')}
+                            </div>
+                          </div>
+                          <div>
+                            <h3 className="text-white font-medium line-clamp-2 mb-1 group-hover:text-indigo-400 transition-colors">
+                              {video.title}
+                            </h3>
+                            <div className="flex items-center gap-2 text-sm text-gray-400">
+                              <span>{video.channelTitle || video.channel?.name}</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
+                              <span>조회수 {parseInt(video.viewCount || '0').toLocaleString()}</span>
+                            </div>
+                          </div>
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              );
               
             case 'recommended':
               // 추천 비디오

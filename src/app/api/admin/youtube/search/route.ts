@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     const videos = await YouTubeService.searchVideos(query, limit)
 
     // Get existing video IDs to check for duplicates
-    const existingVideos = await prisma.youTubeVideo.findMany({
+    const existingVideos = await prisma.youtube_videos.findMany({
       where: {
         youtubeId: {
           in: videos.map(v => v.youtubeId)

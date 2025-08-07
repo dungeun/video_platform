@@ -16,7 +16,7 @@ export async function PUT(
 
     const { featured } = await request.json()
 
-    const video = await prisma.youTubeVideo.update({
+    const video = await prisma.youtube_videos.update({
       where: { id: params.id },
       data: { featured }
     })

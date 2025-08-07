@@ -500,14 +500,14 @@
     ],
     "sectionOrder": [
       {
-        "id": "hero",
-        "type": "hero",
+        "id": "category",
+        "type": "category",
         "order": 1,
         "visible": true
       },
       {
-        "id": "category",
-        "type": "category",
+        "id": "hero",
+        "type": "hero",
         "order": 2,
         "visible": true
       },

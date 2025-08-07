@@ -15,9 +15,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const videos = await prisma.youTubeVideo.findMany({
+    const videos = await prisma.youtube_videos.findMany({
       include: {
-        assignedUser: {
+        users_youtube_videos_assignedUserIdTousers: {
           select: {
             id: true,
             name: true,
@@ -35,7 +35,8 @@ export async function GET(request: NextRequest) {
       ...video,
       viewCount: video.viewCount?.toString() || '0',
       likeCount: video.likeCount?.toString() || '0',
-      commentCount: video.commentCount?.toString() || '0'
+      commentCount: video.commentCount?.toString() || '0',
+      assignedUser: video.users_youtube_videos_assignedUserIdTousers
     }))
 
     return NextResponse.json({ videos: serializedVideos })

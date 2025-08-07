@@ -19,18 +19,13 @@ export async function GET(request: NextRequest) {
       where.category = category
     }
 
-    const videos = await prisma.youTubeVideo.findMany({
+    const videos = await prisma.youtube_videos.findMany({
       where,
       include: {
-        assignedUser: {
+        users_youtube_videos_assignedUserIdTousers: {
           select: {
             id: true,
-            name: true,
-            profile: {
-              select: {
-                profileImage: true
-              }
-            }
+            name: true
           }
         }
       },
@@ -48,7 +43,8 @@ export async function GET(request: NextRequest) {
       viewCount: video.viewCount?.toString() || '0',
       likeCount: video.likeCount?.toString() || '0',
       commentCount: video.commentCount?.toString() || '0',
-      duration: parseDuration(video.duration || 'PT0S')
+      duration: parseDuration(video.duration || 'PT0S'),
+      assignedUser: video.users_youtube_videos_assignedUserIdTousers
     }))
 
     return NextResponse.json({ videos: serializedVideos })

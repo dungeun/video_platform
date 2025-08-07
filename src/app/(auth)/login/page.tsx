@@ -320,22 +320,14 @@ export default function LoginPage() {
 
             {/* Quick Login Buttons */}
             <div className="mt-6 space-y-3">
-              <div className="text-center">
-                <span className="text-xs text-gray-600 bg-gray-100 px-3 py-1 rounded-full">데모 로그인</span>
-                <div className="mt-2 text-xs text-gray-500">
-                  <p>테스트 계정 (랜덤 선택):</p>
-                  {demoAccounts.influencer && (
-                    <p className="mt-1">인플루언서: {demoAccounts.influencer.name}</p>
-                  )}
-                  {demoAccounts.business && (
-                    <p>클라이언트: {demoAccounts.business.name}</p>
-                  )}
-                  {demoAccounts.admin && (
-                    <p>관리자: {demoAccounts.admin.name}</p>
-                  )}
-                  <p className="mt-2 text-gray-400">비밀번호: 일반 계정 password123 | 관리자 admin123!</p>
+              {process.env.NODE_ENV === 'development' && (
+                <div className="text-center">
+                  <span className="text-xs text-gray-600 bg-gray-100 px-3 py-1 rounded-full">개발용 데모 로그인</span>
+                  <div className="mt-2 text-xs text-gray-500">
+                    <p>테스트 계정 (클릭하여 자동 입력)</p>
+                  </div>
                 </div>
-              </div>
+              )}
               <div className="grid grid-cols-3 gap-3">
                 <button
                   onClick={() => handleQuickLogin('user')}

@@ -3,39 +3,54 @@ import { prisma } from '@/lib/db/prisma'
 import * as bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { cookies } from 'next/headers'
+import { AppError, ErrorTypes, createErrorResponse, logError } from '@/lib/utils/error-handler'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
 
+// 프로덕션 환경에서 기본 시크릿 사용 방지
+if (process.env.NODE_ENV === 'production' && JWT_SECRET === 'your-secret-key') {
+  throw new Error('JWT_SECRET must be set in production environment')
+}
+
 export async function POST(request: NextRequest) {
   try {
-    console.log('Request headers:', Object.fromEntries(request.headers.entries()))
-    console.log('Request method:', request.method)
-    console.log('Request URL:', request.url)
+    // 개발 환경에서만 디버그 로그
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Login attempt at:', new Date().toISOString())
+    }
     
     let body;
     try {
-      const textBody = await request.text()
-      console.log('Raw request body:', textBody)
-      body = JSON.parse(textBody)
+      body = await request.json()
     } catch (parseError) {
-      console.error('JSON parsing error:', parseError)
-      return NextResponse.json(
-        { error: 'Invalid JSON format' },
-        { status: 400 }
+      throw new AppError(
+        '잘못된 요청 형식입니다.',
+        400,
+        ErrorTypes.VALIDATION_ERROR
       )
     }
     
     const { email, password } = body
-    
-    console.log('Login attempt for:', email, 'Password length:', password?.length)
 
+    // 입력 검증
     if (!email || !password) {
-      return NextResponse.json(
-        { error: 'Email and password are required' },
-        { status: 400 }
+      throw new AppError(
+        '이메일과 비밀번호를 입력해주세요.',
+        400,
+        ErrorTypes.VALIDATION_ERROR
+      )
+    }
+
+    // 이메일 형식 검증
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      throw new AppError(
+        '올바른 이메일 형식이 아닙니다.',
+        400,
+        ErrorTypes.VALIDATION_ERROR
       )
     }
 
@@ -48,31 +63,39 @@ export async function POST(request: NextRequest) {
     })
 
     if (!user) {
-      console.log('User not found for email:', email)
-      return NextResponse.json(
-        { error: '이메일 또는 비밀번호가 올바르지 않습니다.' },
-        { status: 401 }
+      // 보안을 위해 사용자 존재 여부를 명시하지 않음
+      throw new AppError(
+        '이메일 또는 비밀번호가 올바르지 않습니다.',
+        401,
+        ErrorTypes.AUTHENTICATION_ERROR
       )
     }
 
     // 비밀번호 확인
-    console.log('User found:', user.email, 'Type:', user.type, 'Status:', user.status)
+    const isValidPassword = await bcrypt.compare(password, user.password)
     
-    const isValidPassword = await bcrypt.compare(password, user.password);
-    
-    console.log('Password validation result:', isValidPassword)
     if (!isValidPassword) {
-      return NextResponse.json(
-        { error: '이메일 또는 비밀번호가 올바르지 않습니다.' },
-        { status: 401 }
+      // 로그인 실패 시도 기록 (추후 구현 가능)
+      logError(new Error('Invalid password attempt'), {
+        email,
+        timestamp: new Date().toISOString()
+      })
+      
+      throw new AppError(
+        '이메일 또는 비밀번호가 올바르지 않습니다.',
+        401,
+        ErrorTypes.AUTHENTICATION_ERROR
       )
     }
 
-    // 상태 확인
+    // 계정 상태 확인
     if (user.status !== 'ACTIVE') {
-      return NextResponse.json(
-        { error: '계정이 비활성화되었습니다. 관리자에게 문의하세요.' },
-        { status: 403 }
+      throw new AppError(
+        '계정이 비활성화되었습니다. 관리자에게 문의하세요.',
+        403,
+        ErrorTypes.AUTHORIZATION_ERROR,
+        true,
+        { accountStatus: user.status }
       )
     }
 
@@ -106,34 +129,29 @@ export async function POST(request: NextRequest) {
         profile: user.profiles
       },
       token,
-      accessToken: token // Add this for backward compatibility with useAuth hook
+      accessToken: token // 호환성을 위해 추가
     })
 
     // 쿠키 설정
-    response.cookies.set('auth-token', token, {
+    const isProduction = process.env.NODE_ENV === 'production'
+    const cookieOptions = {
       httpOnly: true,
-      secure: false, // HTTP 환경에서도 작동하도록 수정
-      sameSite: 'lax',
+      secure: isProduction, // 프로덕션에서는 HTTPS 필수
+      sameSite: 'lax' as const,
       maxAge: 60 * 60 * 24 * 7, // 7일
       path: '/'
-    })
-    
-    // accessToken 쿠키도 설정 (호환성)
-    response.cookies.set('accessToken', token, {
-      httpOnly: true,
-      secure: false, // HTTP 환경에서도 작동하도록 수정
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7일
-      path: '/'
-    })
+    }
+
+    response.cookies.set('auth-token', token, cookieOptions)
+    response.cookies.set('accessToken', token, cookieOptions) // 호환성
 
     return response
 
-  } catch (error: any) {
-    console.error('Login error:', error)
-    return NextResponse.json(
-      { error: error.message || 'Login failed' },
-      { status: 401 }
-    )
+  } catch (error) {
+    logError(error, { 
+      endpoint: '/api/auth/login',
+      method: 'POST'
+    })
+    return createErrorResponse(error)
   }
 }

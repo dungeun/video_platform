@@ -61,15 +61,20 @@ export default function YouTubeVideoPage() {
   const loadVideo = async (videoId: string) => {
     try {
       setLoading(true)
+      console.log('Loading video with ID:', videoId)
       const response = await fetch(`/api/videos/youtube/${videoId}`)
+      console.log('API response status:', response.status)
+      
       if (response.ok) {
         const data = await response.json()
+        console.log('Video data received:', data)
         setVideo(data.video)
         
         // TODO: 실제 댓글 API 구현 후 연결
         setComments([])
       } else {
-        console.error('Failed to load video:', response.status)
+        const errorText = await response.text()
+        console.error('Failed to load video:', response.status, errorText)
       }
     } catch (error) {
       console.error('Failed to load video:', error)

@@ -335,7 +335,7 @@ export default function AdminYouTubePage() {
                       <td className="px-4 py-3">
                         <div>
                           <a 
-                            href={video.youtubeUrl} 
+                            href={`/videos/youtube/${video.id}`} 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="font-medium text-blue-600 hover:underline line-clamp-2"
@@ -344,6 +344,11 @@ export default function AdminYouTubePage() {
                           </a>
                           <div className="text-sm text-gray-500 mt-1">
                             {video.channelTitle}
+                          </div>
+                          <div className="text-xs text-gray-400 mt-1">
+                            <a href={video.youtubeUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-500">
+                              원본 YouTube →
+                            </a>
                           </div>
                         </div>
                       </td>
@@ -385,19 +390,41 @@ export default function AdminYouTubePage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="space-y-2">
-                          <select
-                            value={video.status}
-                            onChange={(e) => handleStatusChange(video.id, e.target.value)}
-                            className={`text-sm border rounded px-2 py-1 ${
-                              video.status === 'published' ? 'bg-green-50 text-green-700' :
-                              video.status === 'hidden' ? 'bg-gray-50 text-gray-700' :
-                              'bg-yellow-50 text-yellow-700'
-                            }`}
-                          >
-                            <option value="imported">가져옴</option>
-                            <option value="published">게시됨</option>
-                            <option value="hidden">숨김</option>
-                          </select>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => handleStatusChange(video.id, 'imported')}
+                              className={`text-xs px-2 py-1 rounded font-medium transition-colors ${
+                                video.status === 'imported' 
+                                  ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' 
+                                  : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-yellow-50'
+                              }`}
+                              title="가져온 상태로 변경"
+                            >
+                              가져옴
+                            </button>
+                            <button
+                              onClick={() => handleStatusChange(video.id, 'published')}
+                              className={`text-xs px-2 py-1 rounded font-medium transition-colors ${
+                                video.status === 'published' 
+                                  ? 'bg-green-100 text-green-800 border border-green-300' 
+                                  : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-green-50'
+                              }`}
+                              title="게시 상태로 변경"
+                            >
+                              게시됨
+                            </button>
+                            <button
+                              onClick={() => handleStatusChange(video.id, 'hidden')}
+                              className={`text-xs px-2 py-1 rounded font-medium transition-colors ${
+                                video.status === 'hidden' 
+                                  ? 'bg-gray-100 text-gray-800 border border-gray-300' 
+                                  : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-50'
+                              }`}
+                              title="숨김 상태로 변경"
+                            >
+                              숨김
+                            </button>
+                          </div>
                           {video.featured && (
                             <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
                               추천
