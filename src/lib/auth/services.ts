@@ -34,8 +34,8 @@ class AuthServiceClass {
       const user = await prisma.users.findUnique({
         where: { email },
         include: {
-          profile: true,
-          businessProfile: true
+          profiles: true,
+          business_profiles: true
         }
       })
 
@@ -119,13 +119,13 @@ class AuthServiceClass {
           password: hashedPassword,
           name,
           type: type.toUpperCase() as 'BUSINESS' | 'INFLUENCER',
-          profile: type === 'influencer' ? {
+          profiles: type === 'influencer' ? {
             create: {
               phone,
               address
             }
           } : undefined,
-          businessProfile: type === 'business' ? {
+          business_profiles: type === 'business' ? {
             create: {
               companyName: companyName || name,
               businessNumber: businessNumber || '',
@@ -139,8 +139,8 @@ class AuthServiceClass {
           } : undefined
         },
         include: {
-          profile: true,
-          businessProfile: true
+          profiles: true,
+          business_profiles: true
         }
       })
 
@@ -231,7 +231,7 @@ class AuthServiceClass {
       const user = await prisma.users.findUnique({
         where: { id: userId },
         include: {
-          profile: true
+          profiles: true
         }
       })
       

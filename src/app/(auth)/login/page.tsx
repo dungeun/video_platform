@@ -140,13 +140,13 @@ export default function LoginPage() {
       const credentials = {
         user: { email: 'user@example.com', password: 'password123' },
         business: { email: 'business@company.com', password: 'password123' },
-        admin: { email: 'admin@videopick.co.kr', password: 'password123' }
+        admin: { email: 'admin@videopick.com', password: 'admin123!' }
       }
       email = credentials[userType].email
     }
     
-    // 모든 계정 동일한 비밀번호 사용
-    let password = 'password123'
+    // 계정별 비밀번호 설정
+    let password = userType === 'admin' ? 'admin123!' : 'password123'
     
     const cred = { email, password }
     setFormData(cred)
@@ -333,7 +333,7 @@ export default function LoginPage() {
                   {demoAccounts.admin && (
                     <p>관리자: {demoAccounts.admin.name}</p>
                   )}
-                  <p className="mt-2 text-gray-400">모든 데모 계정 비밀번호: password123</p>
+                  <p className="mt-2 text-gray-400">비밀번호: 일반 계정 password123 | 관리자 admin123!</p>
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-3">

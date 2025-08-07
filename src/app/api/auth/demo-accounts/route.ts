@@ -36,11 +36,11 @@ export async function GET(request: NextRequest) {
       ? influencerUsers[Math.floor(Math.random() * influencerUsers.length)]
       : null
 
-    // 관리자 계정 추가 - 특정 계정 우선 사용
+    // 관리자 계정 추가 - admin@videopick.com 우선 사용
     const adminUser = await prisma.users.findFirst({
       where: { 
         type: 'ADMIN',
-        email: 'admin@linkpick.co.kr'
+        email: 'admin@videopick.com'
       },
       select: {
         id: true,
