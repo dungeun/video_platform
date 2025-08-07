@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     const userId = payload.userId
 
     // 사용자 확인 (비즈니스 계정만 업로드 가능)
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: userId },
       include: { business: true }
     })

@@ -31,7 +31,7 @@ class AuthServiceClass {
 
     try {
       // Find user in database
-      const user = await prisma.user.findUnique({
+      const user = await prisma.users.findUnique({
         where: { email },
         include: {
           profile: true,
@@ -51,7 +51,7 @@ class AuthServiceClass {
       }
 
       // Update last login
-      await prisma.user.update({
+      await prisma.users.update({
         where: { id: user.id },
         data: { lastLogin: new Date() }
       })
@@ -101,7 +101,7 @@ class AuthServiceClass {
 
     try {
       // Check if user already exists
-      const existingUser = await prisma.user.findUnique({
+      const existingUser = await prisma.users.findUnique({
         where: { email }
       })
 
@@ -113,7 +113,7 @@ class AuthServiceClass {
       const hashedPassword = await bcrypt.hash(password, 10)
       
       // Create user with profile
-      const user = await prisma.user.create({
+      const user = await prisma.users.create({
         data: {
           email,
           password: hashedPassword,
@@ -228,7 +228,7 @@ class AuthServiceClass {
 
   async getUserById(userId: string): Promise<User | null> {
     try {
-      const user = await prisma.user.findUnique({
+      const user = await prisma.users.findUnique({
         where: { id: userId },
         include: {
           profile: true

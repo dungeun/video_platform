@@ -46,7 +46,7 @@ export async function GET(
     }
 
     // 사용자 상세 정보 조회
-    const userDetail = await prisma.user.findUnique({
+    const userDetail = await prisma.users.findUnique({
       where: { id: params.id },
       include: {
         profile: true,
@@ -175,7 +175,7 @@ export async function PUT(
     // 트랜잭션으로 사용자와 프로필 업데이트
     const updatedUser = await prisma.$transaction(async (prisma) => {
       // 사용자 기본 정보 업데이트
-      const user = await prisma.user.update({
+      const user = await prisma.users.update({
         where: { id: params.id },
         data: updateData,
         include: {
@@ -198,7 +198,7 @@ export async function PUT(
       }
 
       // 업데이트된 정보 다시 조회
-      return await prisma.user.findUnique({
+      return await prisma.users.findUnique({
         where: { id: params.id },
         include: {
           profile: true,

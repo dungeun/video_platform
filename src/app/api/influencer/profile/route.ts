@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const profile = await prisma.user.findUnique({
+    const profile = await prisma.users.findUnique({
       where: { id: user.id },
       include: {
         profile: true
@@ -95,7 +95,7 @@ export async function PUT(request: NextRequest) {
     } = data;
 
     // 사용자 정보 업데이트
-    const updatedUser = await prisma.user.update({
+    const updatedUser = await prisma.users.update({
       where: { id: user.id },
       data: {
         name: name || undefined,

@@ -99,7 +99,7 @@ export async function POST(
     }
 
     // 사용자 정보 조회
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: userId },
       select: {
         id: true,

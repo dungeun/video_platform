@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 기존 비즈니스 계정 찾기
-    let businessUser = await prisma.user.findUnique({
+    let businessUser = await prisma.users.findUnique({
       where: { email },
       include: { businessProfile: true }
     })
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
       const tempPassword = Math.random().toString(36).slice(-8)
       const hashedPassword = await bcrypt.hash(tempPassword, 10)
 
-      businessUser = await prisma.user.create({
+      businessUser = await prisma.users.create({
         data: {
           email,
           password: hashedPassword,

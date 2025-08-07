@@ -5,7 +5,7 @@ export async function GET() {
   try {
     // 데이터베이스 연결 테스트
     const campaignCount = await prisma.campaign.count();
-    const userCount = await prisma.user.count();
+    const userCount = await prisma.users.count();
     
     // 첫 번째 캠페인 데이터 조회 (있다면)
     const firstCampaign = await prisma.campaign.findFirst({

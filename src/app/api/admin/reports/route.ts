@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 관리자 권한 확인
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: userId },
       select: { type: true }
     })

@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 비즈니스 정보 조회
-    const business = await prisma.user.findUnique({
+    const business = await prisma.users.findUnique({
       where: { id: user.userId || user.id },
       include: {
         campaigns: {

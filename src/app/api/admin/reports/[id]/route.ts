@@ -54,7 +54,7 @@ export async function GET(
     try {
       switch (report.type.toLowerCase()) {
         case 'user':
-          targetInfo = await prisma.user.findUnique({
+          targetInfo = await prisma.users.findUnique({
             where: { id: report.targetId },
             select: { id: true, name: true, email: true, type: true }
           })

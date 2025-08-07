@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 비즈니스 정보 조회
-    const businessUser = await prisma.user.findUnique({
+    const businessUser = await prisma.users.findUnique({
       where: { id: user.id },
       include: {
         businessProfile: true
@@ -114,7 +114,7 @@ export async function PUT(request: NextRequest) {
 
     // 사용자 이름 업데이트
     if (name) {
-      await prisma.user.update({
+      await prisma.users.update({
         where: { id: user.id },
         data: { name }
       })

@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 인플루언서 정보 조회
-    const influencer = await prisma.user.findUnique({
+    const influencer = await prisma.users.findUnique({
       where: { id: user.id },
       include: {
         profile: true,

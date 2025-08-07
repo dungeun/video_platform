@@ -36,10 +36,10 @@ export async function GET(request: NextRequest) {
       recentPayments
     ] = await Promise.all([
       // 전체 사용자 수
-      prisma.user.count(),
+      prisma.users.count(),
       
       // 활성 사용자 수 (최근 7일 이내 로그인)
-      prisma.user.count({
+      prisma.users.count({
         where: {
           lastLogin: {
             gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
       }),
       
       // 오늘 가입한 사용자 수
-      prisma.user.count({
+      prisma.users.count({
         where: {
           createdAt: {
             gte: new Date(new Date().setHours(0, 0, 0, 0))
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
       }),
       
       // 최근 가입한 사용자 (5명)
-      prisma.user.findMany({
+      prisma.users.findMany({
         take: 5,
         orderBy: { createdAt: 'desc' },
         select: {
@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
 
     // 성장률 계산 (지난 30일 대비)
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const previousMonthUsers = await prisma.user.count({
+    const previousMonthUsers = await prisma.users.count({
       where: {
         createdAt: { lt: thirtyDaysAgo }
       }

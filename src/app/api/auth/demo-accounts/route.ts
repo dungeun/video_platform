@@ -7,7 +7,7 @@ export const runtime = 'nodejs'
 export async function GET(request: NextRequest) {
   try {
     // 활성 상태인 비즈니스와 인플루언서 계정만 가져오기 (관리자 제외)
-    const users = await prisma.user.findMany({
+    const users = await prisma.users.findMany({
       where: {
         type: {
           in: ['BUSINESS', 'INFLUENCER']
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
       : null
 
     // 관리자 계정 추가 - 특정 계정 우선 사용
-    const adminUser = await prisma.user.findFirst({
+    const adminUser = await prisma.users.findFirst({
       where: { 
         type: 'ADMIN',
         email: 'admin@linkpick.co.kr'
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
         name: true,
         type: true
       }
-    }) || await prisma.user.findFirst({
+    }) || await prisma.users.findFirst({
       where: { type: 'ADMIN' },
       select: {
         id: true,

@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
     // Create admin user
     const adminPassword = await bcrypt.hash('admin123!@#', 10)
-    const admin = await prisma.user.upsert({
+    const admin = await prisma.users.upsert({
       where: { email: 'admin@linkpick.co.kr' },
       update: {},
       create: {
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
 
     // Create test business user
     const businessPassword = await bcrypt.hash('business123', 10)
-    const businessUser = await prisma.user.upsert({
+    const businessUser = await prisma.users.upsert({
       where: { email: 'business@company.com' },
       update: {},
       create: {
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
 
     // Create test influencer user
     const influencerPassword = await bcrypt.hash('user123', 10)
-    const influencerUser = await prisma.user.upsert({
+    const influencerUser = await prisma.users.upsert({
       where: { email: 'user@example.com' },
       update: {},
       create: {

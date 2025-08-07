@@ -7,7 +7,7 @@ export const runtime = 'nodejs'
 export async function GET(request: NextRequest) {
   try {
     // 데이터베이스 연결 테스트
-    const userCount = await prisma.user.count();
+    const userCount = await prisma.users.count();
     const campaignCount = await prisma.campaign.count();
     
     return NextResponse.json({

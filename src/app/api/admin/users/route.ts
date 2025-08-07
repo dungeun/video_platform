@@ -81,11 +81,11 @@ export async function GET(request: NextRequest) {
     }
 
     // 전체 사용자 수 계산 (페이지네이션용)
-    const totalCount = await prisma.user.count({ where });
+    const totalCount = await prisma.users.count({ where });
     const totalPages = Math.ceil(totalCount / limit);
 
     // 사용자 조회 (페이지네이션 적용)
-    const users = await prisma.user.findMany({
+    const users = await prisma.users.findMany({
       where,
       include: {
         profile: true,
@@ -123,7 +123,7 @@ export async function GET(request: NextRequest) {
     }));
 
     // 전체 통계 가져오기 (필터와 관계없이)
-    const totalStats = await prisma.user.groupBy({
+    const totalStats = await prisma.users.groupBy({
       by: ['type'],
       _count: {
         type: true
@@ -131,7 +131,7 @@ export async function GET(request: NextRequest) {
     });
 
     const stats = {
-      total: await prisma.user.count(),
+      total: await prisma.users.count(),
       admin: totalStats.find(s => s.type === 'ADMIN')?._count.type || 0,
       influencer: totalStats.find(s => s.type === 'INFLUENCER')?._count.type || 0,
       business: totalStats.find(s => s.type === 'BUSINESS')?._count.type || 0
@@ -198,7 +198,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // 사용자 업데이트
-    const updatedUser = await prisma.user.update({
+    const updatedUser = await prisma.users.update({
       where: { id: userId },
       data: updateData
     });

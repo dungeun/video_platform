@@ -105,7 +105,7 @@ export async function POST(
       
       // 사용자 이름 업데이트
       if (name) {
-        await prisma.user.update({
+        await prisma.users.update({
           where: { id: user.id },
           data: { name: name }
         })

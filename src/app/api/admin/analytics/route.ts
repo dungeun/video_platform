@@ -55,8 +55,8 @@ export async function GET(request: NextRequest) {
     }
 
     // 개요 통계
-    const totalUsers = await prisma.user.count()
-    const newUsers = await prisma.user.count({
+    const totalUsers = await prisma.users.count()
+    const newUsers = await prisma.users.count({
       where: {
         createdAt: {
           gte: startDate
@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
     }).catch(() => ({ _sum: { totalAmount: 0 } }))
 
     // 사용자 통계
-    const usersByType = await prisma.user.groupBy({
+    const usersByType = await prisma.users.groupBy({
       by: ['type'],
       _count: {
         id: true
@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
       const monthEnd = new Date(monthStart)
       monthEnd.setMonth(monthEnd.getMonth() + 1)
 
-      const influencers = await prisma.user.count({
+      const influencers = await prisma.users.count({
         where: {
           type: 'INFLUENCER',
           createdAt: {
@@ -140,7 +140,7 @@ export async function GET(request: NextRequest) {
         }
       })
 
-      const businesses = await prisma.user.count({
+      const businesses = await prisma.users.count({
         where: {
           type: 'BUSINESS',
           createdAt: {
@@ -291,7 +291,7 @@ export async function GET(request: NextRequest) {
     }
 
     // TOP 인플루언서
-    const topInfluencers = await prisma.user.findMany({
+    const topInfluencers = await prisma.users.findMany({
       where: {
         type: 'INFLUENCER'
       },

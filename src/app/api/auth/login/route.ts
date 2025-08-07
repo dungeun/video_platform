@@ -40,10 +40,10 @@ export async function POST(request: NextRequest) {
     }
 
     // 데이터베이스에서 사용자 찾기
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { email },
       include: {
-        profile: true
+        profiles: true
       }
     })
 
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 마지막 로그인 시간 업데이트
-    await prisma.user.update({
+    await prisma.users.update({
       where: { id: user.id },
       data: { lastLogin: new Date() }
     })
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
         name: user.name,
         type: user.type,
         verified: (user as any).emailVerified,
-        profile: user.profile
+        profile: user.profiles
       },
       token,
       accessToken: token // Add this for backward compatibility with useAuth hook

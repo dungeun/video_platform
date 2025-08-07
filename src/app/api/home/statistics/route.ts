@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       totalCampaigns
     ] = await Promise.all([
       // 활성 인플루언서 수
-      prisma.user.count({
+      prisma.users.count({
         where: {
           type: 'INFLUENCER',
           profile: {
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       }),
       
       // 파트너 브랜드 수
-      prisma.user.count({
+      prisma.users.count({
         where: {
           type: 'BUSINESS',
           profile: {

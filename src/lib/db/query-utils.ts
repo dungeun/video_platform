@@ -173,7 +173,7 @@ export async function getAggregatedStats(
       }
     }),
     // User statistics
-    prisma.user.groupBy({
+    prisma.users.groupBy({
       by: ['type'],
       where: {
         createdAt: {
