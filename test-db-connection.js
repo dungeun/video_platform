@@ -1,31 +1,54 @@
-const { PrismaClient } = require('@prisma/client');
+const { Client } = require('pg');
+require('dotenv').config();
 
-require('dotenv').config({ path: '.env.local' });
-require('dotenv').config({ path: '.env' });
+async function testConnections() {
+  console.log('🔍 Testing Database Connections...\n');
+  
+  const connections = [
+    {
+      name: 'External Port (21871)',
+      url: 'postgres://postgres:47qdtodgTe996CTr16ESlNdywFcFFD5GdChiM7FrxEdaPr5ug5mGvwp9n9a5H6KX@coolify.one-q.xyz:21871/postgres'
+    },
+    {
+      name: 'Alternative Port (5432)',
+      url: 'postgres://postgres:47qdtodgTe996CTr16ESlNdywFcFFD5GdChiM7FrxEdaPr5ug5mGvwp9n9a5H6KX@coolify.one-q.xyz:5432/postgres'
+    },
+    {
+      name: 'Working Revu DB (reference)',
+      url: 'postgres://linkpick_user:LinkPick2024!@coolify.one-q.xyz:5433/revu_platform'
+    }
+  ];
 
-// 환경 변수 강제 설정
-process.env.DATABASE_URL = 'postgres://linkpick_user:LinkPick2024!@coolify.one-q.xyz:5433/revu_platform';
+  for (const conn of connections) {
+    const client = new Client({ connectionString: conn.url });
+    
+    try {
+      console.log(`Testing: ${conn.name}`);
+      console.log(`URL: ${conn.url.replace(/:[^@]+@/, ':***@')}`);
+      
+      await client.connect();
+      const result = await client.query('SELECT NOW()');
+      console.log(`✅ SUCCESS - Connected at: ${result.rows[0].now}`);
+      await client.end();
+    } catch (error) {
+      console.log(`❌ FAILED - ${error.message}`);
+    }
+    console.log('---\n');
+  }
 
-const prisma = new PrismaClient({
-  log: ['query', 'info', 'warn', 'error'],
-});
-
-async function testConnection() {
+  // Also test current env DATABASE_URL
+  console.log('Testing current .env DATABASE_URL:');
+  console.log(`URL: ${process.env.DATABASE_URL?.replace(/:[^@]+@/, ':***@')}`);
+  
+  const envClient = new Client({ connectionString: process.env.DATABASE_URL });
   try {
-    console.log('DATABASE_URL:', process.env.DATABASE_URL);
-    console.log('Testing database connection...');
-    
-    const result = await prisma.$queryRaw`SELECT 1 as test`;
-    console.log('Database connection successful:', result);
-    
-    const userCount = await prisma.user.count();
-    console.log('Total users:', userCount);
-    
+    await envClient.connect();
+    const result = await envClient.query('SELECT NOW()');
+    console.log(`✅ ENV DATABASE_URL works - Connected at: ${result.rows[0].now}`);
+    await envClient.end();
   } catch (error) {
-    console.error('Database connection failed:', error);
-  } finally {
-    await prisma.$disconnect();
+    console.log(`❌ ENV DATABASE_URL failed - ${error.message}`);
   }
 }
 
-testConnection();
+testConnections().catch(console.error);
