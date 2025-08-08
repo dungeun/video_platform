@@ -54,6 +54,106 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // 데이터베이스 연결 스킵 시 mock 처리
+    if (process.env.SKIP_DB_CONNECTION === 'true') {
+      // Mock users for development (test계정들과 password는 'password')
+      const mockUsers = [
+        {
+          email: 'test@example.com',
+          password: 'password',
+          user: {
+            id: 'mock-influencer-1',
+            email: 'test@example.com',
+            name: '테스트 인플루언서',
+            type: 'INFLUENCER',
+            verified: true,
+            profiles: {
+              id: 'mock-profile-1',
+              bio: '테스트 인플루언서 프로필',
+              profileImage: null
+            }
+          }
+        },
+        {
+          email: 'business@example.com',
+          password: 'password',
+          user: {
+            id: 'mock-business-1',
+            email: 'business@example.com',
+            name: '테스트 비즈니스',
+            type: 'BUSINESS',
+            verified: true,
+            profiles: {
+              id: 'mock-profile-2',
+              bio: '테스트 비즈니스 프로필',
+              profileImage: null
+            }
+          }
+        },
+        {
+          email: 'admin@example.com',
+          password: 'password',
+          user: {
+            id: 'mock-admin-1',
+            email: 'admin@example.com',
+            name: '테스트 관리자',
+            type: 'ADMIN',
+            verified: true,
+            profiles: {
+              id: 'mock-profile-3',
+              bio: '테스트 관리자 프로필',
+              profileImage: null
+            }
+          }
+        }
+      ]
+
+      const mockAccount = mockUsers.find(account => account.email === email && account.password === password)
+      
+      if (mockAccount) {
+        const mockUser = mockAccount.user
+
+        // JWT 토큰 생성
+        const token = jwt.sign(
+          {
+            id: mockUser.id,
+            userId: mockUser.id,
+            email: mockUser.email,
+            type: mockUser.type,
+            name: mockUser.name
+          },
+          JWT_SECRET,
+          { expiresIn: '7d' }
+        )
+
+        const response = NextResponse.json({
+          user: mockUser,
+          token,
+          accessToken: token
+        })
+
+        // 쿠키 설정
+        const cookieOptions = {
+          httpOnly: true,
+          secure: false,
+          sameSite: 'lax' as const,
+          maxAge: 60 * 60 * 24 * 7,
+          path: '/'
+        }
+
+        response.cookies.set('auth-token', token, cookieOptions)
+        response.cookies.set('accessToken', token, cookieOptions)
+
+        return response
+      } else {
+        throw new AppError(
+          '개발용 계정: test@example.com, business@example.com, admin@example.com (비밀번호: password)',
+          401,
+          ErrorTypes.AUTHENTICATION_ERROR
+        )
+      }
+    }
+
     // 데이터베이스에서 사용자 찾기
     const user = await prisma.users.findUnique({
       where: { email },

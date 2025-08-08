@@ -6,6 +6,27 @@ export const runtime = 'nodejs'
 
 export async function GET(request: NextRequest) {
   try {
+    // 데이터베이스 연결 스킵 시 mock 데이터 반환
+    if (process.env.SKIP_DB_CONNECTION === 'true') {
+      return NextResponse.json({
+        influencer: {
+          email: 'test@example.com',
+          name: '테스트 인플루언서',
+          type: 'influencer'
+        },
+        business: {
+          email: 'business@example.com',
+          name: '테스트 비즈니스', 
+          type: 'business'
+        },
+        admin: {
+          email: 'admin@example.com',
+          name: '테스트 관리자',
+          type: 'admin'
+        }
+      })
+    }
+
     // 활성 상태인 비즈니스와 인플루언서 계정만 가져오기 (관리자 제외)
     const users = await prisma.users.findMany({
       where: {

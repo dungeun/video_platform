@@ -25,11 +25,15 @@ const startupTasks = [
     fn: async () => {
       const requiredEnvVars = [
         'DATABASE_URL',
-        'NEXT_PUBLIC_API_URL',
         'JWT_SECRET'
       ];
       
-      const missing = requiredEnvVars.filter(envVar => !process.env[envVar]);
+      // SKIP_DB_CONNECTION이 true이면 DATABASE_URL 체크 제외
+      const checkVars = process.env.SKIP_DB_CONNECTION === 'true' 
+        ? requiredEnvVars.filter(v => v !== 'DATABASE_URL')
+        : requiredEnvVars;
+      
+      const missing = checkVars.filter(envVar => !process.env[envVar]);
       
       if (missing.length > 0) {
         throw new Error(`Missing environment variables: ${missing.join(', ')}`);
@@ -42,8 +46,13 @@ const startupTasks = [
   
   {
     name: 'Database Connection',
-    required: true,
+    required: !process.env.SKIP_DB_CONNECTION,
     fn: async () => {
+      if (process.env.SKIP_DB_CONNECTION === 'true') {
+        logger.debug('Database connection skipped for local development');
+        return { connected: false, skipped: true };
+      }
+      
       try {
         await prisma.$queryRaw`SELECT 1`;
         const dbUrl = process.env.DATABASE_URL || '';
@@ -58,8 +67,13 @@ const startupTasks = [
   
   {
     name: 'Prisma Schema Validation',
-    required: true,
+    required: !process.env.SKIP_DB_CONNECTION,
     fn: async () => {
+      if (process.env.SKIP_DB_CONNECTION === 'true') {
+        logger.debug('Prisma schema validation skipped for local development');
+        return { schemaValid: false, skipped: true };
+      }
+      
       try {
         // Check if Prisma client is generated
         const clientPath = path.join(process.cwd(), 'node_modules', '.prisma', 'client');
@@ -84,6 +98,11 @@ const startupTasks = [
     name: 'Check Database Tables',
     required: false,
     fn: async () => {
+      if (process.env.SKIP_DB_CONNECTION === 'true') {
+        logger.debug('Database table check skipped for local development');
+        return { tableCount: 0, skipped: true };
+      }
+      
       try {
         const tables = await prisma.$queryRaw`
           SELECT table_name 
@@ -167,11 +186,16 @@ const startupTasks = [
       // 찾은 포트를 환경변수에 설정
       process.env.PORT = availablePort;
       
+      // 동적으로 API URL 설정
+      const baseUrl = `http://localhost:${availablePort}`;
+      process.env.NEXT_PUBLIC_API_URL = baseUrl;
+      process.env.NEXT_PUBLIC_APP_URL = baseUrl;
+      
       // .env.local 파일 업데이트 (선택사항)
       if (availablePort !== preferredPort) {
         logger.warning(`Port ${preferredPort} was in use, using port ${availablePort} instead`);
         
-        // .env.local 파일에 포트 정보 업데이트
+        // .env.local 파일에 포트와 URL 정보 업데이트
         const envPath = '.env.local';
         try {
           let envContent = '';
@@ -179,12 +203,27 @@ const startupTasks = [
             envContent = fs.readFileSync(envPath, 'utf8');
           }
           
-          // PORT 라인 찾기 또는 추가
+          // PORT 라인 업데이트 또는 추가
           const portLine = `PORT=${availablePort}`;
+          const apiUrlLine = `NEXT_PUBLIC_API_URL=${baseUrl}`;
+          const appUrlLine = `NEXT_PUBLIC_APP_URL=${baseUrl}`;
+          
           if (envContent.includes('PORT=')) {
             envContent = envContent.replace(/PORT=\d+/, portLine);
           } else {
             envContent += `\n${portLine}\n`;
+          }
+          
+          if (envContent.includes('NEXT_PUBLIC_API_URL=')) {
+            envContent = envContent.replace(/NEXT_PUBLIC_API_URL=.*/, apiUrlLine);
+          } else {
+            envContent += `${apiUrlLine}\n`;
+          }
+          
+          if (envContent.includes('NEXT_PUBLIC_APP_URL=')) {
+            envContent = envContent.replace(/NEXT_PUBLIC_APP_URL=.*/, appUrlLine);
+          } else {
+            envContent += `${appUrlLine}\n`;
           }
           
           fs.writeFileSync(envPath, envContent);

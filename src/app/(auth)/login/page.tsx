@@ -111,7 +111,10 @@ export default function LoginPage() {
         
         return;
       } else {
-        setError(data.error || data.message || '이메일 또는 비밀번호가 올바르지 않습니다.')
+        const errorMsg = typeof data.error === 'string' ? data.error :
+                        typeof data.message === 'string' ? data.message :
+                        '이메일 또는 비밀번호가 올바르지 않습니다.'
+        setError(errorMsg)
         setIsLoading(false)
       }
     } catch (err) {
@@ -138,15 +141,22 @@ export default function LoginPage() {
     } else {
       // 폴백: 기본 계정 사용
       const credentials = {
-        user: { email: 'user@example.com', password: 'password123' },
-        business: { email: 'business@company.com', password: 'password123' },
-        admin: { email: 'admin@videopick.com', password: 'admin123!' }
+        user: { email: 'influencer1@example.com', password: 'influencer123!' },
+        business: { email: 'samsung@example.com', password: 'business123!' },
+        admin: { email: 'admin@videopick.com', password: 'admin123!@#' }
       }
       email = credentials[userType].email
     }
     
     // 계정별 비밀번호 설정
-    let password = userType === 'admin' ? 'admin123!' : 'password123'
+    let password = ''
+    if (userType === 'admin') {
+      password = 'admin123!@#'
+    } else if (userType === 'business') {
+      password = 'business123!'
+    } else {
+      password = 'influencer123!'
+    }
     
     const cred = { email, password }
     setFormData(cred)
@@ -202,7 +212,10 @@ export default function LoginPage() {
         
         return;
       } else {
-        setError(data.error || data.message || '로그인에 실패했습니다.')
+        const errorMsg = typeof data.error === 'string' ? data.error :
+                        typeof data.message === 'string' ? data.message :
+                        '로그인에 실패했습니다.'
+        setError(errorMsg)
         setIsLoading(false)
       }
     } catch (error) {
