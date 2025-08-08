@@ -48,15 +48,15 @@ export async function GET(request: NextRequest) {
       }),
       
       // 전체 캠페인 수
-      prisma.campaign.count(),
+      prisma.campaigns.count(),
       
       // 활성 캠페인 수
-      prisma.campaign.count({
+      prisma.campaigns.count({
         where: { status: 'ACTIVE' }
       }),
       
       // 총 결제 금액
-      prisma.payment.aggregate({
+      prisma.payments.aggregate({
         where: { status: 'COMPLETED' },
         _sum: { amount: true }
       }),
@@ -71,12 +71,12 @@ export async function GET(request: NextRequest) {
       }),
       
       // 승인 대기 중인 비즈니스 프로필
-      prisma.businessProfile.count({
+      prisma.business_profiles.count({
         where: { isVerified: false }
       }),
       
       // 승인 대기 중인 인플루언서 프로필
-      prisma.profile.count({
+      prisma.profiles.count({
         where: { isVerified: false }
       }),
       
@@ -94,14 +94,14 @@ export async function GET(request: NextRequest) {
       }),
       
       // 최근 생성된 캠페인 (5개)
-      prisma.campaign.findMany({
+      prisma.campaigns.findMany({
         take: 5,
         orderBy: { createdAt: 'desc' },
         include: {
-          business: {
+          users: {
             select: {
               name: true,
-              businessProfile: {
+              business_profiles: {
                 select: { companyName: true }
               }
             }
@@ -110,29 +110,29 @@ export async function GET(request: NextRequest) {
       }),
       
       // 최근 캠페인 지원 (5개)
-      prisma.campaignApplication.findMany({
+      prisma.campaign_applications.findMany({
         take: 5,
         orderBy: { createdAt: 'desc' },
         include: {
-          campaign: {
+          campaigns: {
             select: { title: true }
           },
-          influencer: {
+          users: {
             select: { name: true }
           }
         }
       }),
       
       // 최근 결제 (5개)
-      prisma.payment.findMany({
+      prisma.payments.findMany({
         take: 5,
         orderBy: { createdAt: 'desc' },
         where: { status: 'COMPLETED' },
         include: {
-          user: {
+          users: {
             select: { name: true }
           },
-          campaign: {
+          campaigns: {
             select: { title: true }
           }
         }
@@ -164,7 +164,7 @@ export async function GET(request: NextRequest) {
         id: `campaign-${campaign.id}`,
         type: 'campaign_created',
         title: '새 캠페인 생성',
-        description: `${campaign.business.businessProfile?.companyName || campaign.business.name}에서 "${campaign.title}" 캠페인을 생성했습니다.`,
+        description: `${campaign.users.business_profiles?.companyName || campaign.users.name}에서 "${campaign.title}" 캠페인을 생성했습니다.`,
         time: getRelativeTime(campaign.createdAt),
         icon: '📢'
       })),
@@ -172,7 +172,7 @@ export async function GET(request: NextRequest) {
         id: `app-${app.id}`,
         type: 'application_submitted',
         title: '캠페인 지원',
-        description: `${app.influencer.name}님이 "${app.campaign.title}" 캠페인에 지원했습니다.`,
+        description: `${app.users.name}님이 "${app.campaigns.title}" 캠페인에 지원했습니다.`,
         time: getRelativeTime(app.createdAt),
         icon: '📝'
       })),
@@ -180,7 +180,7 @@ export async function GET(request: NextRequest) {
         id: `payment-${payment.id}`,
         type: 'payment_completed',
         title: '결제 완료',
-        description: `${payment.campaign?.title || '캠페인'} 정산금 ₩${payment.amount.toLocaleString()}이 처리되었습니다.`,
+        description: `${payment.campaigns?.title || '캠페인'} 정산금 ₩${payment.amount.toLocaleString()}이 처리되었습니다.`,
         time: getRelativeTime(payment.createdAt),
         icon: '💰'
       }))
