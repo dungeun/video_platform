@@ -225,7 +225,7 @@ export async function POST(request: NextRequest) {
         email: user.email,
         name: user.name,
         type: user.type,
-        verified: (user as any).emailVerified,
+        verified: user.verified,
         profile: user.profiles
       },
       token,

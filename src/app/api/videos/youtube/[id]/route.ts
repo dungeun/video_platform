@@ -1,12 +1,54 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 
+// Mock data for development when database is not available
+const mockVideo = {
+  id: 'mock-1',
+  youtubeId: 'dQw4w9WgXcQ',
+  youtubeUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+  title: 'Sample Video 1',
+  description: 'This is a sample video for testing purposes.',
+  thumbnailUrl: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
+  channelTitle: 'Sample Channel',
+  channelId: 'UC_sample',
+  duration: 'PT3M33S',
+  viewCount: '1000000',
+  likeCount: '50000',
+  commentCount: '1000',
+  publishedAt: new Date().toISOString(),
+  tags: 'sample, test',
+  category: 'Entertainment',
+  embedHtml: null,
+  assignedUserId: null,
+  assignedAt: null,
+  importedBy: 'system',
+  importedAt: new Date().toISOString(),
+  status: 'imported',
+  featured: true,
+  displayOrder: 0
+};
+
 // GET - Fetch single YouTube video
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    // If database connection is skipped (local development), return mock data
+    if (process.env.SKIP_DB_CONNECTION === 'true') {
+      const serializedVideo = {
+        ...mockVideo,
+        id: params.id, // Use the requested ID
+        viewCount: mockVideo.viewCount?.toString() || '0',
+        likeCount: mockVideo.likeCount?.toString() || '0',
+        commentCount: mockVideo.commentCount?.toString() || '0',
+        duration: parseDuration(mockVideo.duration || 'PT0S'),
+        assignedUser: null
+      };
+
+      return NextResponse.json({ video: serializedVideo });
+    }
+
     const video = await prisma.youtube_videos.findUnique({
       where: {
         id: params.id

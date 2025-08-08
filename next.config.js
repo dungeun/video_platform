@@ -10,7 +10,7 @@ const nextConfig = {
   
   // 환경 변수 런타임 설정
   publicRuntimeConfig: {
-    apiUrl: process.env.NEXT_PUBLIC_API_URL || '/api',
+    apiUrl: process.env.NEXT_PUBLIC_API_URL || `http://localhost:${process.env.PORT || 3000}`,
     socketUrl: process.env.NEXT_PUBLIC_SOCKET_URL || '',
   },
 
