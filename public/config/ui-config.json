@@ -527,13 +527,13 @@
         "id": "ranking",
         "type": "ranking",
         "order": 6,
-        "visible": false
+        "visible": true
       },
       {
         "id": "recommended",
         "type": "recommended",
         "order": 7,
-        "visible": false
+        "visible": true
       }
     ]
   }
