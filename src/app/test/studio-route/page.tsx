@@ -133,7 +133,7 @@ export default function StudioRouteTestPage() {
             테스트 방법
           </h3>
           <ul className="text-sm text-yellow-700 space-y-1">
-            <li>• 각 "테스트" 버튼을 클릭하여 새 탭에서 페이지를 열어보세요</li>
+            <li>• 각 &ldquo;테스트&rdquo; 버튼을 클릭하여 새 탭에서 페이지를 열어보세요</li>
             <li>• Studio 라우트들이 해당하는 Business 라우트로 리다이렉트되는지 확인하세요</li>
             <li>• URL 주소창에서 /business로 바뀌는지 확인하세요</li>
             <li>• 페이지 내용이 정상적으로 표시되는지 확인하세요</li>

@@ -84,7 +84,7 @@ async function fixCategories() {
     // 비즈니스 계정 생성 또는 업데이트
     const businessUsers = {};
     for (const account of businessAccounts) {
-      const user = await prisma.user.upsert({
+      const user = await prisma.users.upsert({
         where: { email: account.email },
         update: {},
         create: {
@@ -110,7 +110,7 @@ async function fixCategories() {
     }
 
     // 모든 캠페인 가져오기
-    const campaigns = await prisma.campaign.findMany();
+    const campaigns = await prisma.campaigns.findMany();
     
     console.log(`총 ${campaigns.length}개의 캠페인을 업데이트합니다...`);
     
@@ -141,7 +141,7 @@ async function fixCategories() {
       
       // 해당 카테고리의 비즈니스 계정으로 캠페인 이동
       if (businessUsers[category]) {
-        await prisma.campaign.update({
+        await prisma.campaigns.update({
           where: { id: campaign.id },
           data: { businessId: businessUsers[category] }
         });

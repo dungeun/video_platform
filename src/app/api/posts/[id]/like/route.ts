@@ -34,7 +34,7 @@ export async function POST(
 
     // 게시글 존재 확인
     console.log('Checking post existence...')
-    const post = await prisma.post.findUnique({
+    const post = await prisma.posts.findUnique({
       where: { id: params.id, status: 'PUBLISHED' }
     })
 
@@ -46,7 +46,7 @@ export async function POST(
 
     // 기존 좋아요 확인
     console.log('Checking existing like for user:', userId)
-    const existingLike = await prisma.postLike.findUnique({
+    const existingLike = await prisma.post_likes.findUnique({
       where: {
         postId_userId: {
           postId: params.id,
@@ -61,14 +61,15 @@ export async function POST(
 
     if (existingLike) {
       // 좋아요 취소
-      await prisma.postLike.delete({
+      await prisma.post_likes.delete({
         where: { id: existingLike.id }
       })
       liked = false
     } else {
       // 좋아요 추가
-      await prisma.postLike.create({
+      await prisma.post_likes.create({
         data: {
+          id: `like-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           postId: params.id,
           userId: userId
         }
@@ -77,7 +78,7 @@ export async function POST(
     }
 
     // 총 좋아요 수 조회
-    likeCount = await prisma.postLike.count({
+    likeCount = await prisma.post_likes.count({
       where: { postId: params.id }
     })
 

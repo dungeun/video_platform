@@ -53,11 +53,11 @@ export default function SuperChatButton({
         message: message.trim()
       })
 
-      if (response.paymentRequired) {
+      if ((response as any).paymentRequired) {
         // TODO: 결제 모듈 연동
         // 임시로 바로 확인 처리
         await apiPost('/api/superchat/confirm', {
-          superChatId: response.superChat.id,
+          superChatId: (response as any).superChat.id,
           paymentId: 'temp-payment-id'
         })
       }

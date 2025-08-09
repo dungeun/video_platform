@@ -44,10 +44,15 @@ export async function POST(request: NextRequest) {
     // 데이터베이스에도 백업 저장
     try {
       const { prisma } = await import('@/lib/db/prisma');
-      await prisma.siteConfig.upsert({
+      await prisma.site_config.upsert({
         where: { key: 'ui-config' },
         update: { value: JSON.stringify(config) },
-        create: { key: 'ui-config', value: JSON.stringify(config) }
+        create: { 
+          id: `config-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          key: 'ui-config', 
+          value: JSON.stringify(config),
+          updatedAt: new Date()
+        }
       });
       console.log('✅ Config saved to both JSON and database');
     } catch (dbError) {

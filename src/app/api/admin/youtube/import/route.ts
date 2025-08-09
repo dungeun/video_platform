@@ -83,11 +83,12 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error importing YouTube video:', error)
-    console.error('Error stack:', error.stack)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorStack = error instanceof Error ? error.stack : undefined
     return NextResponse.json({ 
       error: 'Failed to import video', 
-      details: error.message,
-      stack: error.stack
+      details: errorMessage,
+      stack: errorStack
     }, { status: 500 })
   }
 }

@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     }
 
     // DB에서 UI 설정 조회
-    const uiConfig = await prisma.siteConfig.findUnique({
+    const uiConfig = await prisma.site_config.findUnique({
       where: { key: 'ui-config' }
     });
 
@@ -221,10 +221,15 @@ export async function POST(request: NextRequest) {
 
     // 2. DB에 백업 저장
     try {
-      await prisma.siteConfig.upsert({
+      await prisma.site_config.upsert({
         where: { key: 'ui-config' },
         update: { value: JSON.stringify(config) },
-        create: { key: 'ui-config', value: JSON.stringify(config) }
+        create: { 
+          id: `config-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          key: 'ui-config', 
+          value: JSON.stringify(config),
+          updatedAt: new Date()
+        }
       });
       console.log('✅ Config backed up to database');
     } catch (dbError) {

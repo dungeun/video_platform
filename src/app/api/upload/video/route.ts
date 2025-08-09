@@ -18,7 +18,7 @@ const videoUploadSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     // 인증 확인 - BUSINESS와 CREATOR 타입만 허용
-    const authResult = await requireAuth(request, ['BUSINESS', 'CREATOR']);
+    const authResult = await requireAuth(request, ['BUSINESS', 'INFLUENCER']);
     if (authResult instanceof NextResponse) {
       return authResult;
     }
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
           return createErrorResponse(
             '잘못된 업로드 옵션입니다.',
             400,
-            validationResult.error.errors
+            validationResult.error.issues
           );
         }
         
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
 // GET /api/upload/video - 업로드된 비디오 목록 조회 (선택사항)
 export async function GET(request: NextRequest) {
   try {
-    const authResult = await requireAuth(request, ['BUSINESS', 'CREATOR']);
+    const authResult = await requireAuth(request, ['BUSINESS', 'INFLUENCER']);
     if (authResult instanceof NextResponse) {
       return authResult;
     }
@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
 // DELETE /api/upload/video/[filename] - 비디오 파일 삭제 (선택사항)
 export async function DELETE(request: NextRequest) {
   try {
-    const authResult = await requireAuth(request, ['BUSINESS', 'CREATOR']);
+    const authResult = await requireAuth(request, ['BUSINESS', 'INFLUENCER']);
     if (authResult instanceof NextResponse) {
       return authResult;
     }

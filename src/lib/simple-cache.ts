@@ -94,6 +94,32 @@ export class SimpleCacheManager {
   }
 
   /**
+   * 패턴과 일치하는 모든 캐시 키 삭제
+   */
+  async deletePattern(pattern: string): Promise<void> {
+    const keysToDelete: string[] = []
+    const regex = new RegExp(pattern.replace(/\*/g, '.*'))
+    
+    for (const key of this.memoryCache.keys()) {
+      if (regex.test(key)) {
+        keysToDelete.push(key)
+      }
+    }
+    
+    for (const key of keysToDelete) {
+      this.memoryCache.delete(key)
+    }
+  }
+
+  /**
+   * 특정 엔티티의 캐시 무효화
+   */
+  async invalidateEntity(entity: string, id: string): Promise<void> {
+    const pattern = `${entity}:${id}:*`
+    await this.deletePattern(pattern)
+  }
+
+  /**
    * 정리 인터벌 중지 (앱 종료 시)
    */
   destroy(): void {

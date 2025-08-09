@@ -7,7 +7,7 @@ export const runtime = 'nodejs'
 export async function GET(request: NextRequest) {
   try {
     // DB에서 legal 설정 조회
-    const legalConfig = await prisma.siteConfig.findUnique({
+    const legalConfig = await prisma.site_config.findUnique({
       where: { key: 'legal' }
     })
     

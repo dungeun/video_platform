@@ -37,9 +37,7 @@ export async function POST(request: NextRequest) {
     
     const uploadedFile = await uploadService.uploadFile(
       file,
-      userId,
-      type,
-      parsedMetadata
+      userId
     );
     
     return NextResponse.json(uploadedFile, { status: 201 });

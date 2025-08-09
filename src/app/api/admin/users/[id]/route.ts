@@ -49,19 +49,18 @@ export async function GET(
     const userDetail = await prisma.users.findUnique({
       where: { id: params.id },
       include: {
-        profile: true,
-        businessProfile: true,
+        profiles: true,
+        business_profiles: true,
         campaigns: {
           select: {
             id: true
           }
         },
-        applications: {
-          where: {
-            status: 'APPROVED'
-          },
+        channels: {
           select: {
-            id: true
+            id: true,
+            name: true,
+            handle: true
           }
         }
       }
@@ -84,29 +83,15 @@ export async function GET(
       createdAt: userDetail.createdAt.toISOString().split('T')[0],
       lastLogin: userDetail.lastLogin ? userDetail.lastLogin.toISOString().split('T')[0] : '미접속',
       verified: userDetail.verified || false,
-      campaigns: userDetail.type === 'BUSINESS' ? userDetail.campaigns?.length || 0 : userDetail.applications?.length || 0,
-      applications: userDetail.type === 'INFLUENCER' ? userDetail.applications?.length || 0 : undefined,
-      phone: userDetail.profile?.phone || '미등록',
-      address: userDetail.type === 'BUSINESS' ? userDetail.businessProfile?.businessAddress : 
-        (userDetail.profile as any)?.address || '미등록',
-      profile: userDetail.profile ? {
-        bio: userDetail.profile.bio,
-        instagram: userDetail.profile.instagram,
-        instagramFollowers: userDetail.profile.instagramFollowers,
-        youtube: userDetail.profile.youtube,
-        youtubeSubscribers: userDetail.profile.youtubeSubscribers,
-        tiktok: userDetail.profile.tiktok,
-        tiktokFollowers: userDetail.profile.tiktokFollowers,
-        followerCount: userDetail.profile.followerCount,
-        categories: userDetail.profile.categories,
-        phone: userDetail.profile.phone
-      } : undefined,
-      businessProfile: userDetail.businessProfile ? {
-        companyName: userDetail.businessProfile.companyName,
-        businessNumber: userDetail.businessProfile.businessNumber,
-        representativeName: userDetail.businessProfile.representativeName,
-        businessAddress: userDetail.businessProfile.businessAddress,
-        businessCategory: userDetail.businessProfile.businessCategory
+      channels: Array.isArray(userDetail.channels) ? userDetail.channels.length : (userDetail.channels ? 1 : 0),
+      phone: userDetail.profiles?.phone || '미등록',
+      address: userDetail.profiles?.address || '미등록',
+      profile: userDetail.profiles ? {
+        bio: userDetail.profiles.bio,
+        instagram: userDetail.profiles.instagram,
+        youtube: userDetail.profiles.youtube,
+        phone: userDetail.profiles.phone,
+        profileImage: userDetail.profiles.profileImage
       } : undefined
     };
 
@@ -179,20 +164,21 @@ export async function PUT(
         where: { id: params.id },
         data: updateData,
         include: {
-          profile: true,
-          businessProfile: true
+          profiles: true
         }
       });
 
       // 전화번호가 포함된 경우 프로필 업데이트
       if (phone !== undefined) {
         // 프로필이 없으면 생성
-        await prisma.profile.upsert({
+        await prisma.profiles.upsert({
           where: { userId: params.id },
           update: { phone },
           create: {
+            id: `profile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             userId: params.id,
-            phone
+            phone,
+            updatedAt: new Date()
           }
         });
       }
@@ -201,8 +187,7 @@ export async function PUT(
       return await prisma.users.findUnique({
         where: { id: params.id },
         include: {
-          profile: true,
-          businessProfile: true
+          profiles: true
         }
       });
     });

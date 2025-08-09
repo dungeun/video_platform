@@ -10,7 +10,7 @@ async function uploadCampaigns() {
     
     // 기존 캠페인 관련 데이터 삭제
     await prisma.campaignApplication.deleteMany({});
-    await prisma.campaign.deleteMany({});
+    await prisma.campaigns.deleteMany({});
     
     console.log('✅ 기존 데이터 삭제 완료\n');
     
@@ -21,13 +21,13 @@ async function uploadCampaigns() {
     console.log(`📋 ${campaigns.length}개의 캠페인 업로드 시작...\n`);
     
     // 테스트용 비즈니스 사용자 찾기 또는 생성
-    let businessUser = await prisma.user.findFirst({
+    let businessUser = await prisma.users.findFirst({
       where: { type: 'BUSINESS' }
     });
     
     if (!businessUser) {
       console.log('⚠️  비즈니스 사용자가 없어 생성합니다...');
-      businessUser = await prisma.user.create({
+      businessUser = await prisma.users.create({
         data: {
           email: 'business@revu.net',
           password: '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', // secret
@@ -81,7 +81,7 @@ async function uploadCampaigns() {
         }
         
         // 캠페인 생성
-        const createdCampaign = await prisma.campaign.create({
+        const createdCampaign = await prisma.campaigns.create({
           data: {
             businessId: businessUser.id,
             title: campaign.title || `캠페인 ${i + 1}`,
@@ -119,8 +119,8 @@ async function uploadCampaigns() {
     }
     
     // 통계
-    const totalCampaigns = await prisma.campaign.count();
-    const activeCampaigns = await prisma.campaign.count({
+    const totalCampaigns = await prisma.campaigns.count();
+    const activeCampaigns = await prisma.campaigns.count({
       where: { status: 'APPROVED' }
     });
     

@@ -46,7 +46,7 @@ export default function AdminSettlement() {
         params.append('status', activeTab)
       }
 
-      const data = await apiGet(`/api/admin/settlement?${params.toString()}`)
+      const data = await apiGet(`/api/admin/settlement?${params.toString()}`) as any
       setSettlements(data.settlements)
       setStats(data.stats)
       setCurrentPage(data.pagination.page)

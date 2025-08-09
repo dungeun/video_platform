@@ -22,7 +22,7 @@ export default function WritePostPage() {
   ]
 
   // 관리자만 공지사항 작성 가능
-  if (user && (user.type === 'ADMIN' || user.type === 'admin')) {
+  if (user && user.type === 'ADMIN') {
     categories.unshift({ id: 'notice', name: '공지사항', icon: '📢' })
   }
 

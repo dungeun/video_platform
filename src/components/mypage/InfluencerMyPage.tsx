@@ -36,7 +36,6 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
   const [socialLinks, setSocialLinks] = useState({
     instagram: '',
     youtube: '',
-    naverBlog: '',
     tiktok: ''
   })
   const [loadingFollowers, setLoadingFollowers] = useState(false)
@@ -80,7 +79,6 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
     instagram: profileData?.profile?.instagram || '',
     youtube: profileData?.profile?.youtube || '',
     tiktok: profileData?.profile?.tiktok || '',
-    naverBlog: profileData?.profile?.naverBlog || '',
     categories: profileData?.profile?.categories ? parseCategories(profileData.profile.categories) : []
   })
   const [savingProfile, setSavingProfile] = useState(false)
@@ -151,7 +149,6 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
         instagram: profileData.profile?.instagram || '',
         youtube: profileData.profile?.youtube || '',
         tiktok: profileData.profile?.tiktok || '',
-        naverBlog: profileData.profile?.naverBlog || '',
         categories: profileData.profile?.categories ? parseCategories(profileData.profile.categories) : []
       })
     }
@@ -162,27 +159,12 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
   
   // fetchProfile 함수 제거 - useUserData로 대체됨
   
-  // 프로필 데이터로 은행 정보 및 소셜 링크 설정
+  // 프로필 데이터로 소셜 링크 설정
   useEffect(() => {
     if (profileData?.profile) {
-      // 은행 정보 설정
-      if (profileData.profile.bankName) {
-        setBankInfo({
-          bankName: profileData.profile.bankName || '',
-          bankAccountNumber: profileData.profile.bankAccountNumber || '',
-          bankAccountHolder: profileData.profile.bankAccountHolder || ''
-        })
-        setWithdrawalForm(prev => ({
-          ...prev,
-          bankName: profileData.profile.bankName || '',
-          accountNumber: profileData.profile.bankAccountNumber || '',
-          accountHolder: profileData.profile.bankAccountHolder || ''
-        }))
-      }
       setSocialLinks({
         instagram: profileData.profile.instagram || '',
         youtube: profileData.profile.youtube || '',
-        naverBlog: profileData.profile.naverBlog || '',
         tiktok: profileData.profile.tiktok || ''
       })
     }
@@ -444,7 +426,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
       {/* 탭 네비게이션 */}
       <div className="bg-white rounded-lg shadow-sm">
         <div className="flex border-b border-gray-200">
-          {tabs.map((tab) => (
+          {tabs.map((tab: any) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
@@ -484,7 +466,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                       <span className="text-white font-bold text-lg">K</span>
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900">Kidult's Playground</h4>
+                      <h4 className="font-semibold text-gray-900">Kidult&apos;s Playground</h4>
                       <p className="text-sm text-gray-600">구독자 125K명 • 비디오 84개</p>
                       <p className="text-xs text-gray-500 mt-1">구독일: 2024년 6월 15일</p>
                     </div>
@@ -552,8 +534,8 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                     <div className="flex items-center space-x-3">
                       <div className="w-2 h-8 bg-red-500 rounded-full"></div>
                       <div>
-                        <h4 className="font-semibold text-gray-900">Kidult's Playground</h4>
-                        <p className="text-sm text-gray-600">"멋진 리뷰 감사합니다! 응원합니다 🎉"</p>
+                        <h4 className="font-semibold text-gray-900">Kidult&apos;s Playground</h4>
+                        <p className="text-sm text-gray-600">&ldquo;멋진 리뷰 감사합니다! 응원합니다 🎉&rdquo;</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -569,7 +551,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                       <div className="w-2 h-8 bg-orange-500 rounded-full"></div>
                       <div>
                         <h4 className="font-semibold text-gray-900">Tech Review Studio</h4>
-                        <p className="text-sm text-gray-600">"좋은 정보 감사해요!"</p>
+                        <p className="text-sm text-gray-600">&ldquo;좋은 정보 감사해요!&rdquo;</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -585,7 +567,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                       <div className="w-2 h-8 bg-yellow-500 rounded-full"></div>
                       <div>
                         <h4 className="font-semibold text-gray-900">Cook With Me</h4>
-                        <p className="text-sm text-gray-600">"레시피 정말 도움됐어요"</p>
+                        <p className="text-sm text-gray-600">&ldquo;레시피 정말 도움됐어요&rdquo;</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -630,7 +612,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                       </div>
                       <div>
                         <h4 className="font-semibold text-gray-900">슈퍼챗</h4>
-                        <p className="text-sm text-gray-600">Kidult's Playground</p>
+                        <p className="text-sm text-gray-600">Kidult&apos;s Playground</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -947,7 +929,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                 <div className="mt-8">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">최근 수익 내역</h3>
                   <div className="bg-white rounded-lg shadow-sm border border-gray-200 divide-y divide-gray-200">
-                    {recentEarnings.slice(0, 5).map((earning) => (
+                    {recentEarnings.slice(0, 5).map((earning: any) => (
                       <div key={earning.id} className="px-6 py-4">
                         <div className="flex items-center justify-between">
                           <div>
@@ -1066,7 +1048,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
               <div>
                 <h4 className="font-medium text-gray-900 mb-3">최근 수익 내역</h4>
                 <div className="space-y-3">
-                  {recentEarnings.map((earning) => (
+                  {recentEarnings.map((earning: any) => (
                     <div key={earning.id} className="bg-white p-4 rounded-lg border border-gray-200">
                       <div className="flex items-center justify-between">
                         <div>
@@ -1143,7 +1125,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                 </div>
               ) : (
                 <div className="grid gap-4">
-                  {savedCampaigns.map((campaign) => (
+                  {savedCampaigns.map((campaign: any) => (
                     <div key={campaign.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:border-cyan-300 transition-colors">
                       <div className="flex items-start justify-between mb-3">
                         <div>
@@ -1462,21 +1444,6 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <span className="flex items-center gap-2">
-                    <span className="text-green-500">📝</span> 네이버 블로그
-                  </span>
-                </label>
-                <input
-                  type="text"
-                  value={socialLinks.naverBlog}
-                  onChange={(e) => setSocialLinks({...socialLinks, naverBlog: e.target.value})}
-                  placeholder="blog.naver.com/blogid"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <span className="flex items-center gap-2">
                     <span className="text-purple-500">🎵</span> TikTok
                   </span>
                 </label>
@@ -1501,15 +1468,13 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                     const mockFollowers = {
                       instagram: socialLinks.instagram ? Math.floor(Math.random() * 50000) + 10000 : 0,
                       youtube: socialLinks.youtube ? Math.floor(Math.random() * 100000) + 5000 : 0,
-                      naverBlog: socialLinks.naverBlog ? Math.floor(Math.random() * 30000) + 1000 : 0,
                       tiktok: socialLinks.tiktok ? Math.floor(Math.random() * 80000) + 15000 : 0
                     }
                     
-                    const totalFollowers = mockFollowers.instagram + mockFollowers.youtube + mockFollowers.naverBlog + mockFollowers.tiktok
+                    const totalFollowers = mockFollowers.instagram + mockFollowers.youtube + mockFollowers.tiktok
                     
                     if (totalFollowers > 0) {
-                      setStats({...stats, followers: totalFollowers})
-                      alert(`팔로워 수가 업데이트되었습니다!\n\nInstagram: ${mockFollowers.instagram.toLocaleString()}\nYouTube: ${mockFollowers.youtube.toLocaleString()}\n네이버 블로그: ${mockFollowers.naverBlog.toLocaleString()}\nTikTok: ${mockFollowers.tiktok.toLocaleString()}\n\n총 팔로워: ${totalFollowers.toLocaleString()}`)
+                      alert(`팔로워 수가 업데이트되었습니다!\n\nInstagram: ${mockFollowers.instagram.toLocaleString()}\nYouTube: ${mockFollowers.youtube.toLocaleString()}\nTikTok: ${mockFollowers.tiktok.toLocaleString()}\n\n총 팔로워: ${totalFollowers.toLocaleString()}`)
                     } else {
                       alert('SNS 계정을 먼저 입력해주세요.')
                     }

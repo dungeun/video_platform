@@ -115,18 +115,24 @@ class AuthServiceClass {
       // Create user with profile
       const user = await prisma.users.create({
         data: {
+          id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          updatedAt: new Date(),
           email,
           password: hashedPassword,
           name,
           type: type.toUpperCase() as 'BUSINESS' | 'INFLUENCER',
           profiles: type === 'influencer' ? {
             create: {
+              id: `profile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              updatedAt: new Date(),
               phone,
               address
             }
           } : undefined,
           business_profiles: type === 'business' ? {
             create: {
+              id: `biz-profile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              updatedAt: new Date(),
               companyName: companyName || name,
               businessNumber: businessNumber || '',
               representativeName: name,

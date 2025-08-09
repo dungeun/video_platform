@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   try {
     // 데이터베이스 연결 테스트
     const userCount = await prisma.users.count();
-    const campaignCount = await prisma.campaign.count();
+    const campaignCount = await prisma.campaigns.count();
     
     return NextResponse.json({
       status: 'ok',

@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import { sanitizeHtml } from '@/lib/sanitizer'
+import logger from '@/lib/logger'
 
 export default function PrivacyPage() {
   const [content, setContent] = useState<string>('')
@@ -19,11 +21,17 @@ export default function PrivacyPage() {
       const response = await fetch('/api/legal/privacy')
       if (response.ok) {
         const data = await response.json()
-        setContent(data.content || '')
+        // HTML 콘텐츠 살균 처리
+        const safeContent = sanitizeHtml(data.content || '', {
+          allowLinks: true,
+          allowImages: false,
+          allowedTags: ['p', 'br', 'strong', 'em', 'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'li', 'a']
+        })
+        setContent(safeContent)
         setLastUpdated(data.lastUpdated || new Date().toISOString().split('T')[0])
       }
     } catch (error) {
-      console.error('Failed to load privacy policy:', error)
+      logger.error('Failed to load privacy policy:', error)
     } finally {
       setLoading(false)
     }

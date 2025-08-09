@@ -16,7 +16,7 @@ async function authenticate(request: NextRequest) {
   // 쿠키 확인
   if (!token) {
     const cookieStore = cookies();
-    token = cookieStore.get('auth-token')?.value || null;
+    token = cookieStore.get('auth-token')?.value;
   }
 
   if (!token) {
@@ -88,14 +88,14 @@ export async function GET(request: NextRequest) {
     const users = await prisma.users.findMany({
       where,
       include: {
-        profile: true,
-        businessProfile: true,
-        campaigns: {
+        profiles: true,
+        channels: {
           select: {
-            id: true
+            id: true,
+            name: true,
+            handle: true
           }
-        },
-        // campaignApplications 필드가 존재하지 않음 - 주석 처리
+        }
       },
       orderBy: {
         createdAt: 'desc'
@@ -114,12 +114,9 @@ export async function GET(request: NextRequest) {
       createdAt: user.createdAt.toISOString().split('T')[0],
       lastLogin: user.lastLogin ? user.lastLogin.toISOString().split('T')[0] : '미접속',
       verified: (user as any).emailVerified,
-      campaigns: user.type === 'BUSINESS' ? user.campaigns.length : 0,
-      followers: user.type === 'INFLUENCER' ? user.profile?.followerCount || 0 : undefined,
-      phone: user.profile?.phone || user.businessProfile?.businessAddress ? 
-        user.profile?.phone || '미등록' : undefined,
-      address: user.type === 'BUSINESS' ? user.businessProfile?.businessAddress : 
-        (user.profile as any)?.address || '미등록'
+      channels: Array.isArray(user.channels) ? user.channels.length : (user.channels ? 1 : 0),
+      phone: user.profiles?.phone || '미등록',
+      address: user.profiles?.address || '미등록'
     }));
 
     // 전체 통계 가져오기 (필터와 관계없이)

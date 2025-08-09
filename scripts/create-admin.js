@@ -1,64 +1,41 @@
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
-require('dotenv').config();
 
-const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL,
-    },
-  },
-});
+const prisma = new PrismaClient();
 
-async function main() {
-  const email = 'admin@videopick.com';
-  const password = 'admin123!';
-  
+async function createAdmin() {
   try {
-    // Check if admin already exists
-    const existingUser = await prisma.users.findUnique({
-      where: { email },
-    });
-
-    if (existingUser) {
-      console.log('Admin user already exists');
-      console.log('Email:', email);
-      return;
-    }
-
-    // Create admin user
-    const hashedPassword = await bcrypt.hash(password, 10);
+    console.log('Creating admin account...');
     
-    // Generate a unique ID (using timestamp + random string)
-    const adminId = `admin_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    const hashedPassword = await bcrypt.hash('admin123', 10);
     
-    const adminUser = await prisma.users.create({
+    const admin = await prisma.users.create({
       data: {
-        id: adminId,
-        email,
+        id: 'admin-' + Date.now(),
+        email: 'admin@videopick.com',
         password: hashedPassword,
-        name: 'Admin',
+        name: '관리자',
         type: 'ADMIN',
         status: 'ACTIVE',
         verified: true,
+        createdAt: new Date(),
         updatedAt: new Date(),
       },
     });
-
-    console.log('Admin user created successfully:');
-    console.log('Email:', email);
-    console.log('Password:', password);
-    console.log('User ID:', adminUser.id);
+    
+    console.log('Admin account created successfully!');
+    console.log('Email:', admin.email);
+    console.log('Password: admin123');
+    
   } catch (error) {
-    console.error('Error:', error);
+    if (error.code === 'P2002') {
+      console.log('Admin account already exists');
+    } else {
+      console.error('Error creating admin account:', error);
+    }
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
-main()
-  .catch((e) => {
-    console.error('Fatal error:', e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+createAdmin();

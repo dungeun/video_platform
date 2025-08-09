@@ -79,23 +79,23 @@ async function clearExistingData() {
   console.log('🗑️ 기존 데이터 삭제 중...')
   
   // 관련 데이터를 순서대로 삭제 (외래키 제약 조건 고려)
-  await prisma.postLike.deleteMany()
-  await prisma.comment.deleteMany()
-  await prisma.post.deleteMany()
-  await prisma.contentMedia.deleteMany()
-  await prisma.content.deleteMany()
-  await prisma.settlementItem.deleteMany()
-  await prisma.settlement.deleteMany()
-  await prisma.refund.deleteMany()
-  await prisma.payment.deleteMany()
-  await prisma.campaignApplication.deleteMany()
-  await prisma.campaign.deleteMany()
-  await prisma.notification.deleteMany()
-  await prisma.follow.deleteMany()
-  await prisma.file.deleteMany()
-  await prisma.profile.deleteMany()
-  await prisma.businessProfile.deleteMany()
-  await prisma.user.deleteMany()
+  await prisma.post_likes.deleteMany()
+  await prisma.comments.deleteMany()
+  await prisma.posts.deleteMany()
+  await prisma.content_media.deleteMany()
+  await prisma.contents.deleteMany()
+  await prisma.settlement_items.deleteMany()
+  await prisma.settlements.deleteMany()
+  await prisma.refunds.deleteMany()
+  await prisma.payments.deleteMany()
+  await prisma.campaign_applications.deleteMany()
+  await prisma.campaigns.deleteMany()
+  await prisma.notifications.deleteMany()
+  await prisma.follows.deleteMany()
+  await prisma.files.deleteMany()
+  await prisma.profiles.deleteMany()
+  await prisma.business_profiles.deleteMany()
+  await prisma.users.deleteMany()
   
   console.log('✅ 기존 데이터 삭제 완료')
 }
@@ -105,15 +105,18 @@ async function createAdminUser() {
   
   const hashedPassword = await bcrypt.hash('admin123!', 10)
   
-  const admin = await prisma.user.create({
+  const admin = await prisma.users.create({
     data: {
+      id: 'admin-korean',
       email: 'admin@linkpick.co.kr',
       password: hashedPassword,
       name: 'LinkPick 관리자',
       type: 'ADMIN',
       status: 'ACTIVE',
       verified: true,
-      lastLogin: new Date()
+      lastLogin: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date()
     }
   })
   
@@ -129,26 +132,32 @@ async function createKoreanBusinessUsers() {
     const companyName = KOREAN_COMPANIES[i % KOREAN_COMPANIES.length]
     const category = KOREAN_CATEGORIES[i % KOREAN_CATEGORIES.length]
     
-    const business = await prisma.user.create({
+    const business = await prisma.users.create({
       data: {
+        id: `business-${i + 1}`,
         email: `business${i + 1}@${companyName.toLowerCase().replace(/[^a-z0-9]/g, '')}.co.kr`,
         password: '$2b$10$dummy.hash.for.testing',
         name: `${companyName} 마케팅팀`,
         type: 'BUSINESS',
         status: 'ACTIVE',
-        businessProfile: {
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        business_profiles: {
           create: {
+            id: `business-profile-${i + 1}`,
             companyName: companyName,
             businessNumber: `${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 90) + 10}-${Math.floor(Math.random() * 90000) + 10000}`,
             representativeName: `김대표`,
             businessAddress: `서울특별시 강남구 테헤란로 ${Math.floor(Math.random() * 500) + 1}`,
             businessCategory: category,
-            isVerified: Math.random() > 0.3
+            isVerified: Math.random() > 0.3,
+            createdAt: new Date(),
+            updatedAt: new Date()
           }
         }
       },
       include: {
-        businessProfile: true
+        business_profiles: true
       }
     })
     businesses.push(business)
@@ -166,15 +175,19 @@ async function createKoreanInfluencers() {
     const name = KOREAN_INFLUENCER_NAMES[i % KOREAN_INFLUENCER_NAMES.length]
     const categories = [KOREAN_CATEGORIES[i % KOREAN_CATEGORIES.length]]
     
-    const influencer = await prisma.user.create({
+    const influencer = await prisma.users.create({
       data: {
+        id: `influencer-${i + 1}`,
         email: `${name.toLowerCase()}@gmail.com`,
         password: '$2b$10$dummy.hash.for.testing',
         name: name,
         type: 'INFLUENCER',
         status: 'ACTIVE',
-        profile: {
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        profiles: {
           create: {
+            id: `profile-${i + 1}`,
             bio: `안녕하세요! ${categories[0]} 분야 인플루언서 ${name}입니다. 트렌디하고 유용한 정보를 공유하고 있어요!`,
             profileImage: `https://images.unsplash.com/photo-${1500000000 + i}?w=400&q=80`,
             phone: `010-${Math.floor(Math.random() * 9000) + 1000}-${Math.floor(Math.random() * 9000) + 1000}`,
@@ -186,12 +199,14 @@ async function createKoreanInfluencers() {
             tiktokFollowers: Math.floor(Math.random() * 190000) + 10000,
             averageEngagementRate: Math.floor(Math.random() * 70) / 10 + 1.5,
             categories: JSON.stringify(categories),
-            isVerified: Math.random() > 0.4
+            isVerified: Math.random() > 0.4,
+            createdAt: new Date(),
+            updatedAt: new Date()
           }
         }
       },
       include: {
-        profile: true
+        profiles: true
       }
     })
     influencers.push(influencer)
@@ -274,8 +289,9 @@ async function createKoreanCampaigns(businesses: any[]) {
     const statuses = ['DRAFT', 'ACTIVE', 'PAUSED', 'COMPLETED']
     const status = statuses[Math.floor(Math.random() * statuses.length)]
     
-    const campaign = await prisma.campaign.create({
+    const campaign = await prisma.campaigns.create({
       data: {
+        id: `campaign-${i + 1}`,
         businessId: business.id,
         title: title,
         description: description,
@@ -288,7 +304,9 @@ async function createKoreanCampaigns(businesses: any[]) {
         hashtags: JSON.stringify(hashtags),
         imageUrl: campaignImages[i % campaignImages.length],
         status: status,
-        isPaid: Math.random() > 0.7
+        isPaid: Math.random() > 0.7,
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     })
     campaigns.push(campaign)
@@ -322,8 +340,9 @@ async function createKoreanCommunityPosts(users: any[]) {
     const content = postContents[i % postContents.length]
     const category = categories[Math.floor(Math.random() * categories.length)]
     
-    const post = await prisma.post.create({
+    const post = await prisma.posts.create({
       data: {
+        id: `post-${i + 1}`,
         title: title,
         content: content,
         authorId: author.id,
@@ -331,7 +350,9 @@ async function createKoreanCommunityPosts(users: any[]) {
         status: 'PUBLISHED',
         views: Math.floor(Math.random() * 500) + 50,
         likes: Math.floor(Math.random() * 100) + 5,
-        isPinned: Math.random() > 0.9
+        isPinned: Math.random() > 0.9,
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     })
     posts.push(post)
@@ -352,14 +373,17 @@ async function createSampleApplications(campaigns: any[], influencers: any[]) {
       .slice(0, numApplications)
     
     for (const influencer of selectedInfluencers) {
-      const application = await prisma.campaignApplication.create({
+      const application = await prisma.campaign_applications.create({
         data: {
+          id: `application-${campaign.id}-${influencer.id}`,
           campaignId: campaign.id,
           influencerId: influencer.id,
           message: `안녕하세요! ${influencer.name}입니다. 해당 캠페인에 많은 관심이 있어 지원하게 되었습니다. 성실하게 참여하겠습니다.`,
           proposedPrice: Math.floor(Math.random() * 1900000) + 100000,
           status: ['PENDING', 'APPROVED', 'REJECTED'][Math.floor(Math.random() * 3)],
-          reviewedAt: Math.random() > 0.4 ? new Date() : null
+          reviewedAt: Math.random() > 0.4 ? new Date() : null,
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       })
       applications.push(application)

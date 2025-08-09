@@ -6,7 +6,7 @@ async function checkCampaignData() {
     // Check a specific campaign
     const campaignId = 'cmdkaqs7g002rfbr7b6fkasu8';
     
-    const campaign = await prisma.campaign.findUnique({
+    const campaign = await prisma.campaigns.findUnique({
       where: { id: campaignId },
       include: {
         business: {
@@ -36,7 +36,7 @@ async function checkCampaignData() {
     
     // Check if business exists
     if (campaign?.businessId) {
-      const business = await prisma.user.findUnique({
+      const business = await prisma.users.findUnique({
         where: { id: campaign.businessId }
       });
       console.log('\nBusiness exists:', !!business);
@@ -44,7 +44,7 @@ async function checkCampaignData() {
     }
     
     // Count all campaigns
-    const totalCampaigns = await prisma.campaign.count();
+    const totalCampaigns = await prisma.campaigns.count();
     console.log('\nTotal campaigns:', totalCampaigns);
     
   } catch (error) {

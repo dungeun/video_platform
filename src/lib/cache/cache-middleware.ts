@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { cacheService } from './cache-service'
+import { cache as cacheService } from '../simple-cache'
 
 // 캐시 무효화가 필요한 엔드포인트 매핑
 const INVALIDATION_RULES: Record<string, string[]> = {

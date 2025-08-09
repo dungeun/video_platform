@@ -235,7 +235,7 @@ export async function GET(request: NextRequest) {
 
     // 데이터베이스에서 UI 설정 조회 시도
     try {
-      const uiConfig = await prisma.siteConfig.findFirst({
+      const uiConfig = await prisma.site_config.findFirst({
         where: { key: 'ui-config' },
       });
 
@@ -274,9 +274,14 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('UI config 조회 오류:', error);
     
-    // Fallback to default config defined above
-    
-    return NextResponse.json({ config: defaultConfig });
+    // Fallback to basic default config
+    return NextResponse.json({ 
+      config: {
+        header: { menus: [] },
+        footer: { columns: [] },
+        mainPage: { sectionOrder: ['video', 'community'] }
+      }
+    });
   } finally {
     try {
       await prisma.$disconnect();

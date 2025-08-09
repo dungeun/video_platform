@@ -65,13 +65,13 @@ export async function GET(request: NextRequest) {
     })
     const userGrowth = totalUsers > 0 ? Math.round((newUsers / totalUsers) * 100) : 0
 
-    const totalCampaigns = await prisma.campaign.count({
+    const totalCampaigns = await prisma.campaigns.count({
       where: {
         status: 'ACTIVE'
       }
     })
 
-    const totalRevenue = await prisma.payment.aggregate({
+    const totalRevenue = await prisma.payments.aggregate({
       where: {
         status: 'COMPLETED',
         createdAt: {
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    const previousRevenue = await prisma.payment.aggregate({
+    const previousRevenue = await prisma.payments.aggregate({
       where: {
         status: 'COMPLETED',
         createdAt: {
@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
       ? Math.round(((totalRevenue._sum.amount || 0) - (previousRevenue._sum.amount || 0)) / (previousRevenue._sum.amount || 1) * 100)
       : 0
 
-    const totalSettlements = await prisma.settlement.aggregate({
+    const totalSettlements = await prisma.settlements.aggregate({
       where: {
         status: 'COMPLETED',
         createdAt: {
@@ -158,18 +158,18 @@ export async function GET(request: NextRequest) {
     }
 
     // 캠페인 통계
-    const campaignsByStatus = await prisma.campaign.groupBy({
+    const campaignsByStatus = await prisma.campaigns.groupBy({
       by: ['status'],
       _count: {
         id: true
       }
     })
 
-    const campaignsByCategory = await prisma.campaign.findMany({
+    const campaignsByCategory = await prisma.campaigns.findMany({
       select: {
-        business: {
+        users: {
           select: {
-            businessProfile: {
+            business_profiles: {
               select: {
                 businessCategory: true
               }
@@ -181,7 +181,7 @@ export async function GET(request: NextRequest) {
 
     const categoryCount: Record<string, number> = {}
     campaignsByCategory.forEach(campaign => {
-      const category = campaign.business.businessProfile?.businessCategory || '기타'
+      const category = campaign.users.business_profiles?.businessCategory || '기타'
       categoryCount[category] = (categoryCount[category] || 0) + 1
     })
 
@@ -195,7 +195,7 @@ export async function GET(request: NextRequest) {
       const monthEnd = new Date(monthStart)
       monthEnd.setMonth(monthEnd.getMonth() + 1)
 
-      const count = await prisma.campaign.count({
+      const count = await prisma.campaigns.count({
         where: {
           createdAt: {
             gte: monthStart,
@@ -204,7 +204,7 @@ export async function GET(request: NextRequest) {
         }
       })
 
-      const revenue = await prisma.payment.aggregate({
+      const revenue = await prisma.payments.aggregate({
         where: {
           status: 'COMPLETED',
           createdAt: {
@@ -234,7 +234,7 @@ export async function GET(request: NextRequest) {
       const monthEnd = new Date(monthStart)
       monthEnd.setMonth(monthEnd.getMonth() + 1)
 
-      const revenue = await prisma.payment.aggregate({
+      const revenue = await prisma.payments.aggregate({
         where: {
           status: 'COMPLETED',
           createdAt: {
@@ -247,7 +247,7 @@ export async function GET(request: NextRequest) {
         }
       })
 
-      const settlements = await prisma.settlement.aggregate({
+      const settlements = await prisma.settlements.aggregate({
         where: {
           status: 'COMPLETED',
           createdAt: {
@@ -269,7 +269,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 결제 방법별 매출
-    const paymentMethods = await prisma.payment.groupBy({
+    const paymentMethods = await prisma.payments.groupBy({
       by: ['paymentMethod'],
       where: {
         status: 'COMPLETED',
@@ -299,7 +299,7 @@ export async function GET(request: NextRequest) {
         id: true,
         name: true,
         email: true,
-        applications: {
+        campaign_applications: {
           where: {
             status: 'APPROVED',
             contents: {
@@ -309,7 +309,7 @@ export async function GET(request: NextRequest) {
             }
           },
           select: {
-            campaign: {
+            campaigns: {
               select: {
                 budget: true
               }
@@ -324,12 +324,12 @@ export async function GET(request: NextRequest) {
       id: influencer.id,
       name: influencer.name,
       email: influencer.email,
-      campaigns: influencer.applications.length,
-      earnings: influencer.applications.reduce((sum, app) => sum + (app.campaign?.budget || 0) * 0.8, 0)
+      campaigns: influencer.campaign_applications.length,
+      earnings: influencer.campaign_applications.reduce((sum, app) => sum + (app.campaigns?.budget || 0) * 0.8, 0)
     })).sort((a, b) => b.earnings - a.earnings)
 
     // TOP 캠페인
-    const topCampaigns = await prisma.campaign.findMany({
+    const topCampaigns = await prisma.campaigns.findMany({
       where: {
         status: 'ACTIVE'
       },
@@ -337,14 +337,14 @@ export async function GET(request: NextRequest) {
         id: true,
         title: true,
         budget: true,
-        business: {
+        users: {
           select: {
             name: true
           }
         },
         _count: {
           select: {
-            applications: true
+            campaign_applications: true
           }
         }
       },
@@ -357,9 +357,9 @@ export async function GET(request: NextRequest) {
     const formattedCampaigns = topCampaigns.map(campaign => ({
       id: campaign.id,
       title: campaign.title,
-      business: campaign.business.name,
+      business: campaign.users.name,
       revenue: campaign.budget,
-      applications: campaign._count.applications
+      applications: campaign._count.campaign_applications
     }))
 
     return NextResponse.json({

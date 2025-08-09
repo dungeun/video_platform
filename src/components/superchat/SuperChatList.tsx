@@ -56,13 +56,13 @@ export default function SuperChatList({
       const response = await apiGet(`/api/superchat?${params.toString()}`)
       
       if (loadMore) {
-        setSuperChats(prev => [...prev, ...response.superChats])
+        setSuperChats(prev => [...prev, ...(response as any).superChats])
       } else {
-        setSuperChats(response.superChats)
+        setSuperChats((response as any).superChats)
       }
       
-      setHasMore(response.hasMore)
-      setCursor(response.nextCursor)
+      setHasMore((response as any).hasMore)
+      setCursor((response as any).nextCursor)
     } catch (error) {
       console.error('Failed to load super chats:', error)
     } finally {

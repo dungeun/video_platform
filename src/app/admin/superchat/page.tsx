@@ -60,7 +60,7 @@ export default function AdminSuperChat() {
       if (filter.startDate) params.append('startDate', filter.startDate)
       if (filter.endDate) params.append('endDate', filter.endDate)
 
-      const data = await apiGet(`/api/admin/superchat?${params.toString()}`)
+      const data = await apiGet(`/api/admin/superchat?${params.toString()}`) as any
       setSuperChats(data.superChats)
       setCurrentPage(data.pagination.page)
       setTotalPages(data.pagination.totalPages)

@@ -309,7 +309,7 @@ export default function VideoSearch({
         <div className="flex items-center gap-2 flex-wrap">
           {query && (
             <Badge variant="secondary" className="cursor-pointer" onClick={() => setQuery('')}>
-              "{query}" ×
+              &ldquo;{query}&rdquo; ×
             </Badge>
           )}
           {filters.category !== 'all' && (

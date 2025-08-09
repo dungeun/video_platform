@@ -32,7 +32,7 @@ export async function POST(
     }
 
     // 게시글 존재 확인
-    const post = await prisma.post.findUnique({
+    const post = await prisma.posts.findUnique({
       where: { id: params.id, status: 'PUBLISHED' }
     })
 
@@ -42,7 +42,7 @@ export async function POST(
 
     // 대댓글인 경우 부모 댓글 확인
     if (parentId) {
-      const parentComment = await prisma.comment.findUnique({
+      const parentComment = await prisma.comments.findUnique({
         where: { id: parentId, status: 'PUBLISHED' }
       })
 
@@ -51,19 +51,21 @@ export async function POST(
       }
     }
 
-    const comment = await prisma.comment.create({
+    const comment = await prisma.comments.create({
       data: {
+        id: `comment-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         content: content.trim(),
         postId: params.id,
         authorId: user.id,
-        parentId: parentId || null
+        parentId: parentId || null,
+        updatedAt: new Date()
       },
       include: {
-        author: {
+        users: {
           select: {
             id: true,
             name: true,
-            profile: {
+            profiles: {
               select: {
                 profileImage: true
               }
@@ -79,9 +81,9 @@ export async function POST(
       createdAt: comment.createdAt,
       parentId: comment.parentId,
       author: {
-        id: comment.author.id,
-        name: comment.author.name,
-        avatar: comment.author.profile?.profileImage
+        id: comment.users.id,
+        name: comment.users.name,
+        avatar: comment.users.profiles?.profileImage
       }
     }, { status: 201 })
   } catch (error) {

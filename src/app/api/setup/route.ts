@@ -22,10 +22,12 @@ export async function GET(request: NextRequest) {
       where: { email: 'admin@linkpick.co.kr' },
       update: {},
       create: {
+        id: `admin-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         email: 'admin@linkpick.co.kr',
         password: adminPassword,
         name: 'LinkPick Admin',
         type: 'ADMIN',
+        updatedAt: new Date()
       }
     })
     console.log('✅ Admin user created:', admin.email)
@@ -36,17 +38,21 @@ export async function GET(request: NextRequest) {
       where: { email: 'business@company.com' },
       update: {},
       create: {
+        id: `business-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         email: 'business@company.com',
         password: businessPassword,
         name: '테스트 기업',
         type: 'BUSINESS',
-        businessProfile: {
+        updatedAt: new Date(),
+        business_profiles: {
           create: {
+            id: `bp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             companyName: '테스트 주식회사',
             businessNumber: '123-45-67890',
             representativeName: '김대표',
             businessAddress: '서울특별시 강남구 테헤란로 123',
             businessCategory: '이커머스',
+            updatedAt: new Date()
           }
         }
       }
@@ -58,47 +64,35 @@ export async function GET(request: NextRequest) {
       where: { email: 'user@example.com' },
       update: {},
       create: {
+        id: `influencer-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         email: 'user@example.com',
         password: influencerPassword,
         name: '테스트 인플루언서',
         type: 'INFLUENCER',
-        profile: {
+        updatedAt: new Date(),
+        profiles: {
           create: {
+            id: `profile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             bio: '패션과 라이프스타일을 공유하는 인플루언서입니다.',
             instagram: '@test_influencer',
             instagramFollowers: 50000,
             youtube: 'TestInfluencer',
             youtubeSubscribers: 30000,
             categories: JSON.stringify(['패션', '라이프스타일']),
+            updatedAt: new Date()
           }
         }
       }
     })
 
-    // Create sample campaign
-    const campaign = await prisma.campaign.create({
-      data: {
-        businessId: businessUser.id,
-        title: 'LinkPick 런칭 기념 캠페인',
-        description: 'LinkPick 플랫폼 런칭을 기념하는 특별 캠페인입니다. 다양한 카테고리의 인플루언서를 모집합니다.',
-        platform: 'INSTAGRAM',
-        budget: 5000000,
-        targetFollowers: 10000,
-        startDate: new Date(),
-        endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-        requirements: '- 팔로워 1만명 이상\n- 참여율 3% 이상\n- 고품질 콘텐츠 제작 가능',
-        hashtags: JSON.stringify(['LinkPick', '인플루언서마케팅', '런칭이벤트']),
-        status: 'ACTIVE',
-        isPaid: true,
-      }
-    })
-
-    // Create site configuration
-    await prisma.siteConfig.upsert({
+    // Create site configuration  
+    await prisma.site_config.upsert({
       where: { key: 'ui-config' },
       update: {},
       create: {
+        id: `config-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         key: 'ui-config',
+        updatedAt: new Date(),
         value: JSON.stringify({
           header: {
             menus: [
@@ -151,8 +145,7 @@ export async function GET(request: NextRequest) {
         { email: 'admin@linkpick.co.kr', password: 'admin123!@#', type: 'Admin' },
         { email: 'business@company.com', password: 'business123!', type: 'Business' },
         { email: 'user@example.com', password: 'influencer123!', type: 'Influencer' }
-      ],
-      campaign: campaign.title
+      ]
     }
 
     return NextResponse.json(result)

@@ -7,11 +7,11 @@ async function updateCampaignDetails() {
     console.log('캠페인 상세 정보 업데이트 시작...');
 
     // 모든 캠페인 조회
-    const campaigns = await prisma.campaign.findMany({
+    const campaigns = await prisma.campaigns.findMany({
       include: {
-        business: {
+        users: {
           include: {
-            businessProfile: true
+            business_profiles: true
           }
         }
       }
@@ -20,7 +20,7 @@ async function updateCampaignDetails() {
     console.log(`총 ${campaigns.length}개의 캠페인을 업데이트합니다.`);
 
     for (const campaign of campaigns) {
-      const category = campaign.business.businessProfile?.businessCategory || '일반';
+      const category = campaign.users.business_profiles?.businessCategory || '일반';
       
       // 카테고리별 상품 정보
       const productData = getProductDataByCategory(category);
@@ -57,7 +57,7 @@ async function updateCampaignDetails() {
         location: '전국'
       };
 
-      await prisma.campaign.update({
+      await prisma.campaigns.update({
         where: { id: campaign.id },
         data: updateData
       });

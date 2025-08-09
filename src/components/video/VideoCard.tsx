@@ -165,44 +165,54 @@ export default function VideoCard({
     }
   }
 
-  const CardWrapper = onClick ? 'div' : Link
-  const wrapperProps = onClick ? {
-    onClick: handleClick,
-    onKeyDown: handleKeyDown,
-    tabIndex: 0,
-    role: 'button',
-    'aria-label': `${video.title} 비디오 재생`
-  } : {
-    href: `/videos/${video.id}`,
-    'aria-label': `${video.title} 비디오 페이지로 이동`
-  }
-
-  return (
-    <CardWrapper 
-      {...wrapperProps}
-      className={cn(
-        'group block',
-        onClick && 'cursor-pointer',
-        className
-      )}
+  const cardContent = (
+    <Card 
+      variant="default" 
+      padding="none"
+      className="h-full hover:shadow-lg transition-shadow duration-300 overflow-hidden"
     >
-      <Card 
-        variant="default" 
-        padding="none"
-        className="h-full hover:shadow-lg transition-shadow duration-300 overflow-hidden"
-      >
-        <div className="flex flex-col h-full">
-          <VideoThumbnail video={video} variant={variant} />
-          <VideoInfo 
-            video={video} 
-            variant={variant} 
-            showDescription={showDescription}
-            showCreator={showCreator}
-          />
-        </div>
-      </Card>
-    </CardWrapper>
+      <div className="flex flex-col h-full">
+        <VideoThumbnail video={video} variant={variant} />
+        <VideoInfo 
+          video={video} 
+          variant={variant} 
+          showDescription={showDescription}
+          showCreator={showCreator}
+        />
+      </div>
+    </Card>
   )
+
+  if (onClick) {
+    return (
+      <div 
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        tabIndex={0}
+        role="button"
+        aria-label={`${video.title} 비디오 재생`}
+        className={cn(
+          'group block cursor-pointer',
+          className
+        )}
+      >
+        {cardContent}
+      </div>
+    )
+  } else {
+    return (
+      <Link 
+        href={`/videos/${video.id}`}
+        aria-label={`${video.title} 비디오 페이지로 이동`}
+        className={cn(
+          'group block',
+          className
+        )}
+      >
+        {cardContent}
+      </Link>
+    )
+  }
 }
 
 // VideoCard 변형들을 위한 편의 컴포넌트들

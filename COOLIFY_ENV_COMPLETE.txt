@@ -1,0 +1,56 @@
+# Coolify 환경 변수 완전 목록
+# 이미 Coolify에 설정된 환경 변수들과 추가로 설정한 환경 변수들
+
+## 이미 설정된 환경 변수 (MCP로 확인함)
+DATABASE_URL=postgresql://postgres:REBYg9hnDdvw6gFMKwBPbnDIDclHKF4RHo9aIuAchefIqqxN6XOOOIKmyb89ItuK@m00wk0gg0kck804084wwwow0:5432/postgres
+POSTGRES_URL=postgresql://postgres:REBYg9hnDdvw6gFMKwBPbnDIDclHKF4RHo9aIuAchefIqqxN6XOOOIKmyb89ItuK@m00wk0gg0kck804084wwwow0:5432/postgres
+POSTGRES_PRISMA_URL=postgresql://postgres:REBYg9hnDdvw6gFMKwBPbnDIDclHKF4RHo9aIuAchefIqqxN6XOOOIKmyb89ItuK@m00wk0gg0kck804084wwwow0:5432/postgres
+POSTGRES_URL_NON_POOLING=postgresql://postgres:REBYg9hnDdvw6gFMKwBPbnDIDclHKF4RHo9aIuAchefIqqxN6XOOOIKmyb89ItuK@m00wk0gg0kck804084wwwow0:5432/postgres
+POSTGRES_USER=postgres
+POSTGRES_HOST=m00wk0gg0kck804084wwwow0
+POSTGRES_PASSWORD=REBYg9hnDdvw6gFMKwBPbnDIDclHKF4RHo9aIuAchefIqqxN6XOOOIKmyb89ItuK
+POSTGRES_DATABASE=postgres
+JWT_SECRET=VideoPick2024!SuperSecretJWTKey#VideoPickProduction$
+NODE_ENV=production
+
+## 방금 추가한 환경 변수 (MCP로 설정함)
+SKIP_DB_CONNECTION=false
+REDIS_URL=redis://default:uu1SxljgYlrQpLlhIqXUn4GY1TNUuu81hk0IL0bDdT7WbuoDZ2JxUWITk9PVgQ2Q@bssgk8sogo8cgs4c4o0gkwkw:6379/0
+KV_URL=redis://default:uu1SxljgYlrQpLlhIqXUn4GY1TNUuu81hk0IL0bDdT7WbuoDZ2JxUWITk9PVgQ2Q@bssgk8sogo8cgs4c4o0gkwkw:6379/0
+NEXT_TELEMETRY_DISABLED=1
+
+## 추가로 필요할 수 있는 환경 변수 (수동으로 추가 가능)
+DEBUG=false
+DEBUG_MIDDLEWARE=false
+
+## 중요 정보
+1. Coolify가 자동으로 설정하는 환경 변수:
+   - PORT (자동 할당)
+   - NEXT_PUBLIC_APP_URL (도메인으로 자동 설정)
+
+2. 데이터베이스 연결:
+   - Coolify 내부: m00wk0gg0kck804084wwwow0:5432 사용
+   - 외부(로컬): 141.164.60.51:5434 사용
+
+3. Redis 연결:
+   - Coolify 내부: bssgk8sogo8cgs4c4o0gkwkw:6379 사용
+
+## 로컬 개발용 .env.local 파일 내용
+# 로컬에서는 다음과 같이 설정하세요:
+DATABASE_URL="postgresql://postgres:REBYg9hnDdvw6gFMKwBPbnDIDclHKF4RHo9aIuAchefIqqxN6XOOOIKmyb89ItuK@141.164.60.51:5434/postgres"
+SKIP_DB_CONNECTION=false
+JWT_SECRET="development-jwt-secret-change-in-production"
+NODE_ENV=development
+PORT=3003
+NEXT_PUBLIC_API_URL=http://localhost:3003
+NEXT_PUBLIC_APP_URL=http://localhost:3003
+
+## MCP API 정보
+Application UUID: nkkc88c8k8008k0ssws4g848
+Application Name: dungeun/video_platform:main
+Status: running:unhealthy
+URL: http://nkkc88c8k8008k0ssws4g848.141.164.60.51.sslip.io
+
+## 관리자 계정 정보 (데이터베이스에 생성됨)
+Email: admin@videopick.com
+Password: admin123

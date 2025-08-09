@@ -41,15 +41,14 @@ export async function POST(request: NextRequest) {
     const payload = await verifyJWT(token)
     const userId = payload.userId
 
-    // 사용자 확인 (비즈니스 계정만 업로드 가능)
+    // 사용자 확인 (비즈니스 또는 인플루언서 계정만 업로드 가능)
     const user = await prisma.users.findUnique({
-      where: { id: userId },
-      include: { business: true }
+      where: { id: userId }
     })
 
-    if (!user || user.type !== 'BUSINESS' || !user.business) {
+    if (!user || (user.type !== 'BUSINESS' && user.type !== 'INFLUENCER')) {
       return NextResponse.json(
-        { error: 'Only business users can upload videos' },
+        { error: 'Only business or influencer users can upload videos' },
         { status: 403 }
       )
     }
@@ -117,37 +116,37 @@ export async function POST(request: NextRequest) {
 
     // 현재는 캠페인으로 저장 (실제 비디오 테이블이 생기면 변경)
     // 비디오 업로드를 캠페인으로 매핑하여 저장
-    const campaign = await prisma.campaign.create({
+    const campaign = await prisma.campaigns.create({
       data: {
-        businessId: user.business.id,
+        id: `video-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        updatedAt: new Date(),
+        businessId: user.id,
         title: title.trim(),
         description: description?.trim() || '',
         thumbnailImageUrl: thumbnailUrl,
-        // 비디오 URL을 미디어 이미지로 임시 저장
-        mediaImages: [videoUrl], 
-        hashtags: tags,
+        // 비디오 URL을 이미지 URL로 임시 저장 (미디어 이미지 필드가 없으므로)
+        imageUrl: videoUrl, 
+        hashtags: Array.isArray(tags) ? tags.join(',') : tags,
         budget: 0, // 비디오는 예산이 없음
-        deliverables: [`${Math.round(parseInt(durationString) || 0)}분 비디오`],
-        requirements: [`카테고리: ${category || '기타'}`, `공개설정: ${privacy || 'public'}`],
-        applicationDeadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1년 후
-        campaignPeriod: '상시',
+        deliverables: `${Math.round(parseInt(durationString) || 0)}분 비디오`,
+        requirements: `카테고리: ${category || '기타'}, 공개설정: ${privacy || 'public'}`,
         status: privacy === 'private' ? 'DRAFT' : 'ACTIVE',
-        targetAudience: '전체',
-        preferredInfluencerType: 'ANY'
+        platform: 'youtube',
+        targetFollowers: 0,
+        startDate: new Date(),
+        endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1년 후
       },
       include: {
-        business: {
+        users: {
           select: {
             id: true,
-            name: true,
-            logo: true,
-            category: true
+            name: true
           }
         },
         _count: {
           select: {
-            applications: true,
-            likes: true
+            campaign_applications: true,
+            campaign_likes: true
           }
         }
       }
@@ -158,17 +157,17 @@ export async function POST(request: NextRequest) {
       id: campaign.id,
       title: campaign.title,
       description: campaign.description,
-      videoUrl: campaign.mediaImages[0] || '',
+      videoUrl: campaign.imageUrl || '',
       thumbnailUrl: campaign.thumbnailImageUrl || '',
       duration: parseInt(durationString) || 0,
       viewCount: 0,
-      likeCount: campaign._count.likes,
+      likeCount: campaign._count.campaign_likes,
       dislikeCount: 0,
       commentCount: 0,
       creator: {
-        id: campaign.business.id,
-        name: campaign.business.name || '크리에이터',
-        avatar: campaign.business.logo,
+        id: campaign.users.id,
+        name: campaign.users.name || '크리에이터',
+        avatar: null,
         subscriberCount: 12000, // 임시 데이터
         isVerified: true
       },

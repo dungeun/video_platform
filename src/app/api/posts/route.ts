@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
         { content: { contains: search, mode: 'insensitive' } },
-        { author: { name: { contains: search, mode: 'insensitive' } } }
+        { users: { name: { contains: search, mode: 'insensitive' } } }
       ]
     }
 
@@ -49,14 +49,14 @@ export async function GET(request: NextRequest) {
     }
 
     const [posts, total] = await Promise.all([
-      prisma.post.findMany({
+      prisma.posts.findMany({
         where,
         include: {
-          author: {
+          users: {
             select: {
               id: true,
               name: true,
-              profile: {
+              profiles: {
                 select: {
                   profileImage: true
                 }
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
               comments: {
                 where: { status: 'PUBLISHED' }
               },
-              postLikes: true
+              post_likes: true
             }
           }
         },
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
         skip,
         take: limit
       }),
-      prisma.post.count({ where })
+      prisma.posts.count({ where })
     ])
 
     return NextResponse.json({
@@ -86,15 +86,15 @@ export async function GET(request: NextRequest) {
         content: post.content,
         category: post.category,
         views: post.views,
-        likes: post._count.postLikes,
+        likes: post._count.post_likes,
         comments: post._count.comments,
         isPinned: post.isPinned,
         createdAt: post.createdAt,
         updatedAt: post.updatedAt,
         author: {
-          id: post.author.id,
-          name: post.author.name,
-          avatar: post.author.profile?.profileImage
+          id: post.users.id,
+          name: post.users.name,
+          avatar: post.users.profiles?.profileImage
         }
       })),
       pagination: {
@@ -140,20 +140,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid category' }, { status: 400 })
     }
 
-    const post = await prisma.post.create({
+    const post = await prisma.posts.create({
       data: {
+        id: crypto.randomUUID(),
         title,
         content,
         category,
         authorId: user.id,
+        updatedAt: new Date(),
         isPinned: category === 'notice' && (user.type === 'ADMIN' || user.type === 'admin')
       },
       include: {
-        author: {
+        users: {
           select: {
             id: true,
             name: true,
-            profile: {
+            profiles: {
               select: {
                 profileImage: true
               }
@@ -165,7 +167,7 @@ export async function POST(request: NextRequest) {
             comments: {
               where: { status: 'PUBLISHED' }
             },
-            postLikes: true
+            post_likes: true
           }
         }
       }
@@ -177,15 +179,15 @@ export async function POST(request: NextRequest) {
       content: post.content,
       category: post.category,
       views: post.views,
-      likes: post._count.postLikes,
+      likes: post._count.post_likes,
       comments: post._count.comments,
       isPinned: post.isPinned,
       createdAt: post.createdAt,
       updatedAt: post.updatedAt,
       author: {
-        id: post.author.id,
-        name: post.author.name,
-        avatar: post.author.profile?.profileImage
+        id: post.users.id,
+        name: post.users.name,
+        avatar: post.users.profiles?.profileImage
       }
     }, { status: 201 })
   } catch (error) {

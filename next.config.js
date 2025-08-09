@@ -2,10 +2,10 @@
 const nextConfig = {
   output: 'standalone',
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,  // 타입 에러 체크 활성화
   },
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,  // ESLint 체크 활성화
   },
   
   // 환경 변수 런타임 설정

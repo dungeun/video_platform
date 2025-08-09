@@ -10,7 +10,7 @@ async function removePlaceholderImages() {
   
   try {
     // Campaign 테이블에서 placeholder 이미지 제거
-    const campaignResult = await prisma.campaign.updateMany({
+    const campaignResult = await prisma.campaigns.updateMany({
       where: {
         OR: [
           { imageUrl: 'placeholder-image.jpg' },
@@ -30,7 +30,7 @@ async function removePlaceholderImages() {
     console.log(`Updated ${campaignResult.count} campaigns`)
 
     // Profile 테이블에서 placeholder 이미지 제거 (인플루언서)
-    const profileResult = await prisma.profile.updateMany({
+    const profileResult = await prisma.profiles.updateMany({
       where: {
         OR: [
           { profileImage: 'placeholder-image.jpg' },
@@ -50,11 +50,11 @@ async function removePlaceholderImages() {
     console.log('Post table does not have thumbnailUrl field - skipping')
 
     // detailImages와 productImages JSON 필드 처리
-    const campaignsWithJsonImages = await prisma.campaign.findMany({
+    const campaignsWithJsonImages = await prisma.campaigns.findMany({
       where: {
         OR: [
-          { detailImages: { not: null } },
-          { productImages: { not: null } }
+          { detailImages: { not: {} } },
+          { productImages: { not: {} } }
         ]
       }
     })
@@ -87,7 +87,7 @@ async function removePlaceholderImages() {
       }
 
       if (updated) {
-        await prisma.campaign.update({
+        await prisma.campaigns.update({
           where: { id: campaign.id },
           data: updateData
         })

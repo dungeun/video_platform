@@ -21,7 +21,7 @@ export async function signJWT(
 
   // Ensure userId is set for JWTPayload
   if ('email' in payload && !('userId' in payload)) {
-    (payload as any).userId = payload.id;
+    (payload as any).userId = (payload as any).id;
   }
 
   return jwt.sign(payload, secret, options);

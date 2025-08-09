@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     
     // 각 설정 키에 대해 DB 조회
     for (const key of settingKeys) {
-      const config = await prisma.siteConfig.findUnique({
+      const config = await prisma.site_config.findUnique({
         where: { key }
       })
       
@@ -147,10 +147,15 @@ export async function PUT(request: NextRequest) {
     for (const [key, value] of Object.entries(newSettings)) {
       const jsonValue = typeof value === 'string' ? value : JSON.stringify(value)
       
-      await prisma.siteConfig.upsert({
+      await prisma.site_config.upsert({
         where: { key },
         update: { value: jsonValue },
-        create: { key, value: jsonValue }
+        create: { 
+          id: `config-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          key, 
+          value: jsonValue,
+          updatedAt: new Date()
+        }
       })
     }
 

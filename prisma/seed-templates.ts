@@ -98,26 +98,29 @@ async function main() {
   console.log('Start seeding templates...')
   
   // 시스템 사용자 찾기 또는 생성
-  let systemUser = await prisma.user.findFirst({
+  let systemUser = await prisma.users.findFirst({
     where: { email: 'system@linkpick.com' }
   })
   
   if (!systemUser) {
-    systemUser = await prisma.user.create({
+    systemUser = await prisma.users.create({
       data: {
+        id: 'system-user-001',
         email: 'system@linkpick.com',
         name: 'LinkPick System',
         type: 'ADMIN',
         password: '$2a$10$dummy.hash.for.system.user', // 시스템 사용자는 로그인 불가
         status: 'ACTIVE',
-        verified: true
+        verified: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     })
   }
   
   // 기본 템플릿 생성
   for (const template of DEFAULT_TEMPLATES) {
-    const existing = await prisma.applicationTemplate.findFirst({
+    const existing = await prisma.application_templates.findFirst({
       where: {
         name: template.name,
         userId: systemUser.id
@@ -125,11 +128,14 @@ async function main() {
     })
     
     if (!existing) {
-      await prisma.applicationTemplate.create({
+      await prisma.application_templates.create({
         data: {
+          id: `template-${template.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
           ...template,
           userId: systemUser.id,
-          useCount: 0
+          useCount: 0,
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       })
       console.log(`Created template: ${template.name}`)

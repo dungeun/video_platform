@@ -21,12 +21,10 @@ export async function POST(
     const videoId = params.id
 
     // 현재는 캠페인 좋아요 기능을 사용 (실제 비디오 테이블이 생기면 변경)
-    const existingLike = await prisma.campaignLike.findUnique({
+    const existingLike = await prisma.campaign_likes.findFirst({
       where: {
-        userId_campaignId: {
-          userId,
-          campaignId: videoId
-        }
+        userId: userId,
+        campaignId: videoId
       }
     })
 
@@ -34,19 +32,17 @@ export async function POST(
 
     if (existingLike) {
       // 좋아요 제거
-      await prisma.campaignLike.delete({
+      await prisma.campaign_likes.delete({
         where: {
-          userId_campaignId: {
-            userId,
-            campaignId: videoId
-          }
+          id: existingLike.id
         }
       })
       liked = false
     } else {
       // 좋아요 추가
-      await prisma.campaignLike.create({
+      await prisma.campaign_likes.create({
         data: {
+          id: `like-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           userId,
           campaignId: videoId
         }
@@ -55,7 +51,7 @@ export async function POST(
     }
 
     // 총 좋아요 수 조회
-    const likeCount = await prisma.campaignLike.count({
+    const likeCount = await prisma.campaign_likes.count({
       where: { campaignId: videoId }
     })
 

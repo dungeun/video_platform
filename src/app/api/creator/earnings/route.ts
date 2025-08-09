@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 사용자의 채널 조회
-    const channel = await prisma.channel.findUnique({
+    const channel = await prisma.channels.findUnique({
       where: { userId: user.id }
     })
 
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     }
     if (month) where.month = month
 
-    const earnings = await prisma.creatorEarnings.findMany({
+    const earnings = await prisma.creator_earnings.findMany({
       where,
       orderBy: [
         { year: 'desc' },
@@ -73,18 +73,18 @@ export async function GET(request: NextRequest) {
     }
 
     // 최근 SuperChat 조회
-    const recentSuperChats = await prisma.superChat.findMany({
+    const recentSuperChats = await prisma.super_chats.findMany({
       where: {
         channelId: channel.id,
         isPaid: true
       },
       include: {
-        user: {
+        users: {
           select: {
             id: true,
             name: true,
             email: true,
-            profile: {
+            profiles: {
               select: {
                 profileImage: true
               }

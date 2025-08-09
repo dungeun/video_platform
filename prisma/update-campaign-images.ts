@@ -44,7 +44,7 @@ async function updateCampaignImages() {
   
   try {
     // 모든 캠페인 조회
-    const campaigns = await prisma.campaign.findMany({
+    const campaigns = await prisma.campaigns.findMany({
       orderBy: {
         createdAt: 'desc'
       }
@@ -70,7 +70,7 @@ async function updateCampaignImages() {
       // 이미지 배열에서 순환하여 할당
       const imageUrl = campaignImages[i % campaignImages.length]
       
-      await prisma.campaign.update({
+      await prisma.campaigns.update({
         where: { id: campaign.id },
         data: { imageUrl }
       })

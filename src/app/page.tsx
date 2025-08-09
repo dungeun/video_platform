@@ -378,7 +378,7 @@ export default function HomePage() {
     setUser(currentUser)
     
     // 업체 사용자는 비즈니스 대시보드로 리다이렉트
-    if (currentUser && (currentUser.type === 'BUSINESS' || currentUser.type === 'business')) {
+    if (currentUser && currentUser.type === 'BUSINESS') {
       router.push('/business/dashboard')
     }
 
@@ -672,7 +672,6 @@ export default function HomePage() {
                       .sort((a, b) => {
                         // 랭킹 기준에 따른 정렬
                         switch (config.mainPage?.rankingSection?.criteria) {
-                          case 'views':
                           case 'popular':
                           default:
                             return b.viewCount - a.viewCount; // 조회수 높은 순

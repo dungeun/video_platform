@@ -3,7 +3,7 @@ const prisma = new PrismaClient()
 
 async function main() {
   // Find business user
-  const businessUser = await prisma.user.findFirst({
+  const businessUser = await prisma.users.findFirst({
     where: { type: 'BUSINESS' }
   })
 
@@ -147,7 +147,7 @@ async function main() {
   ]
 
   for (const campaign of campaigns) {
-    const created = await prisma.campaign.create({
+    const created = await prisma.campaigns.create({
       data: campaign
     })
     console.log('Created campaign:', created.title)

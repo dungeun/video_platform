@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     console.error('Error searching YouTube videos:', error)
     return NextResponse.json({ 
       error: 'Failed to search videos', 
-      details: error.message 
+      details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 })
   }
 }

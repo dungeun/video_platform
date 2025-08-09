@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 사용자의 채널 조회
-    const channel = await prisma.channel.findUnique({
+    const channel = await prisma.channels.findUnique({
       where: { userId: user.id }
     })
 
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 진행 중인 정산 신청 확인
-    const pendingSettlement = await prisma.settlementRequest.findFirst({
+    const pendingSettlement = await prisma.settlement_requests.findFirst({
       where: {
         channelId: channel.id,
         status: { in: ['pending', 'processing'] }
@@ -50,8 +50,9 @@ export async function POST(request: NextRequest) {
     }
 
     // 정산 신청 생성
-    const settlement = await prisma.settlementRequest.create({
+    const settlement = await prisma.settlement_requests.create({
       data: {
+        id: `settlement-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         channelId: channel.id,
         amount,
         bankName,
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
     })
 
     // 채널의 pendingSettlement 차감
-    await prisma.channel.update({
+    await prisma.channels.update({
       where: { id: channel.id },
       data: {
         pendingSettlement: {
@@ -93,7 +94,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 사용자의 채널 조회
-    const channel = await prisma.channel.findUnique({
+    const channel = await prisma.channels.findUnique({
       where: { userId: user.id }
     })
 
@@ -111,7 +112,7 @@ export async function GET(request: NextRequest) {
     }
     if (status) where.status = status
 
-    const settlements = await prisma.settlementRequest.findMany({
+    const settlements = await prisma.settlement_requests.findMany({
       where,
       orderBy: { requestedAt: 'desc' },
       take: limit,
@@ -124,7 +125,7 @@ export async function GET(request: NextRequest) {
     const nextCursor = settlements.length === limit ? settlements[settlements.length - 1].id : null
 
     // 정산 통계
-    const stats = await prisma.settlementRequest.groupBy({
+    const stats = await prisma.settlement_requests.groupBy({
       by: ['status'],
       where: { channelId: channel.id },
       _sum: { amount: true },

@@ -8,38 +8,49 @@ async function main() {
 
   // Create admin user
   const adminPassword = await bcrypt.hash('admin123!@#', 10)
-  const admin = await prisma.user.upsert({
+  const admin = await prisma.users.upsert({
     where: { email: 'admin@linkpick.co.kr' },
     update: {},
     create: {
+      id: 'admin-production',
       email: 'admin@linkpick.co.kr',
       password: adminPassword,
       name: 'LinkPick Admin',
       type: 'ADMIN',
+      status: 'ACTIVE',
       verified: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
     }
   })
   console.log('✅ Admin user created:', admin.email)
 
   // Create test business user
   const businessPassword = await bcrypt.hash('business123!', 10)
-  const businessUser = await prisma.user.upsert({
+  const businessUser = await prisma.users.upsert({
     where: { email: 'business@company.com' },
     update: {},
     create: {
+      id: 'business-production',
       email: 'business@company.com',
       password: businessPassword,
       name: '테스트 기업',
       type: 'BUSINESS',
+      status: 'ACTIVE',
       verified: true,
-      businessProfile: {
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      business_profiles: {
         create: {
+          id: 'business-profile-production',
           companyName: '테스트 주식회사',
           businessNumber: '123-45-67890',
           representativeName: '김대표',
           businessAddress: '서울특별시 강남구 테헤란로 123',
           businessCategory: '이커머스',
           isVerified: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       }
     }
@@ -48,17 +59,22 @@ async function main() {
 
   // Create test influencer user
   const influencerPassword = await bcrypt.hash('influencer123!', 10)
-  const influencerUser = await prisma.user.upsert({
+  const influencerUser = await prisma.users.upsert({
     where: { email: 'user@example.com' },
     update: {},
     create: {
+      id: 'influencer-production',
       email: 'user@example.com',
       password: influencerPassword,
       name: '테스트 인플루언서',
       type: 'INFLUENCER',
+      status: 'ACTIVE',
       verified: true,
-      profile: {
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      profiles: {
         create: {
+          id: 'profile-production',
           bio: '패션과 라이프스타일을 공유하는 인플루언서입니다.',
           instagram: '@test_influencer',
           instagramFollowers: 50000,
@@ -66,6 +82,8 @@ async function main() {
           youtubeSubscribers: 30000,
           categories: JSON.stringify(['패션', '라이프스타일']),
           isVerified: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       }
     }
@@ -73,8 +91,9 @@ async function main() {
   console.log('✅ Influencer user created:', influencerUser.email)
 
   // Create sample campaign
-  const campaign = await prisma.campaign.create({
+  const campaign = await prisma.campaigns.create({
     data: {
+      id: 'campaign-production',
       businessId: businessUser.id,
       title: 'LinkPick 런칭 기념 캠페인',
       description: 'LinkPick 플랫폼 런칭을 기념하는 특별 캠페인입니다. 다양한 카테고리의 인플루언서를 모집합니다.',
@@ -87,15 +106,18 @@ async function main() {
       hashtags: JSON.stringify(['LinkPick', '인플루언서마케팅', '런칭이벤트']),
       status: 'ACTIVE',
       isPaid: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
     }
   })
   console.log('✅ Sample campaign created:', campaign.title)
 
   // Create site configuration
-  await prisma.siteConfig.upsert({
+  await prisma.site_config.upsert({
     where: { key: 'ui-config' },
     update: {},
     create: {
+      id: 'ui-config-production',
       key: 'ui-config',
       value: JSON.stringify({
         header: {
@@ -139,7 +161,8 @@ async function main() {
             }
           ]
         }
-      })
+      }),
+      updatedAt: new Date()
     }
   })
   console.log('✅ Site configuration created')

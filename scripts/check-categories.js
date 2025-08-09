@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 async function checkCategories() {
   try {
     // 모든 비즈니스 프로필의 카테고리 확인
-    const businessProfiles = await prisma.businessProfile.findMany({
+    const businessProfiles = await prisma.business_profiles.findMany({
       include: {
         user: {
           include: {
@@ -32,7 +32,7 @@ async function checkCategories() {
     });
 
     // 캠페인과 비즈니스 카테고리 매칭 확인
-    const campaigns = await prisma.campaign.findMany({
+    const campaigns = await prisma.campaigns.findMany({
       include: {
         business: {
           include: {

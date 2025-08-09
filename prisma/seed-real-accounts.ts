@@ -14,7 +14,7 @@ async function createRealAccounts() {
     const hashedPassword = await bcrypt.hash('password123', 10)
     
     // 관리자 계정 생성/업데이트
-    const admin = await prisma.user.upsert({
+    const admin = await prisma.users.upsert({
       where: { email: 'admin@linkpick.co.kr' },
       update: {
         password: hashedPassword,
@@ -23,17 +23,21 @@ async function createRealAccounts() {
         status: 'ACTIVE'
       },
       create: {
+        id: 'admin-real-001',
         email: 'admin@linkpick.co.kr',
         password: hashedPassword,
         name: '관리자',
         type: 'ADMIN',
-        status: 'ACTIVE'
+        status: 'ACTIVE',
+        verified: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     })
     console.log('Admin account created/updated:', admin.email)
     
     // 비즈니스 계정 생성/업데이트
-    const business = await prisma.user.upsert({
+    const business = await prisma.users.upsert({
       where: { email: 'business@company.com' },
       update: {
         password: hashedPassword,
@@ -42,30 +46,37 @@ async function createRealAccounts() {
         status: 'ACTIVE'
       },
       create: {
+        id: 'business-real-001',
         email: 'business@company.com',
         password: hashedPassword,
         name: '테스트 비즈니스',
         type: 'BUSINESS',
         status: 'ACTIVE',
-        businessProfile: {
+        verified: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        business_profiles: {
           create: {
+            id: 'business-profile-real-001',
             companyName: '(주)테스트기업',
             businessNumber: '123-45-67890',
             representativeName: '홍길동',
             businessAddress: '서울시 강남구 테헤란로 123',
             businessCategory: '마케팅',
-            isVerified: true
+            isVerified: true,
+            createdAt: new Date(),
+            updatedAt: new Date()
           }
         }
       },
       include: {
-        businessProfile: true
+        business_profiles: true
       }
     })
     console.log('Business account created/updated:', business.email)
     
     // 인플루언서 계정 생성/업데이트
-    const influencer = await prisma.user.upsert({
+    const influencer = await prisma.users.upsert({
       where: { email: 'influencer@example.com' },
       update: {
         password: hashedPassword,
@@ -74,24 +85,31 @@ async function createRealAccounts() {
         status: 'ACTIVE'
       },
       create: {
+        id: 'influencer-real-001',
         email: 'influencer@example.com',
         password: hashedPassword,
         name: '테스트 인플루언서',
         type: 'INFLUENCER',
         status: 'ACTIVE',
-        profile: {
+        verified: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        profiles: {
           create: {
+            id: 'profile-real-001',
             bio: '테스트 인플루언서입니다',
             profileImage: 'https://example.com/profile.jpg',
             instagram: '@test_influencer',
             instagramFollowers: 50000,
             categories: JSON.stringify(['패션', '뷰티']),
-            isVerified: true
+            isVerified: true,
+            createdAt: new Date(),
+            updatedAt: new Date()
           }
         }
       },
       include: {
-        profile: true
+        profiles: true
       }
     })
     console.log('Influencer account created/updated:', influencer.email)
@@ -102,7 +120,7 @@ async function createRealAccounts() {
         email: 'test.business@example.com',
         name: '테스트 비즈니스 2',
         type: 'BUSINESS' as const,
-        businessProfile: {
+        business_profiles: {
           companyName: '테스트 컴퍼니',
           businessNumber: '987-65-43210',
           representativeName: '김영희',
@@ -115,7 +133,7 @@ async function createRealAccounts() {
         email: 'test.influencer@example.com',
         name: '테스트 인플루언서 2',
         type: 'INFLUENCER' as const,
-        profile: {
+        profiles: {
           bio: '라이프스타일 인플루언서',
           profileImage: 'https://example.com/profile2.jpg',
           instagram: '@lifestyle_influencer',
@@ -126,8 +144,9 @@ async function createRealAccounts() {
       }
     ]
     
-    for (const account of testAccounts) {
-      const user = await prisma.user.upsert({
+    for (let i = 0; i < testAccounts.length; i++) {
+      const account = testAccounts[i];
+      const user = await prisma.users.upsert({
         where: { email: account.email },
         update: {
           password: hashedPassword,
@@ -136,19 +155,33 @@ async function createRealAccounts() {
           status: 'ACTIVE'
         },
         create: {
+          id: `test-user-${i + 1}`,
           email: account.email,
           password: hashedPassword,
           name: account.name,
           type: account.type,
           status: 'ACTIVE',
-          ...(account.type === 'BUSINESS' && account.businessProfile ? {
-            businessProfile: {
-              create: account.businessProfile
+          verified: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          ...(account.type === 'BUSINESS' && account.business_profiles ? {
+            business_profiles: {
+              create: {
+                id: `test-business-profile-${i + 1}`,
+                ...account.business_profiles,
+                createdAt: new Date(),
+                updatedAt: new Date()
+              }
             }
           } : {}),
-          ...(account.type === 'INFLUENCER' && account.profile ? {
-            profile: {
-              create: account.profile
+          ...(account.type === 'INFLUENCER' && account.profiles ? {
+            profiles: {
+              create: {
+                id: `test-profile-${i + 1}`,
+                ...account.profiles,
+                createdAt: new Date(),
+                updatedAt: new Date()
+              }
             }
           } : {})
         }

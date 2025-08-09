@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
 
     if (view === 'stats') {
       // 전체 통계
-      const totalStats = await prisma.superChat.aggregate({
+      const totalStats = await prisma.super_chats.aggregate({
         where: { isPaid: true },
         _sum: { amount: true },
         _count: true
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
       const today = new Date()
       today.setHours(0, 0, 0, 0)
       
-      const todayStats = await prisma.superChat.aggregate({
+      const todayStats = await prisma.super_chats.aggregate({
         where: {
           isPaid: true,
           createdAt: { gte: today }
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
       // 이번 달 통계
       const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
       
-      const monthStats = await prisma.superChat.aggregate({
+      const monthStats = await prisma.super_chats.aggregate({
         where: {
           isPaid: true,
           createdAt: { gte: firstDayOfMonth }
@@ -53,14 +53,14 @@ export async function GET(request: NextRequest) {
       })
 
       // 상위 채널
-      const topChannels = await prisma.channel.findMany({
+      const topChannels = await prisma.channels.findMany({
         where: {
           totalSuperChatAmount: { gt: 0 }
         },
         orderBy: { totalSuperChatAmount: 'desc' },
         take: 10,
         include: {
-          user: {
+          users: {
             select: {
               id: true,
               name: true,
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
             }
           },
           _count: {
-            select: { superChats: true }
+            select: { super_chats: true }
           }
         }
       })
@@ -91,8 +91,8 @@ export async function GET(request: NextRequest) {
           name: channel.name,
           handle: channel.handle,
           totalAmount: channel.totalSuperChatAmount,
-          superChatCount: channel._count.superChats,
-          owner: channel.user
+          superChatCount: channel._count.super_chats,
+          owner: channel.users
         }))
       })
     } else if (view === 'daily') {
@@ -129,27 +129,27 @@ export async function GET(request: NextRequest) {
       const skip = (page - 1) * limit
 
       const [superChats, total] = await Promise.all([
-        prisma.superChat.findMany({
+        prisma.super_chats.findMany({
           where,
           include: {
-            user: {
+            users: {
               select: {
                 id: true,
                 name: true,
                 email: true,
-                profile: {
+                profiles: {
                   select: {
                     profileImage: true
                   }
                 }
               }
             },
-            channel: {
+            channels: {
               select: {
                 id: true,
                 name: true,
                 handle: true,
-                user: {
+                users: {
                   select: {
                     id: true,
                     name: true,
@@ -158,7 +158,7 @@ export async function GET(request: NextRequest) {
                 }
               }
             },
-            payment: {
+            payments: {
               select: {
                 id: true,
                 orderId: true,
@@ -171,7 +171,7 @@ export async function GET(request: NextRequest) {
           skip,
           take: limit
         }),
-        prisma.superChat.count({ where })
+        prisma.super_chats.count({ where })
       ])
 
       return NextResponse.json({

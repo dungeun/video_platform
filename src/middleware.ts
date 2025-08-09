@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { verifyJWTEdge, getTokenFromHeader } from '@/lib/auth/jwt-edge';
+import { verifyJWTEdge } from '@/lib/auth/jwt-edge';
+import { rateLimitMiddleware } from '@/lib/rate-limiter';
 
 // 인증이 필요없는 public 경로들
 const publicPaths = [
@@ -50,6 +51,14 @@ const protectedPagePaths = [
 
 export async function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+
+  // 속도 제한 체크 (API 경로에만 적용)
+  if (pathname.startsWith('/api/')) {
+    const rateLimitResponse = await rateLimitMiddleware(request);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+  }
 
   // 디버그 로그는 개발환경에서만 (환경변수 제어)
   if (process.env.NODE_ENV === 'development' && process.env.DEBUG_MIDDLEWARE === 'true') {

@@ -162,7 +162,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Query campaigns that can be treated as videos
-    const campaigns = await prisma.campaign.findMany({
+    const campaigns = await prisma.campaigns.findMany({
       where,
       select: {
         id: true,
@@ -190,22 +190,15 @@ export async function GET(request: NextRequest) {
         rewardAmount: true,
         createdAt: true,
         updatedAt: true,
-        business: {
+        users: {
           select: {
             id: true,
             name: true,
-            businessProfile: {
-              select: {
-                companyName: true,
-                businessCategory: true
-              }
-            }
           }
         },
         _count: {
           select: {
-            videoComments: true,
-            applications: true // Keep for backward compatibility
+            campaign_applications: true // Keep for backward compatibility
           }
         }
       },
@@ -218,7 +211,7 @@ export async function GET(request: NextRequest) {
     const validVideoCampaigns = campaigns.filter(isValidVideoCampaign);
 
     // Get total count
-    const total = await prisma.campaign.count({ where });
+    const total = await prisma.campaigns.count({ where });
 
     // Transform to video format
     const response = transformCampaignListToVideoResponse(
@@ -245,8 +238,8 @@ export async function GET(request: NextRequest) {
 // POST /api/videos - 새 비디오 생성
 export async function POST(request: NextRequest) {
   try {
-    // Authenticate user - allow both BUSINESS and CREATOR types
-    const authResult = await requireAuth(request, ['BUSINESS', 'CREATOR']);
+    // Authenticate user - allow both BUSINESS and INFLUENCER types
+    const authResult = await requireAuth(request, ['BUSINESS', 'INFLUENCER']);
     if (authResult instanceof NextResponse) {
       return authResult;
     }
@@ -279,8 +272,10 @@ export async function POST(request: NextRequest) {
     const campaignData = transformVideoRequestToCampaign(validatedData, user.id);
 
     // Create video (as campaign with video fields)
-    const campaign = await prisma.campaign.create({
+    const campaign = await prisma.campaigns.create({
       data: {
+        id: `video-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        updatedAt: new Date(),
         ...campaignData,
         // Override with video-specific fields
         streamKey: validatedData.streamKey,
@@ -317,7 +312,7 @@ export async function POST(request: NextRequest) {
 // PUT /api/videos - 비디오 정보 업데이트 (bulk update)
 export async function PUT(request: NextRequest) {
   try {
-    const authResult = await requireAuth(request, ['BUSINESS', 'CREATOR']);
+    const authResult = await requireAuth(request, ['BUSINESS', 'INFLUENCER']);
     if (authResult instanceof NextResponse) {
       return authResult;
     }
@@ -350,7 +345,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update campaigns (videos) owned by the user
-    const updateResult = await prisma.campaign.updateMany({
+    const updateResult = await prisma.campaigns.updateMany({
       where: {
         id: { in: videoIds },
         businessId: user.id, // Ensure user owns the videos
@@ -383,7 +378,7 @@ export async function PUT(request: NextRequest) {
 // DELETE /api/videos - 비디오 삭제 (bulk delete)
 export async function DELETE(request: NextRequest) {
   try {
-    const authResult = await requireAuth(request, ['BUSINESS', 'CREATOR']);
+    const authResult = await requireAuth(request, ['BUSINESS', 'INFLUENCER']);
     if (authResult instanceof NextResponse) {
       return authResult;
     }
@@ -397,7 +392,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Soft delete by updating status
-    const deleteResult = await prisma.campaign.updateMany({
+    const deleteResult = await prisma.campaigns.updateMany({
       where: {
         id: { in: videoIds },
         businessId: user.id, // Ensure user owns the videos

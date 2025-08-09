@@ -118,7 +118,7 @@ export async function GET(request: NextRequest) {
     }));
     
     // Get featured videos if on first page (viewCount 기반)
-    let featuredVideos = [];
+    let featuredVideos: any[] = [];
     if (page === 1 && !search && !category) {
       const featured = await prisma.videos.findMany({
         where: {
@@ -235,6 +235,7 @@ export async function POST(request: NextRequest) {
           name: user.name,
           handle: user.email.split('@')[0],
           description: `${user.name}'s Channel`,
+          updatedAt: new Date()
         },
       });
     }
@@ -251,7 +252,6 @@ export async function POST(request: NextRequest) {
         duration,
         category: category || 'general',
         tags,
-        isPremium,
         status: 'processing',
         createdAt: new Date(),
         updatedAt: new Date(),

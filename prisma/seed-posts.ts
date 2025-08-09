@@ -5,81 +5,116 @@ const prisma = new PrismaClient()
 async function seedPosts() {
   try {
     // 관리자 계정 찾기 또는 생성
-    let adminUser = await prisma.user.findFirst({
+    let adminUser = await prisma.users.findFirst({
       where: { type: 'ADMIN' }
     })
 
     if (!adminUser) {
-      adminUser = await prisma.user.create({
+      adminUser = await prisma.users.create({
         data: {
+          id: 'admin-seed-posts',
           email: 'admin@linkpick.com',
           password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKpQj6oqFmxGwQq', // password123
           name: '관리자',
-          type: 'ADMIN'
+          type: 'ADMIN',
+          status: 'ACTIVE',
+          verified: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       })
     }
 
     // 테스트 유저들 생성
     const users = await Promise.all([
-      prisma.user.upsert({
+      prisma.users.upsert({
         where: { email: 'beauty@example.com' },
         update: {},
         create: {
+          id: 'beauty-user-001',
           email: 'beauty@example.com',
           password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKpQj6oqFmxGwQq',
           name: '뷰티크리에이터A',
-          type: 'INFLUENCER'
+          type: 'INFLUENCER',
+          status: 'ACTIVE',
+          verified: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       }),
-      prisma.user.upsert({
+      prisma.users.upsert({
         where: { email: 'fashion@example.com' },
         update: {},
         create: {
+          id: 'fashion-user-001',
           email: 'fashion@example.com',
           password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKpQj6oqFmxGwQq',
           name: '패션블로거B',
-          type: 'INFLUENCER'
+          type: 'INFLUENCER',
+          status: 'ACTIVE',
+          verified: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       }),
-      prisma.user.upsert({
+      prisma.users.upsert({
         where: { email: 'newbie@example.com' },
         update: {},
         create: {
+          id: 'newbie-user-001',
           email: 'newbie@example.com',
           password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKpQj6oqFmxGwQq',
           name: '새내기인플루언서',
-          type: 'INFLUENCER'
+          type: 'INFLUENCER',
+          status: 'ACTIVE',
+          verified: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       }),
-      prisma.user.upsert({
+      prisma.users.upsert({
         where: { email: 'daily@example.com' },
         update: {},
         create: {
+          id: 'daily-user-001',
           email: 'daily@example.com',
           password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKpQj6oqFmxGwQq',
           name: '일상크리에이터',
-          type: 'INFLUENCER'
+          type: 'INFLUENCER',
+          status: 'ACTIVE',
+          verified: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       }),
-      prisma.user.upsert({
+      prisma.users.upsert({
         where: { email: 'tech@example.com' },
         update: {},
         create: {
+          id: 'tech-user-001',
           email: 'tech@example.com',
           password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKpQj6oqFmxGwQq',
           name: '테크리뷰어C',
-          type: 'INFLUENCER'
+          type: 'INFLUENCER',
+          status: 'ACTIVE',
+          verified: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       }),
-      prisma.user.upsert({
+      prisma.users.upsert({
         where: { email: 'food@example.com' },
         update: {},
         create: {
+          id: 'food-user-001',
           email: 'food@example.com',
           password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKpQj6oqFmxGwQq',
           name: '푸드인플루언서D',
-          type: 'INFLUENCER'
+          type: 'INFLUENCER',
+          status: 'ACTIVE',
+          verified: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       })
     ])
@@ -925,23 +960,29 @@ LinkPick에서 테크 카테고리 캠페인이
       ...freePosts
     ]
 
-    for (const postData of allPosts) {
+    for (let i = 0; i < allPosts.length; i++) {
+      const postData = allPosts[i]
       const { views, likes, ...data } = postData
       
-      const post = await prisma.post.create({
+      const post = await prisma.posts.create({
         data: {
+          id: `post-${i + 1}`,
           ...data,
-          views
+          views,
+          updatedAt: new Date()
         }
       })
 
       // 좋아요 추가 (랜덤 유저가 좋아요)
       const likeUsers = users.sort(() => 0.5 - Math.random()).slice(0, Math.min(likes, users.length))
-      for (const user of likeUsers) {
-        await prisma.postLike.create({
+      for (let j = 0; j < likeUsers.length; j++) {
+        const user = likeUsers[j]
+        await prisma.post_likes.create({
           data: {
+            id: `like-${post.id}-${user.id}`,
             postId: post.id,
-            userId: user.id
+            userId: user.id,
+            createdAt: new Date()
           }
         })
       }
@@ -949,13 +990,16 @@ LinkPick에서 테크 카테고리 캠페인이
       // 댓글 추가 (일부 게시글에만)
       if (Math.random() > 0.5) {
         const commentCount = Math.floor(Math.random() * 5) + 1
-        for (let i = 0; i < commentCount; i++) {
+        for (let k = 0; k < commentCount; k++) {
           const commentUser = users[Math.floor(Math.random() * users.length)]
-          await prisma.comment.create({
+          await prisma.comments.create({
             data: {
+              id: `comment-${post.id}-${k + 1}`,
               postId: post.id,
               authorId: commentUser.id,
-              content: getRandomComment(post.category)
+              content: getRandomComment(post.category),
+              createdAt: new Date(),
+              updatedAt: new Date()
             }
           })
         }

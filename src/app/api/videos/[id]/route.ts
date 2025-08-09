@@ -28,24 +28,22 @@ export async function GET(
     // 현재는 비디오 테이블이 없으므로 캠페인 데이터를 비디오로 변환하여 사용
     
     // 캠페인을 비디오로 변환하여 사용
-    const campaign = await prisma.campaign.findUnique({
+    const campaign = await prisma.campaigns.findUnique({
       where: { id: videoId },
       include: {
-        business: {
+        users: {
           select: {
             id: true,
             name: true,
-            logo: true,
-            category: true
           }
         },
         _count: {
           select: {
-            applications: true,
-            likes: true
+            campaign_applications: true,
+            campaign_likes: true
           }
         },
-        likes: userId ? {
+        campaign_likes: userId ? {
           where: { userId },
           select: { id: true }
         } : false
@@ -65,9 +63,9 @@ export async function GET(
     // 사용자별 상호작용 정보 추가
     const videoWithInteractions = {
       ...video,
-      isLiked: userId ? campaign.likes.length > 0 : false,
+      isLiked: userId ? campaign.campaign_likes.length > 0 : false,
       isDisliked: false, // 캠페인에는 dislike가 없으므로 false
-      likeCount: campaign._count.likes,
+      likeCount: campaign._count.campaign_likes,
       dislikeCount: 0,
       // 크리에이터 정보 보강
       creator: {
@@ -112,9 +110,9 @@ export async function PUT(
     const { title, description, thumbnailUrl, tags, category, isPublic } = await request.json()
 
     // 현재는 캠페인을 업데이트 (실제 비디오 테이블이 생기면 변경)
-    const campaign = await prisma.campaign.findUnique({
+    const campaign = await prisma.campaigns.findUnique({
       where: { id: params.id },
-      include: { business: true }
+      include: { users: true }
     })
 
     if (!campaign) {
@@ -124,15 +122,15 @@ export async function PUT(
       )
     }
 
-    // 업데이트 권한 확인 (비즈니스 소유자만)
-    if (campaign.business.userId !== userId) {
+    // 업데이트 권한 확인 (캠페인 소유자만)
+    if (campaign.businessId !== userId) {
       return NextResponse.json(
         { error: 'Permission denied' },
         { status: 403 }
       )
     }
 
-    const updatedCampaign = await prisma.campaign.update({
+    const updatedCampaign = await prisma.campaigns.update({
       where: { id: params.id },
       data: {
         title: title || campaign.title,
@@ -143,18 +141,16 @@ export async function PUT(
         status: isPublic !== undefined ? (isPublic ? 'ACTIVE' : 'DRAFT') : campaign.status
       },
       include: {
-        business: {
+        users: {
           select: {
             id: true,
             name: true,
-            logo: true,
-            category: true
           }
         },
         _count: {
           select: {
-            applications: true,
-            likes: true
+            campaign_applications: true,
+            campaign_likes: true
           }
         }
       }
@@ -195,9 +191,9 @@ export async function DELETE(
     const userId = payload.userId
 
     // 현재는 캠페인 삭제 (실제 비디오 테이블이 생기면 변경)
-    const campaign = await prisma.campaign.findUnique({
+    const campaign = await prisma.campaigns.findUnique({
       where: { id: params.id },
-      include: { business: true }
+      include: { users: true }
     })
 
     if (!campaign) {
@@ -207,15 +203,15 @@ export async function DELETE(
       )
     }
 
-    // 삭제 권한 확인 (비즈니스 소유자만)
-    if (campaign.business.userId !== userId) {
+    // 삭제 권한 확인 (캠페인 소유자만)
+    if (campaign.businessId !== userId) {
       return NextResponse.json(
         { error: 'Permission denied' },
         { status: 403 }
       )
     }
 
-    await prisma.campaign.delete({
+    await prisma.campaigns.delete({
       where: { id: params.id }
     })
 

@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 채널 존재 확인
-    const channel = await prisma.channel.findUnique({
+    const channel = await prisma.channels.findUnique({
       where: { id: channelId }
     })
 
@@ -39,8 +39,9 @@ export async function POST(request: NextRequest) {
     }
 
     // SuperChat 생성
-    const superChat = await prisma.superChat.create({
+    const superChat = await prisma.super_chats.create({
       data: {
+        id: `superchat-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         userId: user.id,
         channelId,
         videoId,
@@ -52,12 +53,12 @@ export async function POST(request: NextRequest) {
         isPaid: false // 결제 완료 후 true로 변경
       },
       include: {
-        user: {
+        users: {
           select: {
             id: true,
             name: true,
             email: true,
-            profile: {
+            profiles: {
               select: {
                 profileImage: true
               }
@@ -99,22 +100,22 @@ export async function GET(request: NextRequest) {
     if (videoId) where.videoId = videoId
     if (streamId) where.streamId = streamId
 
-    const superChats = await prisma.superChat.findMany({
+    const superChats = await prisma.super_chats.findMany({
       where,
       include: {
-        user: {
+        users: {
           select: {
             id: true,
             name: true,
             email: true,
-            profile: {
+            profiles: {
               select: {
                 profileImage: true
               }
             }
           }
         },
-        channel: {
+        channels: {
           select: {
             id: true,
             name: true,

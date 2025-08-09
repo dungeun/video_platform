@@ -3,7 +3,7 @@ const prisma = new PrismaClient();
 
 async function checkJsonFields() {
   try {
-    const campaigns = await prisma.campaign.findMany({
+    const campaigns = await prisma.campaigns.findMany({
       take: 5
     });
     

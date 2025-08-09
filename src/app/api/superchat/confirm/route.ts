@@ -17,10 +17,10 @@ export async function POST(request: NextRequest) {
     }
 
     // SuperChat 조회
-    const superChat = await prisma.superChat.findUnique({
+    const superChat = await prisma.super_chats.findUnique({
       where: { id: superChatId },
       include: {
-        channel: true
+        channels: true
       }
     })
 
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     // 트랜잭션으로 처리
     const result = await prisma.$transaction(async (tx) => {
       // SuperChat 상태 업데이트
-      const updatedSuperChat = await tx.superChat.update({
+      const updatedSuperChat = await tx.super_chats.update({
         where: { id: superChatId },
         data: {
           isPaid: true,
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       })
 
       // 채널 통계 업데이트
-      await tx.channel.update({
+      await tx.channels.update({
         where: { id: superChat.channelId },
         data: {
           totalSuperChatAmount: {
@@ -65,8 +65,9 @@ export async function POST(request: NextRequest) {
 
       // 수익 기록 생성
       const now = new Date()
-      await tx.creatorEarnings.create({
+      await tx.creator_earnings.create({
         data: {
+          id: `earning-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           channelId: superChat.channelId,
           type: 'superchat',
           amount: superChat.amount,

@@ -20,7 +20,7 @@ export async function GET(
           select: {
             id: true,
             name: true,
-            profile: {
+            profiles: {
               select: {
                 profileImage: true
               }

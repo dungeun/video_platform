@@ -104,9 +104,13 @@ export default function StudioUpload() {
         throw new Error('네트워크 오류')
       })
 
-      const token = AuthService.getToken()
+      // 토큰은 localStorage에서 직접 가져오기 (AuthService에 getToken 메서드가 없음)
+      const storedUser = localStorage.getItem('user')
+      const token = storedUser ? JSON.parse(storedUser).token : null
       xhr.open('POST', '/api/upload/video')
-      xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+      if (token) {
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+      }
       xhr.send(formData)
 
     } catch (error) {

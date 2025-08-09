@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { AuthService } from '@/lib/auth'
 import { apiGet } from '@/lib/api/client'
 import { useBusinessVideoStats } from '@/hooks/useSharedData'
-import VideoManagementTab from '@/components/business/VideoManagementTab'
+// VideoManagementTab removed - old campaign platform component
 import { Play, Eye, Heart, Users, TrendingUp, Clock, BarChart3, MessageCircle } from 'lucide-react'
 
 function StudioDashboardContent() {
@@ -54,15 +54,14 @@ function StudioDashboardContent() {
           const parsedUser = JSON.parse(storedUser)
           console.log('Parsed user:', parsedUser)
           
-          // AuthService 복원
-          AuthService.login(parsedUser.type, parsedUser)
+          // 사용자 정보 복원
           currentUser = parsedUser
         }
         
-        const userType = currentUser.type?.toUpperCase()
+        const userType = currentUser?.type?.toUpperCase()
         console.log('User type:', userType);
         
-        if (userType !== 'BUSINESS' && userType !== 'ADMIN' && userType !== 'CREATOR') {
+        if (!currentUser || (userType !== 'BUSINESS' && userType !== 'ADMIN' && userType !== 'INFLUENCER')) {
           console.log('User type not allowed:', userType, '- 로그인 페이지로 리다이렉트')
           router.push('/login')
           return
@@ -382,7 +381,12 @@ function StudioDashboardContent() {
 
         {/* 탭 컨텐츠 */}
         <div>
-          {activeTab === 'videos' && <VideoManagementTab />}
+          {activeTab === 'videos' && (
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">내 비디오</h3>
+              <p className="text-gray-600">비디오 관리 기능은 준비 중입니다.</p>
+            </div>
+          )}
           {activeTab === 'analytics' && (
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">채널 분석</h3>

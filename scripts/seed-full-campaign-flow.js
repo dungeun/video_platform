@@ -7,7 +7,7 @@ async function main() {
 
   // 1. 비즈니스 사용자 생성
   const businessPassword = await bcrypt.hash('password123', 10)
-  const businessUser = await prisma.user.upsert({
+  const businessUser = await prisma.users.upsert({
     where: { email: 'testbusiness@linkpick.com' },
     update: {},
     create: {
@@ -33,7 +33,7 @@ async function main() {
 
   // 2. 인플루언서 사용자 생성
   const influencerPassword = await bcrypt.hash('password123', 10)
-  const influencerUser = await prisma.user.upsert({
+  const influencerUser = await prisma.users.upsert({
     where: { email: 'testinfluencer@linkpick.com' },
     update: {},
     create: {
@@ -59,7 +59,7 @@ async function main() {
   console.log('✅ Influencer user created:', influencerUser.email)
 
   // 3. 캠페인 생성 (결제 완료 상태)
-  const campaign = await prisma.campaign.create({
+  const campaign = await prisma.campaigns.create({
     data: {
       businessId: businessUser.id,
       title: '2025 여름 신상품 리뷰 캠페인',
@@ -81,7 +81,7 @@ async function main() {
   console.log('✅ Campaign created:', campaign.title)
 
   // 4. 결제 기록 생성
-  const payment = await prisma.payment.create({
+  const payment = await prisma.payments.create({
     data: {
       orderId: `ORDER_${Date.now()}`,
       campaignId: campaign.id,
@@ -113,7 +113,7 @@ async function main() {
   console.log('✅ Application created and approved')
 
   // 6. 콘텐츠 제출
-  const content = await prisma.content.create({
+  const content = await prisma.contents.create({
     data: {
       applicationId: application.id,
       contentUrl: 'https://www.instagram.com/p/test_content_123',
@@ -126,7 +126,7 @@ async function main() {
   console.log('✅ Content submitted and approved')
 
   // 7. 정산 생성 (콘텐츠 승인 시 자동 생성되는 것을 시뮬레이션)
-  const settlement = await prisma.settlement.create({
+  const settlement = await prisma.settlements.create({
     data: {
       influencerId: influencerUser.id,
       totalAmount: 800000, // 캠페인 예산의 80% (플랫폼 수수료 20% 제외)
@@ -141,7 +141,7 @@ async function main() {
   console.log('✅ Settlement created')
 
   // 8. 정산 아이템 생성
-  const settlementItem = await prisma.settlementItem.create({
+  const settlementItem = await prisma.settlement_items.create({
     data: {
       settlementId: settlement.id,
       applicationId: application.id,
@@ -154,7 +154,7 @@ async function main() {
   // 9. 추가 테스트 데이터: 정산 요청 및 완료된 정산
   
   // 정산 요청된 건
-  const requestedSettlement = await prisma.settlement.create({
+  const requestedSettlement = await prisma.settlements.create({
     data: {
       influencerId: influencerUser.id,
       totalAmount: 600000,
@@ -169,7 +169,7 @@ async function main() {
   })
 
   // 완료된 정산
-  const completedSettlement = await prisma.settlement.create({
+  const completedSettlement = await prisma.settlements.create({
     data: {
       influencerId: influencerUser.id,
       totalAmount: 500000,
@@ -187,7 +187,7 @@ async function main() {
   console.log('✅ Additional settlements created')
 
   // 10. 파일 업로드 기록 (콘텐츠 이미지)
-  const file = await prisma.file.create({
+  const file = await prisma.files.create({
     data: {
       userId: influencerUser.id,
       filename: 'content-screenshot.jpg',
@@ -200,7 +200,7 @@ async function main() {
     }
   })
 
-  const contentMedia = await prisma.contentMedia.create({
+  const contentMedia = await prisma.content_media.create({
     data: {
       contentId: content.id,
       fileId: file.id,

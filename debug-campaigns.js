@@ -14,11 +14,11 @@ async function testCampaignQuery() {
     console.log('Testing campaign query...');
     
     // 간단한 쿼리 먼저 테스트
-    const simpleCount = await prisma.campaign.count();
+    const simpleCount = await prisma.campaigns.count();
     console.log('Campaign count:', simpleCount);
     
     // 복잡한 쿼리 테스트
-    const campaigns = await prisma.campaign.findMany({
+    const campaigns = await prisma.campaigns.findMany({
       include: {
         business: {
           select: {

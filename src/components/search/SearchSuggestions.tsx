@@ -155,6 +155,8 @@ export default function SearchSuggestions({
       document.addEventListener('mousedown', handleClickOutside)
       return () => document.removeEventListener('mousedown', handleClickOutside)
     }
+    
+    return undefined
   }, [isVisible, onClose])
 
   const handleSuggestionClick = (suggestion: SearchSuggestion) => {

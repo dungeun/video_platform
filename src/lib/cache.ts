@@ -1,4 +1,11 @@
-import Redis from 'ioredis';
+// Redis import - optionally load if available
+let Redis: any;
+try {
+  Redis = require('ioredis');
+} catch (error) {
+  // Redis not available, will use in-memory cache only
+  console.log('Redis module not available, using in-memory cache only');
+}
 
 /**
  * Cache configuration and utilities
@@ -10,12 +17,12 @@ export interface CacheOptions {
 }
 
 export class CacheManager {
-  private redis: Redis | null = null;
+  private redis: any | null = null;
   private memoryCache: Map<string, { value: any; expires: number }> = new Map();
 
   constructor() {
     // Skip Redis initialization in development or when explicitly disabled
-    if (process.env.DISABLE_REDIS === 'true' || process.env.NODE_ENV === 'development') {
+    if (!Redis || process.env.DISABLE_REDIS === 'true' || process.env.NODE_ENV === 'development') {
       console.log('Cache: Redis disabled, using in-memory cache only');
       return;
     }

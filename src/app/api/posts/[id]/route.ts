@@ -23,17 +23,17 @@ export async function GET(
         console.log('Token validation error:', error)
       }
     }
-    const post = await prisma.post.findUnique({
+    const post = await prisma.posts.findUnique({
       where: {
         id: params.id,
         status: 'PUBLISHED'
       },
       include: {
-        author: {
+        users: {
           select: {
             id: true,
             name: true,
-            profile: {
+            profiles: {
               select: {
                 profileImage: true
               }
@@ -46,40 +46,23 @@ export async function GET(
             parentId: null // 최상위 댓글만
           },
           include: {
-            author: {
+            users: {
               select: {
                 id: true,
                 name: true,
-                profile: {
+                profiles: {
                   select: {
                     profileImage: true
                   }
                 }
               }
             },
-            replies: {
-              where: { status: 'PUBLISHED' },
-              include: {
-                author: {
-                  select: {
-                    id: true,
-                    name: true,
-                    profile: {
-                      select: {
-                        profileImage: true
-                      }
-                    }
-                  }
-                }
-              },
-              orderBy: { createdAt: 'asc' }
-            }
           },
           orderBy: { createdAt: 'desc' }
         },
         _count: {
           select: {
-            postLikes: true
+            post_likes: true
           }
         }
       }
@@ -90,7 +73,7 @@ export async function GET(
     }
 
     // 조회수 증가
-    await prisma.post.update({
+    await prisma.posts.update({
       where: { id: params.id },
       data: { views: { increment: 1 } }
     })
@@ -98,7 +81,7 @@ export async function GET(
     // 사용자가 로그인한 경우 좋아요 상태 확인
     let isLiked = false
     if (userId) {
-      const userLike = await prisma.postLike.findUnique({
+      const userLike = await prisma.post_likes.findUnique({
         where: {
           postId_userId: {
             postId: params.id,
@@ -115,35 +98,26 @@ export async function GET(
       content: post.content,
       category: post.category,
       views: post.views + 1,
-      likes: post._count.postLikes,
+      likes: post._count.post_likes,
       isLiked: isLiked,
       isPinned: post.isPinned,
       createdAt: post.createdAt,
       updatedAt: post.updatedAt,
       author: {
-        id: post.author.id,
-        name: post.author.name,
-        avatar: post.author.profile?.profileImage
+        id: post.users.id,
+        name: post.users.name,
+        avatar: post.users.profiles?.profileImage
       },
       comments: post.comments.map(comment => ({
         id: comment.id,
         content: comment.content,
         createdAt: comment.createdAt,
         author: {
-          id: comment.author.id,
-          name: comment.author.name,
-          avatar: comment.author.profile?.profileImage
+          id: comment.users.id,
+          name: comment.users.name,
+          avatar: comment.users.profiles?.profileImage
         },
-        replies: comment.replies.map(reply => ({
-          id: reply.id,
-          content: reply.content,
-          createdAt: reply.createdAt,
-          author: {
-            id: reply.author.id,
-            name: reply.author.name,
-            avatar: reply.author.profile?.profileImage
-          }
-        }))
+        replies: []
       }))
     })
   } catch (error) {
@@ -176,7 +150,7 @@ export async function PUT(
 
     const { title, content, category } = await request.json()
 
-    const existingPost = await prisma.post.findUnique({
+    const existingPost = await prisma.posts.findUnique({
       where: { id: params.id }
     })
 
@@ -194,7 +168,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Invalid category' }, { status: 400 })
     }
 
-    const updatedPost = await prisma.post.update({
+    const updatedPost = await prisma.posts.update({
       where: { id: params.id },
       data: {
         ...(title && { title }),
@@ -202,11 +176,11 @@ export async function PUT(
         ...(category && { category })
       },
       include: {
-        author: {
+        users: {
           select: {
             id: true,
             name: true,
-            profile: {
+            profiles: {
               select: {
                 profileImage: true
               }
@@ -218,7 +192,7 @@ export async function PUT(
             comments: {
               where: { status: 'PUBLISHED' }
             },
-            postLikes: true
+            post_likes: true
           }
         }
       }
@@ -230,15 +204,15 @@ export async function PUT(
       content: updatedPost.content,
       category: updatedPost.category,
       views: updatedPost.views,
-      likes: updatedPost._count.postLikes,
+      likes: updatedPost._count.post_likes,
       comments: updatedPost._count.comments,
       isPinned: updatedPost.isPinned,
       createdAt: updatedPost.createdAt,
       updatedAt: updatedPost.updatedAt,
       author: {
-        id: updatedPost.author.id,
-        name: updatedPost.author.name,
-        avatar: updatedPost.author.profile?.profileImage
+        id: updatedPost.users.id,
+        name: updatedPost.users.name,
+        avatar: updatedPost.users.profiles?.profileImage
       }
     })
   } catch (error) {
@@ -269,7 +243,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
-    const existingPost = await prisma.post.findUnique({
+    const existingPost = await prisma.posts.findUnique({
       where: { id: params.id }
     })
 
@@ -282,7 +256,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    await prisma.post.update({
+    await prisma.posts.update({
       where: { id: params.id },
       data: { status: 'DELETED' }
     })

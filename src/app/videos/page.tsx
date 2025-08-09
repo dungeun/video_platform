@@ -133,8 +133,8 @@ function VideosPageContent() {
           const convertedVideos = (campaignData.campaigns || []).map(transformCampaignToVideo)
           
           // 중복 제거 후 추가
-          const existingIds = new Set(allVideos.map(v => v.id))
-          const newVideos = convertedVideos.filter(v => !existingIds.has(v.id))
+          const existingIds = new Set(allVideos.map((v: any) => v.id))
+          const newVideos = convertedVideos.filter((v: any) => !existingIds.has(v.id))
           allVideos = [...allVideos, ...newVideos]
         }
       }
@@ -168,7 +168,7 @@ function VideosPageContent() {
       case 'views':
         return sorted.sort((a, b) => b.viewCount - a.viewCount)
       case 'likes':
-        return sorted.sort((a, b) => b.likeCount - a.likeCount)
+        return sorted.sort((a, b) => (b.likeCount || 0) - (a.likeCount || 0))
       default:
         return sorted
     }
@@ -325,7 +325,7 @@ function VideosPageContent() {
                           className="cursor-pointer hover:bg-gray-300"
                           onClick={() => setSearchTerm('')}
                         >
-                          "{searchTerm}" ×
+                          &ldquo;{searchTerm}&rdquo; ×
                         </Badge>
                       )}
                       {selectedDuration !== 'all' && (

@@ -56,14 +56,14 @@ export async function fetchCampaignsPaginated(
 
   // Use transaction for consistent reads
   const [campaigns, total] = await prisma.$transaction([
-    prisma.campaign.findMany({
+    prisma.campaigns.findMany({
       where,
       orderBy: orderBy || { createdAt: 'desc' },
       skip: offset,
       take: limit,
       include: getCampaignWithRelations()
     }),
-    prisma.campaign.count({ where })
+    prisma.campaigns.count({ where })
   ]);
 
   return {
@@ -159,7 +159,7 @@ export async function getAggregatedStats(
     revenueStats
   ] = await prisma.$transaction([
     // Campaign statistics
-    prisma.campaign.aggregate({
+    prisma.campaigns.aggregate({
       where: {
         createdAt: {
           gte: dateRange.start,

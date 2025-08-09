@@ -17,29 +17,35 @@ async function createAdditionalAdmins() {
   const admins = []
   
   // 관리자 1
-  const admin1 = await prisma.user.create({
+  const admin1 = await prisma.users.create({
     data: {
+      id: 'admin-002',
       email: 'admin2@linkpick.co.kr',
       password: hashedPassword,
       name: '김지원 (운영팀)',
       type: 'ADMIN',
       status: 'ACTIVE',
       verified: true,
-      lastLogin: new Date(Date.now() - 1000 * 60 * 60 * 24) // 1일 전
+      lastLogin: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1일 전
+      createdAt: new Date(),
+      updatedAt: new Date()
     }
   })
   admins.push(admin1)
   
   // 관리자 2
-  const admin2 = await prisma.user.create({
+  const admin2 = await prisma.users.create({
     data: {
+      id: 'admin-003',
       email: 'admin3@linkpick.co.kr',
       password: hashedPassword,
       name: '박민수 (개발팀)',
       type: 'ADMIN',
       status: 'ACTIVE',
       verified: true,
-      lastLogin: new Date(Date.now() - 1000 * 60 * 60 * 48) // 2일 전
+      lastLogin: new Date(Date.now() - 1000 * 60 * 60 * 48), // 2일 전
+      createdAt: new Date(),
+      updatedAt: new Date()
     }
   })
   admins.push(admin2)
@@ -62,8 +68,9 @@ async function createAdditionalUsers() {
     const isInfluencer = i % 2 === 0
     const status = statuses[Math.floor(Math.random() * statuses.length)]
     
-    const user = await prisma.user.create({
+    const user = await prisma.users.create({
       data: {
+        id: `user-${i + 100}`,
         email: `user${i + 100}@example.com`,
         password: hashedPassword,
         name: name,
@@ -75,30 +82,38 @@ async function createAdditionalUsers() {
           : status === 'INACTIVE'
           ? new Date(Date.now() - 1000 * 60 * 60 * 24 * 60) // 60일 전
           : null,
-        profile: isInfluencer ? {
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        profiles: isInfluencer ? {
           create: {
+            id: `profile-${i + 100}`,
             bio: `안녕하세요, ${name}입니다. 다양한 콘텐츠를 제작하고 있습니다.`,
             instagram: `@${name.toLowerCase().replace(/\s/g, '')}`,
             instagramFollowers: Math.floor(Math.random() * 100000) + 1000,
             youtube: Math.random() > 0.5 ? `youtube.com/@${name.toLowerCase()}` : null,
             youtubeSubscribers: Math.random() > 0.5 ? Math.floor(Math.random() * 50000) + 500 : null,
-            categories: JSON.stringify(['뷰티', '패션', '라이프스타일'][Math.floor(Math.random() * 3)])
+            categories: JSON.stringify(['뷰티', '패션', '라이프스타일'][Math.floor(Math.random() * 3)]),
+            createdAt: new Date(),
+            updatedAt: new Date()
           }
         } : undefined,
-        businessProfile: !isInfluencer ? {
+        business_profiles: !isInfluencer ? {
           create: {
+            id: `business-profile-${i + 100}`,
             companyName: `${name} 컴퍼니`,
             businessNumber: `${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 90) + 10}-${Math.floor(Math.random() * 90000) + 10000}`,
             representativeName: name,
             businessAddress: `서울시 ${['강남구', '서초구', '송파구', '마포구', '성동구'][Math.floor(Math.random() * 5)]} 도로명 ${Math.floor(Math.random() * 100) + 1}`,
             businessCategory: ['패션', '뷰티', '푸드', '테크', '라이프스타일'][Math.floor(Math.random() * 5)],
-            isVerified: status === 'ACTIVE' && Math.random() > 0.3
+            isVerified: status === 'ACTIVE' && Math.random() > 0.3,
+            createdAt: new Date(),
+            updatedAt: new Date()
           }
         } : undefined
       },
       include: {
-        profile: true,
-        businessProfile: true
+        profiles: true,
+        business_profiles: true
       }
     })
     

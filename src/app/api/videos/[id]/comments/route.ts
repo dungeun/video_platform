@@ -104,8 +104,7 @@ export async function POST(
       select: {
         id: true,
         name: true,
-        profileImage: true,
-        // isVerified 필드가 없다면 임시로 false
+        verified: true, // profileImage 대신 verified 필드 사용
       }
     })
 
@@ -124,8 +123,8 @@ export async function POST(
       author: {
         id: user.id,
         name: user.name || '익명',
-        profileImage: user.profileImage,
-        isVerified: false // 임시
+        profileImage: null, // profileImage 필드가 없으므로 null
+        isVerified: user.verified || false
       },
       createdAt: new Date().toISOString(),
       likeCount: 0,
