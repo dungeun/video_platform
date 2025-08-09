@@ -21,7 +21,7 @@ export function handleError(error: unknown): NextResponse {
     return NextResponse.json(
       {
         error: 'Validation failed',
-        details: error.errors.map(e => ({
+        details: error.issues.map(e => ({
           path: e.path.join('.'),
           message: e.message
         }))

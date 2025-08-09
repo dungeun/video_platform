@@ -99,7 +99,7 @@ export class YouTubeService {
       };
     } catch (error) {
       console.error('Error fetching YouTube video info:', error);
-      throw new Error(`Failed to fetch video info: ${error.message}`);
+      throw new Error(`Failed to fetch video info: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 

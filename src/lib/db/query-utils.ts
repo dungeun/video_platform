@@ -45,8 +45,8 @@ export function getCampaignWithRelations(includeApplications: boolean = false) {
 export async function fetchCampaignsPaginated(
   prisma: any,
   options: {
-    where?: Prisma.CampaignWhereInput;
-    orderBy?: Prisma.CampaignOrderByWithRelationInput;
+    where?: Prisma.campaignsWhereInput;
+    orderBy?: Prisma.campaignsOrderByWithRelationInput;
     page: number;
     limit: number;
   }

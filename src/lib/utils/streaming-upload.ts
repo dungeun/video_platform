@@ -88,7 +88,7 @@ export class StreamingUploader {
 
       // 쓰기 스트림 종료
       await new Promise<void>((resolve, reject) => {
-        writeStream.end((error) => {
+        writeStream.end((error: Error | null | undefined) => {
           if (error) reject(error);
           else resolve();
         });
@@ -172,7 +172,7 @@ export class StreamingUploader {
 
       // 쓰기 스트림 종료
       await new Promise<void>((resolve, reject) => {
-        writeStream.end((error) => {
+        writeStream.end((error: Error | null | undefined) => {
           if (error) reject(error);
           else resolve();
         });

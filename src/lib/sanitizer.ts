@@ -71,12 +71,10 @@ export function sanitizeHtml(dirty: string, options: SanitizeOptions = {}): stri
   }
 
   // DOMPurify로 정화
-  let clean = DOMPurify.sanitize(dirty, config);
-
+  const cleanHtml = DOMPurify.sanitize(dirty, config);
+  
   // TrustedHTML을 string으로 변환
-  if (typeof clean !== 'string') {
-    clean = String(clean);
-  }
+  let clean: string = typeof cleanHtml === 'string' ? cleanHtml : cleanHtml.toString();
 
   // 추가 보안: JavaScript 프로토콜 제거
   clean = clean.replace(/javascript:/gi, '');

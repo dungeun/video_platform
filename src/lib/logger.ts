@@ -51,7 +51,7 @@ class Logger {
     return `${prefix} ${message}`;
   }
 
-  private log(level: LogLevel, message: string, ...args: any[]): void {
+  private logMessage(level: LogLevel, message: string, ...args: any[]): void {
     if (!this.shouldLog(level)) {
       return;
     }
@@ -118,19 +118,19 @@ class Logger {
   }
 
   public debug(message: string, ...args: any[]): void {
-    this.log('debug', message, ...args);
+    this.logMessage('debug', message, ...args);
   }
 
   public info(message: string, ...args: any[]): void {
-    this.log('info', message, ...args);
+    this.logMessage('info', message, ...args);
   }
 
   public warn(message: string, ...args: any[]): void {
-    this.log('warn', message, ...args);
+    this.logMessage('warn', message, ...args);
   }
 
   public error(message: string, ...args: any[]): void {
-    this.log('error', message, ...args);
+    this.logMessage('error', message, ...args);
   }
 
   // console.log 대체 메서드
@@ -158,4 +158,5 @@ if (process.env.NODE_ENV === 'production' && typeof window !== 'undefined') {
 }
 
 export default logger;
-export { Logger, LogLevel, LoggerConfig };
+export { Logger };
+export type { LogLevel, LoggerConfig };
