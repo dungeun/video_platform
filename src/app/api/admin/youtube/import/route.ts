@@ -64,6 +64,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Video already imported' }, { status: 400 })
     }
 
+    // Check if the importing user exists in database
+    let importingUserId = null;
+    if (user.id) {
+      const existingUser = await prisma.users.findUnique({
+        where: { id: user.id }
+      }).catch(() => null);
+      
+      if (existingUser) {
+        importingUserId = user.id;
+      } else {
+        console.log('User not found in database, setting importedBy to null');
+      }
+    }
+
     // Create video record in database
     const video = await prisma.youtube_videos.create({
       data: {
@@ -83,7 +97,7 @@ export async function POST(request: NextRequest) {
         tags: videoInfo.tags.join(','),
         category: videoInfo.category,
         embedHtml: videoInfo.embedHtml,
-        importedBy: user.id,
+        importedBy: importingUserId, // null if user doesn't exist
         assignedUserId: assignedUserId || null,
         assignedAt: assignedUserId ? new Date() : null
       },
