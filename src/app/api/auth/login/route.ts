@@ -10,9 +10,22 @@ export const runtime = 'nodejs'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
 
+// CORS headers
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Max-Age': '86400',
+}
+
 // 프로덕션 환경에서 기본 시크릿 사용 방지
 if (process.env.NODE_ENV === 'production' && JWT_SECRET === 'your-secret-key') {
   throw new Error('JWT_SECRET must be set in production environment')
+}
+
+// OPTIONS 메서드 처리 (CORS preflight)
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, { status: 200, headers: corsHeaders })
 }
 
 export async function POST(request: NextRequest) {
@@ -26,10 +39,14 @@ export async function POST(request: NextRequest) {
     try {
       body = await request.json()
     } catch (parseError) {
-      throw new AppError(
-        '잘못된 요청 형식입니다.',
-        400,
-        ErrorTypes.VALIDATION_ERROR
+      return NextResponse.json(
+        {
+          error: {
+            message: '잘못된 요청 형식입니다.',
+            code: ErrorTypes.VALIDATION_ERROR
+          }
+        },
+        { status: 400, headers: corsHeaders }
       )
     }
     
@@ -37,20 +54,28 @@ export async function POST(request: NextRequest) {
 
     // 입력 검증
     if (!email || !password) {
-      throw new AppError(
-        '이메일과 비밀번호를 입력해주세요.',
-        400,
-        ErrorTypes.VALIDATION_ERROR
+      return NextResponse.json(
+        {
+          error: {
+            message: '이메일과 비밀번호를 입력해주세요.',
+            code: ErrorTypes.VALIDATION_ERROR
+          }
+        },
+        { status: 400, headers: corsHeaders }
       )
     }
 
     // 이메일 형식 검증
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
-      throw new AppError(
-        '올바른 이메일 형식이 아닙니다.',
-        400,
-        ErrorTypes.VALIDATION_ERROR
+      return NextResponse.json(
+        {
+          error: {
+            message: '올바른 이메일 형식이 아닙니다.',
+            code: ErrorTypes.VALIDATION_ERROR
+          }
+        },
+        { status: 400, headers: corsHeaders }
       )
     }
 
@@ -130,6 +155,8 @@ export async function POST(request: NextRequest) {
           user: mockUser,
           token,
           accessToken: token
+        }, {
+          headers: corsHeaders
         })
 
         // 쿠키 설정
@@ -164,10 +191,14 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       // 보안을 위해 사용자 존재 여부를 명시하지 않음
-      throw new AppError(
-        '이메일 또는 비밀번호가 올바르지 않습니다.',
-        401,
-        ErrorTypes.AUTHENTICATION_ERROR
+      return NextResponse.json(
+        {
+          error: {
+            message: '이메일 또는 비밀번호가 올바르지 않습니다.',
+            code: ErrorTypes.AUTHENTICATION_ERROR
+          }
+        },
+        { status: 401, headers: corsHeaders}
       )
     }
 
@@ -181,10 +212,14 @@ export async function POST(request: NextRequest) {
         timestamp: new Date().toISOString()
       })
       
-      throw new AppError(
-        '이메일 또는 비밀번호가 올바르지 않습니다.',
-        401,
-        ErrorTypes.AUTHENTICATION_ERROR
+      return NextResponse.json(
+        {
+          error: {
+            message: '이메일 또는 비밀번호가 올바르지 않습니다.',
+            code: ErrorTypes.AUTHENTICATION_ERROR
+          }
+        },
+        { status: 401, headers: corsHeaders }
       )
     }
 
@@ -252,6 +287,13 @@ export async function POST(request: NextRequest) {
       endpoint: '/api/auth/login',
       method: 'POST'
     })
-    return createErrorResponse(error)
+    
+    // createErrorResponse의 응답에 CORS 헤더 추가
+    const errorResponse = createErrorResponse(error)
+    const errorData = await errorResponse.json()
+    return NextResponse.json(errorData, {
+      status: errorResponse.status,
+      headers: corsHeaders
+    })
   }
 }
