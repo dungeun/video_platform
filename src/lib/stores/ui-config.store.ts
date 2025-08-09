@@ -595,6 +595,7 @@ export const useUIConfigStore = create<UIConfigStore>()(
             const uiData = await uiConfigResponse.json()
             console.log('UI config loaded:', uiData.config);
             console.log('SectionOrder from API:', uiData.config?.mainPage?.sectionOrder);
+            
             // API로부터 받은 config가 유효한지 검증
             if (uiData.config && 
                 uiData.config.mainPage && 
@@ -604,6 +605,19 @@ export const useUIConfigStore = create<UIConfigStore>()(
                 uiData.config.mainPage.categoryMenus.length > 0) {
               console.log('Using valid API config');
               console.log('Final sectionOrder:', uiData.config.mainPage.sectionOrder);
+              
+              // sectionOrder가 있지만 ranking과 recommended가 visible: false인 경우 강제로 true로 변경
+              if (uiData.config.mainPage.sectionOrder) {
+                const updatedSectionOrder = uiData.config.mainPage.sectionOrder.map((section: any) => {
+                  if ((section.id === 'ranking' || section.id === 'recommended') && section.visible === false) {
+                    console.log(`Forcing ${section.id} to be visible`);
+                    return { ...section, visible: true };
+                  }
+                  return section;
+                });
+                uiData.config.mainPage.sectionOrder = updatedSectionOrder;
+              }
+              
               set({ config: uiData.config })
             } else {
               console.log('API config incomplete, using default');
