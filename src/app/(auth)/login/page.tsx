@@ -63,13 +63,30 @@ export default function LoginPage() {
     setIsLoading(true)
     
     try {
+      console.log('Form login attempt:', formData)
+      console.log('Request body:', JSON.stringify(formData))
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       })
 
-      const data = await response.json()
+      console.log('Response status:', response.status)
+      console.log('Response headers:', response.headers)
+      
+      const responseText = await response.text()
+      console.log('Raw response text:', responseText)
+      
+      let data
+      try {
+        data = JSON.parse(responseText)
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError)
+        console.error('Response was:', responseText)
+        setError('서버 응답을 처리할 수 없습니다.')
+        setIsLoading(false)
+        return
+      }
 
       if (response.ok) {
         console.log('=== handleSubmit 로그인 성공 ===');
@@ -163,13 +180,30 @@ export default function LoginPage() {
     
     try {
       console.log('Quick login attempt:', cred)
+      console.log('Request body:', JSON.stringify(cred))
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(cred),
       })
 
-      const data = await response.json()
+      console.log('Response status:', response.status)
+      console.log('Response headers:', response.headers)
+      
+      const responseText = await response.text()
+      console.log('Raw response text:', responseText)
+      
+      let data
+      try {
+        data = JSON.parse(responseText)
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError)
+        console.error('Response was:', responseText)
+        setError('서버 응답을 처리할 수 없습니다.')
+        setIsLoading(false)
+        return
+      }
+      
       console.log('Login response:', { status: response.status, data })
 
       if (response.ok) {
