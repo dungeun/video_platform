@@ -58,39 +58,49 @@ export function useAuth() {
   // 현재 사용자 정보 가져오기
   const getCurrentUser = useCallback(async () => {
     const token = getAccessToken();
-    if (!token) {
+    const storedUser = localStorage.getItem('user');
+    
+    if (!token || !storedUser) {
       setAuthState(prev => ({ ...prev, isLoading: false }));
       return;
     }
 
     try {
-      const response = await fetch('/api/auth/me', {
+      // 먼저 localStorage에서 사용자 정보를 읽어옴
+      const userData = JSON.parse(storedUser);
+      setAuthState({
+        user: userData,
+        isAuthenticated: true,
+        isLoading: false,
+      });
+      
+      // /api/auth/me 엔드포인트가 있다면 백그라운드에서 검증
+      // 없어도 localStorage 데이터로 작동
+      fetch('/api/auth/me', {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
+      }).then(response => {
+        if (!response.ok) {
+          // 토큰이 만료되었거나 유효하지 않은 경우에만 로그아웃
+          if (response.status === 401) {
+            clearTokens();
+            setAuthState({
+              user: null,
+              isAuthenticated: false,
+              isLoading: false,
+            });
+          }
+        }
+      }).catch(() => {
+        // /api/auth/me 엔드포인트가 없어도 localStorage 데이터로 계속 작동
+        console.log('Auth verification endpoint not available, using cached data');
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        const userData = data.user || data; // handle both { user: {...} } and direct user object
-        setAuthState({
-          user: userData,
-          isAuthenticated: true,
-          isLoading: false,
-        });
-        // Sync with localStorage
-        localStorage.setItem('user', JSON.stringify(userData));
-      } else {
-        // 토큰이 유효하지 않음
-        clearTokens();
-        setAuthState({
-          user: null,
-          isAuthenticated: false,
-          isLoading: false,
-        });
-      }
+      
     } catch (error) {
       console.error('Auth error:', error);
+      // localStorage 파싱 실패 시
+      clearTokens();
       setAuthState({
         user: null,
         isAuthenticated: false,
