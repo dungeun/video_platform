@@ -66,19 +66,35 @@ export class YouTubeService {
 
       // Use YouTube oEmbed API (no API key required)
       const oembedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
-      const response = await fetch(oembedUrl);
+      
+      console.log('Fetching from oEmbed:', oembedUrl);
+      
+      const response = await fetch(oembedUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'Accept': 'application/json',
+        },
+        // Add timeout to prevent hanging
+        signal: AbortSignal.timeout(10000)
+      }).catch(error => {
+        console.error('oEmbed fetch error:', error);
+        throw new Error('Network error while fetching video info');
+      });
       
       if (!response.ok) {
-        throw new Error('Failed to fetch video info from YouTube');
+        console.error('oEmbed response not OK:', response.status, response.statusText);
+        throw new Error(`Failed to fetch video info from YouTube: ${response.status}`);
       }
 
       const oembedData = await response.json();
+      console.log('oEmbed data received:', oembedData);
       
       // Extract thumbnail URL from oEmbed or use default
       const thumbnailUrl = oembedData.thumbnail_url || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
 
       // Try to get higher quality thumbnail
-      const highQualityThumbnail = thumbnailUrl.replace('/hqdefault.jpg', '/maxresdefault.jpg');
+      const highQualityThumbnail = thumbnailUrl.replace('/hqdefault.jpg', '/maxresdefault.jpg')
+                                              .replace('/default.jpg', '/maxresdefault.jpg');
 
       return {
         youtubeId: videoId,
@@ -99,6 +115,28 @@ export class YouTubeService {
       };
     } catch (error) {
       console.error('Error fetching YouTube video info:', error);
+      // Provide fallback data if oEmbed fails
+      const videoId = this.extractVideoId(url);
+      if (videoId) {
+        console.log('Falling back to basic video info for:', videoId);
+        return {
+          youtubeId: videoId,
+          youtubeUrl: `https://www.youtube.com/watch?v=${videoId}`,
+          title: `YouTube Video - ${videoId}`,
+          description: '',
+          thumbnailUrl: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+          channelTitle: 'Unknown Channel',
+          channelId: '',
+          duration: 'PT0S',
+          viewCount: 0,
+          likeCount: 0,
+          commentCount: 0,
+          publishedAt: new Date(),
+          tags: [],
+          category: '',
+          embedHtml: this.generateEmbedCode(videoId)
+        };
+      }
       throw new Error(`Failed to fetch video info: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }

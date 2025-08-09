@@ -1,20 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { AuthService } from '@/lib/auth'
 import { YouTubeService } from '@/lib/services/youtube.service'
+import jwt from 'jsonwebtoken'
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
 
 // POST - Import YouTube video
 export async function POST(request: NextRequest) {
   try {
-    // Check admin auth
-    const user = AuthService.getUserFromRequest(request)
-    console.log('User from request:', user)
+    // Check admin auth - JWT 직접 검증
+    let user: any = null;
     
-    // Temporary: Skip auth for testing
-    const testUser = user || { id: 'test-admin-id', type: 'ADMIN' }
+    // Check both cookie names for compatibility
+    let accessToken = request.cookies.get('auth-token')?.value || request.cookies.get('accessToken')?.value
     
-    if (!testUser || testUser.type !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // Also check Authorization header
+    if (!accessToken) {
+      const authHeader = request.headers.get('Authorization')
+      if (authHeader?.startsWith('Bearer ')) {
+        accessToken = authHeader.substring(7)
+      }
+    }
+
+    if (accessToken) {
+      try {
+        const decoded = jwt.verify(accessToken, JWT_SECRET) as any
+        user = {
+          id: decoded.userId || decoded.id,
+          email: decoded.email,
+          name: decoded.name,
+          type: decoded.type
+        }
+      } catch (error) {
+        console.error('JWT verification error:', error)
+      }
+    }
+
+    console.log('User from token:', user)
+    
+    if (!user || user.type !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 401 })
     }
 
     const { url, assignedUserId } = await request.json()
@@ -58,7 +83,7 @@ export async function POST(request: NextRequest) {
         tags: videoInfo.tags.join(','),
         category: videoInfo.category,
         embedHtml: videoInfo.embedHtml,
-        importedBy: testUser.id,
+        importedBy: user.id,
         assignedUserId: assignedUserId || null,
         assignedAt: assignedUserId ? new Date() : null
       },
