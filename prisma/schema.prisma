@@ -710,13 +710,13 @@ model youtube_videos {
   embedHtml                                  String?
   assignedUserId                             String?
   assignedAt                                 DateTime?
-  importedBy                                 String
+  importedBy                                 String?
   importedAt                                 DateTime  @default(now())
   status                                     String    @default("imported")
   featured                                   Boolean   @default(false)
   displayOrder                               Int       @default(0)
   users_youtube_videos_assignedUserIdTousers users?    @relation("youtube_videos_assignedUserIdTousers", fields: [assignedUserId], references: [id])
-  users_youtube_videos_importedByTousers     users     @relation("youtube_videos_importedByTousers", fields: [importedBy], references: [id])
+  users_youtube_videos_importedByTousers     users?    @relation("youtube_videos_importedByTousers", fields: [importedBy], references: [id])
 
   @@index([assignedUserId])
   @@index([featured])
