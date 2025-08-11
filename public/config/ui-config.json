@@ -1,34 +1,47 @@
 {
   "header": {
     "logo": {
-      "text": "비디오픽",
-      "imageUrl": null
+      "text": "비디오픽"
     },
     "menus": [
       {
-        "id": "menu-1",
-        "label": "인기영상",
-        "href": "/campaigns",
+        "id": "1",
+        "label": "홈",
+        "href": "/",
         "order": 1,
         "visible": true
       },
       {
-        "id": "menu-2",
-        "label": "VIP영상",
-        "href": "/influencers",
+        "id": "2",
+        "label": "인기",
+        "href": "/videos?sort=popular",
         "order": 2,
         "visible": true
       },
       {
-        "id": "menu-3",
+        "id": "3",
+        "label": "구독",
+        "href": "/subscriptions",
+        "order": 3,
+        "visible": true
+      },
+      {
+        "id": "4",
+        "label": "라이브",
+        "href": "/live",
+        "order": 4,
+        "visible": true
+      },
+      {
+        "id": "5",
         "label": "커뮤니티",
         "href": "/community",
-        "order": 3,
+        "order": 5,
         "visible": true
       }
     ],
     "ctaButton": {
-      "text": "시작하기",
+      "text": "무료로 시작하기",
       "href": "/register",
       "visible": true
     }
@@ -36,64 +49,85 @@
   "footer": {
     "columns": [
       {
-        "id": "column-1",
+        "id": "1",
         "title": "서비스",
         "order": 1,
         "links": [
           {
-            "id": "link-1",
-            "label": "인플루언서 찾기",
-            "href": "/influencers",
+            "id": "1-1",
+            "label": "비디오 둘러보기",
+            "href": "/videos",
             "order": 1,
             "visible": true
           },
           {
-            "id": "link-2",
-            "label": "캠페인 만들기",
-            "href": "/campaigns/create",
+            "id": "1-2",
+            "label": "크리에이터 찾기",
+            "href": "/channels",
             "order": 2,
+            "visible": true
+          },
+          {
+            "id": "1-3",
+            "label": "스튜디오",
+            "href": "/studio",
+            "order": 3,
             "visible": true
           }
         ]
       },
       {
-        "id": "column-2",
+        "id": "2",
         "title": "회사",
         "order": 2,
         "links": [
           {
-            "id": "link-3",
+            "id": "2-1",
             "label": "회사 소개",
             "href": "/about",
             "order": 1,
             "visible": true
           },
           {
-            "id": "link-4",
-            "label": "문의하기",
-            "href": "/contact",
+            "id": "2-2",
+            "label": "블로그",
+            "href": "/blog",
             "order": 2,
+            "visible": true
+          },
+          {
+            "id": "2-3",
+            "label": "채용",
+            "href": "/careers",
+            "order": 3,
             "visible": true
           }
         ]
       },
       {
-        "id": "column-3",
-        "title": "법적 정보",
+        "id": "3",
+        "title": "지원",
         "order": 3,
         "links": [
           {
-            "id": "link-5",
-            "label": "이용약관",
-            "href": "/terms",
+            "id": "3-1",
+            "label": "도움말",
+            "href": "/help",
             "order": 1,
             "visible": true
           },
           {
-            "id": "link-6",
-            "label": "개인정보처리방침",
-            "href": "/privacy",
+            "id": "3-2",
+            "label": "문의하기",
+            "href": "/contact",
             "order": 2,
+            "visible": true
+          },
+          {
+            "id": "3-3",
+            "label": "이용약관",
+            "href": "/terms",
+            "order": 3,
             "visible": true
           }
         ]
@@ -113,6 +147,11 @@
       {
         "platform": "instagram",
         "url": "https://instagram.com/videopick",
+        "visible": true
+      },
+      {
+        "platform": "youtube",
+        "url": "https://youtube.com/@videopick",
         "visible": true
       }
     ],
@@ -291,9 +330,9 @@
       {
         "id": "slide-1",
         "type": "blue",
-        "tag": "캠페인 혜택",
-        "title": "브랜드와 함께하는\\n완벽한 캠페인",
-        "subtitle": "최대 500만원 캠페인 참여 기회",
+        "tag": "신규 콘텐츠",
+        "title": "크리에이터와 함께하는\n창의적인 비디오 세상",
+        "subtitle": "다양한 비디오 콘텐츠를 만나보세요",
         "bgColor": "bg-gradient-to-br from-blue-400 to-blue-600",
         "order": 1,
         "visible": true
@@ -301,8 +340,8 @@
       {
         "id": "slide-2",
         "type": "dark",
-        "title": "이번달, 어떤 캠페인이\\n당신을 기다릴까요?",
-        "subtitle": "다양한 브랜드와의 만남",
+        "title": "이번달 가장 핫한\n비디오 트렌드는?",
+        "subtitle": "인기 크리에이터들의 최신 콘텐츠",
         "bgColor": "bg-gradient-to-br from-gray-800 to-gray-900",
         "order": 2,
         "visible": true
@@ -310,8 +349,8 @@
       {
         "id": "slide-3",
         "type": "green",
-        "title": "인플루언서 매칭 시작",
-        "subtitle": "AI가 찾아주는 최적의 파트너",
+        "title": "당신만의 채널을 시작하세요",
+        "subtitle": "쉽고 빠른 비디오 업로드",
         "bgColor": "bg-gradient-to-br from-green-400 to-green-600",
         "order": 3,
         "visible": true
@@ -319,9 +358,9 @@
       {
         "id": "slide-4",
         "type": "pink",
-        "tag": "신규 오픈",
-        "title": "첫 캠페인\\n특별 혜택",
-        "subtitle": "수수료 50% 할인 이벤트",
+        "tag": "신규 크리에이터",
+        "title": "첫 비디오\n수익화 지원",
+        "subtitle": "구독자 1,000명 달성 지원 프로그램",
         "bgColor": "bg-gradient-to-br from-pink-400 to-pink-600",
         "order": 4,
         "visible": true
@@ -329,8 +368,8 @@
       {
         "id": "slide-5",
         "type": "blue",
-        "title": "AI 매칭\\n서비스 출시",
-        "subtitle": "최적의 인플루언서를 찾아드립니다",
+        "title": "AI 추천\n알고리즘 도입",
+        "subtitle": "당신이 좋아할 비디오를 추천합니다",
         "bgColor": "bg-gradient-to-br from-indigo-400 to-indigo-600",
         "order": 5,
         "visible": true
@@ -338,9 +377,9 @@
       {
         "id": "slide-6",
         "type": "dark",
-        "tag": "HOT",
-        "title": "인기 브랜드\\n대량 모집",
-        "subtitle": "지금 바로 지원하세요",
+        "tag": "LIVE",
+        "title": "실시간 스트리밍\n지금 시작",
+        "subtitle": "시청자와 실시간으로 소통하세요",
         "bgColor": "bg-gradient-to-br from-gray-700 to-gray-900",
         "order": 6,
         "visible": true
@@ -465,49 +504,52 @@
       }
     ],
     "promoBanner": {
-      "title": "처음이니까, 수수료 50% 할인",
-      "subtitle": "첫 캠페인을 더 가볍게 시작하세요!",
-      "icon": "📦",
+      "title": "크리에이터 지원 프로그램",
+      "subtitle": "수익화와 성장을 위한 다양한 혜택을 제공합니다",
+      "icon": "🎬",
       "visible": true
     },
     "rankingSection": {
       "visible": true,
-      "title": "인기 비디오",
-      "subtitle": "가장 많이 시청된 비디오들을 확인해보세요",
+      "title": "🔥 인기 비디오 TOP 4",
+      "subtitle": "지금 가장 많이 시청되는 비디오를 만나보세요",
       "criteria": "popular",
       "count": 4,
       "showBadge": true
     },
-    "customSections": [
-      {
-        "id": "latest-realestate",
-        "title": "최신 부동산",
-        "subtitle": "업데이트된 부동산 영상을 확인해보세요",
-        "type": "auto",
-        "visible": true,
-        "order": 5,
-        "layout": "grid",
-        "columns": 4,
-        "rows": 1,
-        "filter": {
-          "category": "realestate",
-          "sortBy": "latest"
-        },
-        "showMoreButton": true,
-        "moreButtonText": "더보기",
-        "moreButtonLink": "/category/realestate"
-      }
-    ],
+    "youtubeSection": {
+      "visible": true,
+      "title": "최신 부동산 유튜브",
+      "subtitle": "부동산 전문 유튜버들의 최신 영상",
+      "count": 6,
+      "category": "realestate",
+      "keywords": [
+        "부동산",
+        "아파트",
+        "재테크",
+        "투자"
+      ],
+      "channelIds": [],
+      "viewAllLink": "/videos/youtube?category=realestate"
+    },
+    "recommendedSection": {
+      "visible": true,
+      "title": "추천 비디오",
+      "subtitle": "큐레이션된 비디오 목록",
+      "count": 10,
+      "selectionMode": "auto"
+    },
+    "customSections": [],
     "sectionOrder": [
       {
-        "id": "category",
-        "type": "category",
+        "id": "hero",
+        "type": "hero",
         "order": 1,
         "visible": true
       },
       {
-        "id": "hero",
-        "type": "hero",
+        "id": "category",
+        "type": "category",
         "order": 2,
         "visible": true
       },
@@ -526,6 +568,12 @@
       {
         "id": "ranking",
         "type": "ranking",
+        "order": 5,
+        "visible": true
+      },
+      {
+        "id": "youtube",
+        "type": "youtube",
         "order": 6,
         "visible": true
       },

@@ -210,21 +210,21 @@ function VideosPageContent() {
   return (
     <PageLayout>
       <div className="min-h-screen bg-gray-50">
-        {/* 헤더 */}
+        {/* 헤더 (모바일 최적화) */}
         <div className="bg-white border-b sticky top-0 z-10">
-          <div className="container mx-auto px-6 py-4">
+          <div className="container mx-auto px-4 sm:px-6 py-4">
             <div className="flex flex-col gap-4">
-              {/* 상단: 제목과 검색 */}
-              <div className="flex items-center justify-between">
+              {/* 상단: 제목과 검색 (모바일 반응형) */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">비디오</h1>
-                  <p className="text-gray-600 mt-1">
+                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900">비디오</h1>
+                  <p className="text-gray-600 mt-1 text-sm sm:text-base">
                     다양한 크리에이터들의 창의적인 비디오를 만나보세요
                   </p>
                 </div>
                 
                 {user?.type === 'BUSINESS' && (
-                  <Button asChild>
+                  <Button asChild className="w-full sm:w-auto">
                     <Link href="/studio/upload">
                       + 비디오 업로드
                     </Link>
@@ -232,16 +232,16 @@ function VideosPageContent() {
                 )}
               </div>
 
-              {/* 검색 바 */}
+              {/* 검색 바 (모바일 최적화) */}
               <form onSubmit={handleSearch} className="flex gap-2">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                   <Input
-                    placeholder="비디오 제목, 크리에이터, 태그로 검색..."
+                    placeholder="비디오 검색..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onFocus={() => setShowSearchSuggestions(true)}
-                    className="pl-10"
+                    className="pl-9 sm:pl-10 text-sm sm:text-base"
                   />
                   <SearchSuggestions
                     query={searchTerm}
@@ -258,62 +258,69 @@ function VideosPageContent() {
                     onClose={() => setShowSearchSuggestions(false)}
                   />
                 </div>
-                <Button type="submit">검색</Button>
+                <Button type="submit" className="px-3 sm:px-4">
+                  <span className="hidden sm:inline">검색</span>
+                  <Search className="w-4 h-4 sm:hidden" />
+                </Button>
               </form>
 
-              {/* 필터 및 정렬 */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  {/* 카테고리 필터 */}
-                  <div className="flex items-center gap-2">
-                    <Filter className="w-4 h-4 text-gray-500" />
-                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                      <SelectTrigger className="w-32">
+              {/* 필터 및 정렬 (모바일 최적화) */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-0">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
+                  {/* 상단: 메인 필터들 */}
+                  <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-2 sm:pb-0">
+                    {/* 카테고리 필터 */}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Filter className="w-4 h-4 text-gray-500 hidden sm:block" />
+                      <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                        <SelectTrigger className="w-28 sm:w-32 text-xs sm:text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map(category => (
+                            <SelectItem key={category.id} value={category.id}>
+                              {category.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* 정렬 */}
+                    <Select value={sortBy} onValueChange={setSortBy}>
+                      <SelectTrigger className="w-28 sm:w-32 text-xs sm:text-sm flex-shrink-0">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {categories.map(category => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {category.label}
+                        {sortOptions.map(option => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
+
+                    {/* 고급 필터 토글 */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                      className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm flex-shrink-0"
+                    >
+                      <Filter className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="hidden xs:inline">고급 필터</span>
+                      <span className="xs:hidden">필터</span>
+                      {showAdvancedFilters ? '▲' : '▼'}
+                    </Button>
                   </div>
 
-                  {/* 정렬 */}
-                  <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {sortOptions.map(option => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  {/* 고급 필터 토글 */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                    className="flex items-center gap-2"
-                  >
-                    <Filter className="w-4 h-4" />
-                    고급 필터
-                    {showAdvancedFilters ? '▲' : '▼'}
-                  </Button>
-
-                  {/* 선택된 필터 표시 */}
+                  {/* 선택된 필터 표시 (모바일에서 스크롤) */}
                   {(selectedCategory !== 'all' || searchTerm || selectedDuration !== 'all' || selectedViews !== 'all' || selectedTags.length > 0) && (
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-1 sm:gap-2 flex-wrap overflow-x-auto scrollbar-hide">
                       {selectedCategory !== 'all' && (
                         <Badge 
                           variant="secondary" 
-                          className="cursor-pointer hover:bg-gray-300"
+                          className="cursor-pointer hover:bg-gray-300 text-xs whitespace-nowrap flex-shrink-0"
                           onClick={() => setSelectedCategory('all')}
                         >
                           {getCategoryLabel(selectedCategory)} ×
@@ -322,16 +329,16 @@ function VideosPageContent() {
                       {searchTerm && (
                         <Badge 
                           variant="secondary"
-                          className="cursor-pointer hover:bg-gray-300"
+                          className="cursor-pointer hover:bg-gray-300 text-xs whitespace-nowrap flex-shrink-0"
                           onClick={() => setSearchTerm('')}
                         >
-                          &ldquo;{searchTerm}&rdquo; ×
+                          &ldquo;{searchTerm.length > 10 ? searchTerm.substring(0, 10) + '...' : searchTerm}&rdquo; ×
                         </Badge>
                       )}
                       {selectedDuration !== 'all' && (
                         <Badge 
                           variant="secondary"
-                          className="cursor-pointer hover:bg-gray-300"
+                          className="cursor-pointer hover:bg-gray-300 text-xs whitespace-nowrap flex-shrink-0"
                           onClick={() => setSelectedDuration('all')}
                         >
                           {durationOptions.find(d => d.value === selectedDuration)?.label} ×
@@ -340,7 +347,7 @@ function VideosPageContent() {
                       {selectedViews !== 'all' && (
                         <Badge 
                           variant="secondary"
-                          className="cursor-pointer hover:bg-gray-300"
+                          className="cursor-pointer hover:bg-gray-300 text-xs whitespace-nowrap flex-shrink-0"
                           onClick={() => setSelectedViews('all')}
                         >
                           {viewsOptions.find(v => v.value === selectedViews)?.label} ×
@@ -350,7 +357,7 @@ function VideosPageContent() {
                         <Badge 
                           key={tag}
                           variant="secondary"
-                          className="cursor-pointer hover:bg-gray-300"
+                          className="cursor-pointer hover:bg-gray-300 text-xs whitespace-nowrap flex-shrink-0"
                           onClick={() => setSelectedTags(prev => prev.filter(t => t !== tag))}
                         >
                           #{tag} ×
@@ -360,39 +367,39 @@ function VideosPageContent() {
                   )}
                 </div>
 
-                {/* 보기 모드 전환 */}
-                <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                {/* 보기 모드 전환 (모바일 최적화) */}
+                <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 self-start sm:self-auto">
                   <Button
                     variant={viewMode === 'grid' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('grid')}
-                    className="px-3"
+                    className="px-2 sm:px-3"
                   >
-                    <Grid className="w-4 h-4" />
+                    <Grid className="w-3 h-3 sm:w-4 sm:h-4" />
                   </Button>
                   <Button
                     variant={viewMode === 'list' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('list')}
-                    className="px-3"
+                    className="px-2 sm:px-3"
                   >
-                    <List className="w-4 h-4" />
+                    <List className="w-3 h-3 sm:w-4 sm:h-4" />
                   </Button>
                 </div>
               </div>
             </div>
 
-            {/* 고급 필터 패널 */}
+            {/* 고급 필터 패널 (모바일 최적화) */}
             {showAdvancedFilters && (
-              <div className="bg-gray-50 rounded-lg p-4 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-gray-50 rounded-lg p-3 sm:p-4 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                   {/* 재생시간 필터 */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                       재생시간
                     </label>
                     <Select value={selectedDuration} onValueChange={setSelectedDuration}>
-                      <SelectTrigger>
+                      <SelectTrigger className="text-xs sm:text-sm">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -407,11 +414,11 @@ function VideosPageContent() {
 
                   {/* 조회수 필터 */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                       조회수
                     </label>
                     <Select value={selectedViews} onValueChange={setSelectedViews}>
-                      <SelectTrigger>
+                      <SelectTrigger className="text-xs sm:text-sm">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -425,8 +432,8 @@ function VideosPageContent() {
                   </div>
 
                   {/* 태그 입력 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <div className="sm:col-span-2 lg:col-span-1">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                       태그 (쉼표로 구분)
                     </label>
                     <Input
@@ -436,12 +443,13 @@ function VideosPageContent() {
                         const tags = e.target.value.split(',').map(t => t.trim()).filter(Boolean)
                         setSelectedTags(tags)
                       }}
+                      className="text-xs sm:text-sm"
                     />
                   </div>
                 </div>
 
                 {/* 필터 초기화 버튼 */}
-                <div className="flex justify-end">
+                <div className="flex justify-center sm:justify-end">
                   <Button
                     variant="outline"
                     size="sm"
@@ -453,6 +461,7 @@ function VideosPageContent() {
                       setSearchTerm('')
                       setSortBy('latest')
                     }}
+                    className="text-xs sm:text-sm w-full sm:w-auto"
                   >
                     모든 필터 초기화
                   </Button>
@@ -462,39 +471,39 @@ function VideosPageContent() {
           </div>
         </div>
 
-        {/* 메인 컨텐츠 */}
-        <div className="container mx-auto px-6 py-8">
-          {/* 통계 정보 */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <div className="bg-white rounded-lg p-4 flex items-center gap-3">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Eye className="w-6 h-6 text-blue-600" />
+        {/* 메인 컨텐츠 (모바일 최적화) */}
+        <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+          {/* 통계 정보 (모바일 최적화) */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <div className="bg-white rounded-lg p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Eye className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
               </div>
-              <div>
-                <p className="text-sm text-gray-600">총 비디오</p>
-                <p className="text-xl font-bold">{videos.length}개</p>
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-gray-600">총 비디오</p>
+                <p className="text-lg sm:text-xl font-bold">{videos.length}개</p>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg p-4 flex items-center gap-3">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-green-600" />
+            <div className="bg-white rounded-lg p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
               </div>
-              <div>
-                <p className="text-sm text-gray-600">인기 급상승</p>
-                <p className="text-xl font-bold">
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-gray-600">인기 급상승</p>
+                <p className="text-lg sm:text-xl font-bold">
                   {videos.filter(v => v.viewCount > 1000).length}개
                 </p>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg p-4 flex items-center gap-3">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Clock className="w-6 h-6 text-purple-600" />
+            <div className="bg-white rounded-lg p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
               </div>
-              <div>
-                <p className="text-sm text-gray-600">오늘 업로드</p>
-                <p className="text-xl font-bold">
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-gray-600">오늘 업로드</p>
+                <p className="text-lg sm:text-xl font-bold">
                   {videos.filter(v => {
                     const today = new Date()
                     const videoDate = new Date(v.createdAt)
@@ -505,8 +514,8 @@ function VideosPageContent() {
             </div>
           </div>
 
-          {/* 비디오 목록 */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
+          {/* 비디오 목록 (모바일 최적화) */}
+          <div className="bg-white rounded-xl shadow-sm p-3 sm:p-6">
             <VideoList
               videos={videos}
               loading={loading}
@@ -515,13 +524,14 @@ function VideosPageContent() {
               columns={viewMode === 'list' ? 1 : 4}
             />
 
-            {/* 더 보기 버튼 */}
+            {/* 더 보기 버튼 (모바일 최적화) */}
             {hasMore && !loading && videos.length > 0 && (
-              <div className="flex justify-center mt-8">
+              <div className="flex justify-center mt-6 sm:mt-8">
                 <Button 
                   onClick={handleLoadMore}
                   variant="outline"
                   size="lg"
+                  className="w-full sm:w-auto"
                 >
                   더 많은 비디오 보기
                 </Button>
@@ -531,20 +541,20 @@ function VideosPageContent() {
             {/* 로딩 중 */}
             {loading && videos.length === 0 && (
               <div className="flex justify-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-indigo-600"></div>
               </div>
             )}
 
-            {/* 결과가 없을 때 */}
+            {/* 결과가 없을 때 (모바일 최적화) */}
             {!loading && videos.length === 0 && (
               <div className="text-center py-12">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Search className="w-8 h-8 text-gray-400" />
+                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Search className="w-7 h-7 sm:w-8 sm:h-8 text-gray-400" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
                   검색 결과가 없습니다
                 </h3>
-                <p className="text-gray-600 mb-4">
+                <p className="text-sm sm:text-base text-gray-600 mb-4">
                   다른 검색어나 필터를 시도해보세요.
                 </p>
                 <Button
@@ -557,6 +567,7 @@ function VideosPageContent() {
                     setSelectedViews('all')
                     setSelectedTags([])
                   }}
+                  className="w-full sm:w-auto"
                 >
                   필터 초기화
                 </Button>

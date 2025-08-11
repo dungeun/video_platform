@@ -15,7 +15,7 @@ interface Section {
   visible: boolean;
   fixed?: boolean;
   order: number;
-  type: 'hero' | 'category' | 'quicklinks' | 'promo' | 'ranking' | 'custom' | 'recommended';
+  type: 'hero' | 'category' | 'quicklinks' | 'promo' | 'ranking' | 'custom' | 'recommended' | 'youtube';
 }
 
 interface SortableSectionItemProps {
@@ -260,6 +260,16 @@ export function SectionOrderTab() {
       updateSectionOrder(baseSectionOrder);
       updateMainPageCustomSections(customSectionsUpdate);
       
+      // 업데이트된 config 구성
+      const updatedConfig = {
+        ...config,
+        mainPage: {
+          ...config.mainPage,
+          sectionOrder: baseSectionOrder,
+          customSections: customSectionsUpdate
+        }
+      };
+      
       // API 호출하여 즉시 저장
       try {
         const response = await fetch('/api/admin/ui-config', {
@@ -268,7 +278,7 @@ export function SectionOrderTab() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ config })
+          body: JSON.stringify({ config: updatedConfig })
         });
         
         if (response.ok) {
@@ -330,6 +340,16 @@ export function SectionOrderTab() {
     updateSectionOrder(baseSectionOrder);
     updateMainPageCustomSections(customSectionsUpdate);
     
+    // 업데이트된 config 구성
+    const updatedConfig = {
+      ...config,
+      mainPage: {
+        ...config.mainPage,
+        sectionOrder: baseSectionOrder,
+        customSections: customSectionsUpdate
+      }
+    };
+    
     // API 호출하여 즉시 저장
     try {
       const response = await fetch('/api/admin/ui-config', {
@@ -338,7 +358,7 @@ export function SectionOrderTab() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ config })
+        body: JSON.stringify({ config: updatedConfig })
       });
       
       if (response.ok) {
@@ -363,7 +383,8 @@ export function SectionOrderTab() {
       { id: 'quicklinks', type: 'quicklinks' as const, order: 3, visible: true },
       { id: 'promo', type: 'promo' as const, order: 4, visible: true },
       { id: 'ranking', type: 'ranking' as const, order: 5, visible: true },
-      { id: 'recommended', type: 'recommended' as const, order: 6, visible: true }
+      { id: 'youtube', type: 'youtube' as const, order: 6, visible: true },
+      { id: 'recommended', type: 'recommended' as const, order: 7, visible: true }
     ];
     
     // 커스텀 섹션은 중복 제거하여 유지 - latest-realestate는 하나만 남기기

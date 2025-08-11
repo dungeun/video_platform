@@ -112,9 +112,9 @@ export default function Sidebar({ isCollapsed = false, onToggle, isMobile = fals
               href={item.href}
               onClick={() => handleItemClick(item.id)}
               className={`
-                flex items-center px-4 py-3 mb-1 rounded-lg transition-all duration-200
-                text-gray-300 hover:bg-gray-700 hover:text-white
-                ${activeItem === item.id ? 'bg-blue-600/20 text-white border-l-4 border-blue-500 pl-3' : ''}
+                flex items-center px-3 sm:px-4 py-3 mb-1 rounded-lg transition-all duration-200
+                text-gray-300 hover:bg-gray-700 hover:text-white touch-manipulation
+                ${activeItem === item.id ? 'bg-blue-600/20 text-white border-l-4 border-blue-500 pl-2 sm:pl-3' : ''}
                 ${isCollapsed ? 'justify-center' : ''}
               `}
             >
@@ -278,10 +278,14 @@ export default function Sidebar({ isCollapsed = false, onToggle, isMobile = fals
           onClick={onToggle}
         />
         {/* Mobile Sidebar */}
-        <aside className="fixed left-0 top-0 h-full w-64 bg-gray-800 border-r border-gray-700 z-50 lg:hidden">
+        <aside className="fixed left-0 top-0 h-full w-72 sm:w-80 bg-gray-800 border-r border-gray-700 z-50 lg:hidden">
           <div className="flex items-center justify-between p-4 border-b border-gray-700">
-            <h2 className="text-white font-semibold">메뉴</h2>
-            <button onClick={onToggle} className="text-gray-400 hover:text-white">
+            <h2 className="text-white font-semibold text-lg">메뉴</h2>
+            <button 
+              onClick={onToggle} 
+              className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-gray-700 touch-manipulation"
+              aria-label="Close menu"
+            >
               <Menu className="w-5 h-5" />
             </button>
           </div>

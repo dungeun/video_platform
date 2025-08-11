@@ -3,9 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Plus, Trash2, Eye, EyeOff, Upload } from 'lucide-react';
+import { useUIConfigStore } from '@/lib/stores/ui-config.store';
 
 interface HeroSlide {
   id: string;
+  type?: 'blue' | 'dark' | 'green' | 'pink';
   title: string;
   subtitle: string;
   tag?: string;
@@ -22,26 +24,30 @@ interface HeroSlide {
 
 export default function HeroSectionEditPage() {
   const router = useRouter();
-  const [slides, setSlides] = useState<HeroSlide[]>([
-    {
-      id: '1',
-      title: '인플루언서 마케팅의\n새로운 기준',
-      subtitle: '투명하고 신뢰할 수 있는 캠페인 매칭 플랫폼',
-      tag: 'NEW',
-      bgColor: 'bg-gradient-to-br from-indigo-600 to-purple-600',
-      visible: true,
-      order: 1
-    },
-    {
-      id: '2',
-      title: '월 100만원 더 벌기',
-      subtitle: '나에게 맞는 캠페인을 찾아 수익을 올려보세요',
-      bgColor: 'bg-gradient-to-br from-pink-500 to-rose-500',
-      visible: true,
-      order: 2
-    }
-  ]);
+  const { config, updateMainPageHeroSlides, loadSettingsFromAPI } = useUIConfigStore();
+  const [slides, setSlides] = useState<HeroSlide[]>([]);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // UI 설정에서 히어로 슬라이드 데이터 로드
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      await loadSettingsFromAPI();
+      setLoading(false);
+    };
+    loadData();
+  }, []);
+
+  // config가 로드되면 slides 업데이트
+  useEffect(() => {
+    if (config.mainPage?.heroSlides) {
+      setSlides(config.mainPage.heroSlides.map(slide => ({
+        ...slide,
+        type: slide.type || 'blue'
+      })));
+    }
+  }, [config]);
 
   const handleAddSlide = () => {
     const newSlide: HeroSlide = {
@@ -85,11 +91,35 @@ export default function HeroSectionEditPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // API 호출 로직
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      alert('저장되었습니다.');
-      router.push('/admin/ui-config?tab=sections');
+      // Store에 업데이트
+      updateMainPageHeroSlides(slides);
+      
+      // API 호출하여 설정 저장
+      const response = await fetch('/api/admin/ui-config', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          config: {
+            ...config,
+            mainPage: {
+              ...config.mainPage,
+              heroSlides: slides
+            }
+          }
+        }),
+      });
+
+      if (response.ok) {
+        alert('저장되었습니다.');
+        router.push('/admin/ui-config?tab=sections');
+      } else {
+        throw new Error('저장 실패');
+      }
     } catch (error) {
+      console.error('Save error:', error);
       alert('저장 중 오류가 발생했습니다.');
     } finally {
       setSaving(false);
@@ -104,6 +134,19 @@ export default function HeroSectionEditPage() {
     { name: '오렌지-레드', value: 'bg-gradient-to-br from-orange-500 to-red-500' },
     { name: '퍼플-핑크', value: 'bg-gradient-to-br from-purple-600 to-pink-600' },
   ];
+
+  if (loading) {
+    return (
+      <div className="max-w-6xl mx-auto">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">설정을 불러오는 중...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto">

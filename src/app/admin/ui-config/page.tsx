@@ -127,14 +127,14 @@ export default function UIConfigPage() {
   };
 
   return (
-    <div>
+    <div className="max-w-full">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">UI 설정 관리</h1>
         <p className="text-gray-600 mt-2">헤더와 푸터의 메뉴 및 콘텐츠를 관리합니다.</p>
       </div>
 
       {/* 탭 메뉴 */}
-      <div className="flex space-x-1 mb-8">
+      <div className="flex flex-wrap gap-1 mb-8">
         <button
           onClick={() => setActiveTab('header')}
           className={`px-6 py-3 rounded-lg font-medium transition-colors ${

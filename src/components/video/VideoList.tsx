@@ -14,48 +14,48 @@ export default function VideoList({
   columns = 4,
   className
 }: VideoListProps) {
-  // 로딩 상태
+  // 로딩 상태 (모바일 최적화)
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
+      <div className="flex items-center justify-center py-8 sm:py-12">
         <div className="flex items-center gap-2 text-gray-600">
-          <Loader2 className="w-5 h-5 animate-spin" />
-          <span>비디오를 불러오는 중...</span>
+          <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+          <span className="text-sm sm:text-base">비디오를 불러오는 중...</span>
         </div>
       </div>
     )
   }
 
-  // 비디오가 없는 경우
+  // 비디오가 없는 경우 (모바일 최적화)
   if (!videos || videos.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <AlertCircle className="w-12 h-12 text-gray-400 mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
+      <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-center px-4">
+        <AlertCircle className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mb-3 sm:mb-4" />
+        <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
           표시할 비디오가 없습니다
         </h3>
-        <p className="text-gray-600">
+        <p className="text-sm sm:text-base text-gray-600">
           비디오가 업로드되면 여기에 표시됩니다.
         </p>
       </div>
     )
   }
 
-  // 그리드 컬럼 클래스 매핑
+  // 그리드 컬럼 클래스 매핑 (모바일 최적화)
   const gridClasses = {
     1: 'grid-cols-1',
-    2: 'grid-cols-1 md:grid-cols-2',
-    3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
-    4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
-    5: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5',
-    6: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6'
+    2: 'grid-cols-2 sm:grid-cols-2',
+    3: 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3',
+    4: 'grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4',
+    5: 'grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5',
+    6: 'grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6'
   }
 
-  // 갭 크기 (variant에 따라 조정)
+  // 갭 크기 (모바일 최적화)
   const gapClasses = {
-    compact: 'gap-3',
-    default: 'gap-6',
-    large: 'gap-8'
+    compact: 'gap-2 sm:gap-3',
+    default: 'gap-3 sm:gap-4 md:gap-6',
+    large: 'gap-4 sm:gap-6 md:gap-8'
   }
 
   return (

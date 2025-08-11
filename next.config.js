@@ -20,7 +20,10 @@ const nextConfig = {
       'localhost',
       'res.cloudinary.com',
       'images.unsplash.com',
-      'ui-avatars.com'
+      'ui-avatars.com',
+      'i.pravatar.cc',
+      'img.youtube.com',
+      'i.ytimg.com'
     ],
   },
 

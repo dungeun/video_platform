@@ -128,9 +128,34 @@ export interface CustomSection {
   moreButtonLink?: string;
 }
 
+export interface RecommendedSection {
+  visible: boolean;
+  title: string;
+  subtitle?: string;
+  count: number;
+  selectionMode: 'auto' | 'manual';
+  autoFilter?: {
+    category?: string;
+    minBudget?: number;
+    platform?: string;
+  };
+  manualCampaignIds?: string[];
+}
+
+export interface YoutubeSection {
+  visible: boolean;
+  title: string;
+  subtitle?: string;
+  count: number;
+  category: string;
+  keywords?: string[];
+  channelIds?: string[];
+  viewAllLink?: string;
+}
+
 export interface SectionOrder {
   id: string;
-  type: 'hero' | 'category' | 'quicklinks' | 'promo' | 'ranking' | 'custom' | 'recommended';
+  type: 'hero' | 'category' | 'quicklinks' | 'promo' | 'ranking' | 'custom' | 'recommended' | 'youtube';
   order: number;
   visible: boolean;
 }
@@ -164,6 +189,8 @@ export interface UIConfig {
     quickLinks: QuickLink[]; // 바로가기 링크 (3단)
     promoBanner: PromoBanner; // 프로모션 배너 (1단)
     rankingSection: RankingSection; // 랭킹 섹션
+    recommendedSection?: RecommendedSection; // 추천 비디오 섹션
+    youtubeSection?: YoutubeSection; // YouTube 비디오 섹션
     customSections: CustomSection[]; // 커스텀 섹션들
     sectionOrder?: SectionOrder[]; // 섹션 순서
   };
@@ -186,6 +213,8 @@ interface UIConfigStore {
   updateMainPageQuickLinks: (links: QuickLink[]) => void;
   updateMainPagePromoBanner: (banner: PromoBanner) => void;
   updateMainPageRankingSection: (ranking: RankingSection) => void;
+  updateMainPageRecommendedSection: (recommended: RecommendedSection) => void;
+  updateMainPageYoutubeSection: (youtube: YoutubeSection) => void;
   updateMainPageCustomSections: (sections: CustomSection[]) => void;
   addCustomSection: (section: CustomSection) => void;
   updateCustomSection: (id: string, section: Partial<CustomSection>) => void;
@@ -376,6 +405,16 @@ const defaultConfig: UIConfig = {
       count: 4,
       showBadge: true,
     },
+    youtubeSection: {
+      visible: true,
+      title: '최신 부동산 유튜브',
+      subtitle: '부동산 전문 유튜버들의 최신 영상',
+      count: 6,
+      category: 'realestate',
+      keywords: ['부동산', '아파트', '재테크', '투자'],
+      channelIds: [],
+      viewAllLink: '/videos/youtube?category=realestate',
+    },
     customSections: [],
     sectionOrder: [
       { id: 'hero', type: 'hero', order: 1, visible: true },
@@ -383,7 +422,8 @@ const defaultConfig: UIConfig = {
       { id: 'quicklinks', type: 'quicklinks', order: 3, visible: true },
       { id: 'promo', type: 'promo', order: 4, visible: true },
       { id: 'ranking', type: 'ranking', order: 5, visible: true },
-      { id: 'recommended', type: 'recommended', order: 6, visible: true },
+      { id: 'youtube', type: 'youtube', order: 6, visible: true },
+      { id: 'recommended', type: 'recommended', order: 7, visible: true },
     ],
   },
 };
@@ -527,6 +567,26 @@ export const useUIConfigStore = create<UIConfigStore>()(
             mainPage: {
               ...state.config.mainPage,
               rankingSection: ranking,
+            },
+          },
+        })),
+      updateMainPageRecommendedSection: (recommended) =>
+        set((state) => ({
+          config: {
+            ...state.config,
+            mainPage: {
+              ...state.config.mainPage,
+              recommendedSection: recommended,
+            },
+          },
+        })),
+      updateMainPageYoutubeSection: (youtube) =>
+        set((state) => ({
+          config: {
+            ...state.config,
+            mainPage: {
+              ...state.config.mainPage,
+              youtubeSection: youtube,
             },
           },
         })),

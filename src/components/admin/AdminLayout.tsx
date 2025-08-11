@@ -14,6 +14,24 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname()
   const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth()
   const [isLoading, setIsLoading] = useState(true)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // 모바일 디바이스 감지
+  useEffect(() => {
+    const checkMobile = () => {
+      const isMobileDevice = window.innerWidth < 1024 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      setIsMobile(isMobileDevice)
+      
+      if (isMobileDevice) {
+        console.log('AdminLayout - 모바일 디바이스에서 관리자 페이지 접근 차단')
+      }
+    }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   useEffect(() => {
     if (!authLoading) {
@@ -140,6 +158,38 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     router.push('/login')
   }
 
+  // 모바일 디바이스 차단
+  if (isMobile) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
+        <div className="text-center max-w-md mx-auto">
+          <div className="w-16 h-16 mx-auto mb-6 bg-red-100 rounded-full flex items-center justify-center">
+            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">PC에서만 접근 가능</h1>
+          <p className="text-gray-600 mb-6">
+            관리자 페이지는 보안상의 이유로 PC에서만 접근할 수 있습니다.
+            <br />
+            데스크톱 컴퓨터나 노트북을 사용해 주세요.
+          </p>
+          <div className="space-y-2">
+            <button
+              onClick={() => router.push('/')}
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              메인 페이지로 이동
+            </button>
+            <p className="text-sm text-gray-500">
+              또는 PC에서 다시 접근해 주세요
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -154,10 +204,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   if (!user) return null
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 flex">
 
-      {/* 사이드바 */}
-      <div className="fixed inset-y-0 left-0 z-40 w-64 bg-gray-900">
+      {/* 사이드바 - PC 전용 */}
+      <div className="fixed inset-y-0 left-0 z-40 w-64 bg-gray-900 flex-shrink-0">
         <div className="flex flex-col h-full">
           {/* 로고 */}
           <div className="flex items-center justify-between px-6 py-5 border-b border-gray-800">
@@ -216,9 +266,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </div>
 
       {/* 메인 콘텐츠 */}
-      <div className="ml-64">
+      <div className="flex-1 ml-64 min-w-0">
         {/* 페이지 콘텐츠 */}
-        <main className="p-6">
+        <main className="p-6 w-full">
           {children}
         </main>
       </div>

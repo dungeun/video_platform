@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Plus, Trash2, Eye, EyeOff, Image } from 'lucide-react';
+import { useUIConfigStore } from '@/lib/stores/ui-config.store';
 
 interface QuickLink {
   id: string;
@@ -15,33 +16,27 @@ interface QuickLink {
 
 export default function QuickLinksSectionEditPage() {
   const router = useRouter();
-  const [quickLinks, setQuickLinks] = useState<QuickLink[]>([
-    { 
-      id: '1', 
-      title: '인플루언서 등록', 
-      link: '/register?type=influencer', 
-      icon: '🎯',
-      visible: true, 
-      order: 1 
-    },
-    { 
-      id: '2', 
-      title: '캠페인 의뢰', 
-      link: '/register?type=business', 
-      icon: '📢',
-      visible: true, 
-      order: 2 
-    },
-    { 
-      id: '3', 
-      title: '이용가이드', 
-      link: '/guide', 
-      icon: '📖',
-      visible: true, 
-      order: 3 
-    },
-  ]);
+  const { config, updateMainPageQuickLinks, loadSettingsFromAPI } = useUIConfigStore();
+  const [quickLinks, setQuickLinks] = useState<QuickLink[]>([]);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // UI 설정에서 바로가기 링크 데이터 로드
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      await loadSettingsFromAPI();
+      setLoading(false);
+    };
+    loadData();
+  }, []);
+
+  // config가 로드되면 quickLinks 업데이트
+  useEffect(() => {
+    if (config.mainPage?.quickLinks) {
+      setQuickLinks(config.mainPage.quickLinks);
+    }
+  }, [config]);
 
   const handleAddLink = () => {
     if (quickLinks.length >= 3) {
@@ -72,10 +67,35 @@ export default function QuickLinksSectionEditPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      alert('저장되었습니다.');
-      router.push('/admin/ui-config?tab=sections');
+      // Store에 업데이트
+      updateMainPageQuickLinks(quickLinks);
+      
+      // API 호출하여 설정 저장
+      const response = await fetch('/api/admin/ui-config', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          config: {
+            ...config,
+            mainPage: {
+              ...config.mainPage,
+              quickLinks: quickLinks
+            }
+          }
+        }),
+      });
+
+      if (response.ok) {
+        alert('저장되었습니다.');
+        router.push('/admin/ui-config?tab=sections');
+      } else {
+        throw new Error('저장 실패');
+      }
     } catch (error) {
+      console.error('Save error:', error);
       alert('저장 중 오류가 발생했습니다.');
     } finally {
       setSaving(false);
@@ -86,6 +106,19 @@ export default function QuickLinksSectionEditPage() {
     '🎯', '📢', '📖', '💎', '🚀', '⭐', '🔥', '💡', '📊', '🎁',
     '🏆', '💰', '📈', '🎨', '📱', '💻', '🌟', '✨', '🎪', '🎬'
   ];
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">설정을 불러오는 중...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto">

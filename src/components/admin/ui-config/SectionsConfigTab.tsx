@@ -68,6 +68,15 @@ export function SectionsConfigTab() {
       type: 'ranking'
     },
     {
+      id: 'youtube',
+      name: 'YouTube 비디오',
+      description: 'YouTube API 연동 비디오 섹션',
+      status: 'active',
+      editUrl: '/admin/ui-config/sections/youtube',
+      order: 6,
+      type: 'youtube'
+    },
+    {
       id: 'recommended',
       name: '추천 비디오',
       description: '큐레이션된 비디오 목록',

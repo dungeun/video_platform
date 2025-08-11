@@ -258,7 +258,7 @@ export default function VideoPlayer({
     <div 
       ref={playerRef}
       className={cn(
-        'relative bg-black rounded-xl overflow-hidden aspect-video group focus-within:outline-none',
+        'relative bg-black rounded-lg sm:rounded-xl overflow-hidden aspect-video group focus-within:outline-none touch-manipulation',
         className
       )}
       tabIndex={0}
@@ -306,74 +306,75 @@ export default function VideoPlayer({
           showControls ? 'opacity-100' : 'opacity-0'
         )}
       >
-        {/* 중앙 재생 버튼 */}
+        {/* 중앙 재생 버튼 (모바일 최적화) */}
         <div className="absolute inset-0 flex items-center justify-center">
           <Button
             variant="ghost"
             size="icon"
-            className="w-16 h-16 text-white hover:bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="w-12 h-12 sm:w-16 sm:h-16 text-white hover:bg-white/20 opacity-0 group-hover:opacity-100 sm:opacity-0 transition-opacity touch-manipulation"
             onClick={togglePlay}
           >
-            {isPlaying ? <Pause className="w-8 h-8" /> : <Play className="w-8 h-8 ml-1" />}
+            {isPlaying ? <Pause className="w-6 h-6 sm:w-8 sm:h-8" /> : <Play className="w-6 h-6 sm:w-8 sm:h-8 ml-0.5 sm:ml-1" />}
           </Button>
         </div>
 
-        {/* 하단 컨트롤 바 */}
-        <div className="absolute bottom-0 left-0 right-0 p-4">
-          {/* 진행 바 */}
+        {/* 하단 컨트롤 바 (모바일 최적화) */}
+        <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
+          {/* 진행 바 (모바일에서 더 두껍게) */}
           <div 
-            className="w-full h-1 bg-white/30 rounded-full mb-3 cursor-pointer group/progress"
+            className="w-full h-1.5 sm:h-1 bg-white/30 rounded-full mb-3 cursor-pointer group/progress touch-manipulation"
             onClick={handleSeek}
           >
             <div 
-              className="h-full bg-indigo-500 rounded-full relative transition-all group-hover/progress:h-1.5"
+              className="h-full bg-indigo-500 rounded-full relative transition-all group-hover/progress:h-2 sm:group-hover/progress:h-1.5"
               style={{ width: `${progressPercentage}%` }}
             >
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-indigo-500 rounded-full opacity-0 group-hover/progress:opacity-100 transition-opacity" />
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-3 sm:h-3 bg-indigo-500 rounded-full opacity-0 group-hover/progress:opacity-100 transition-opacity" />
             </div>
           </div>
           
-          {/* 컨트롤 버튼들 */}
+          {/* 컨트롤 버튼들 (모바일 최적화) */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/20 w-10 h-10"
+                className="text-white hover:bg-white/20 w-8 h-8 sm:w-10 sm:h-10 touch-manipulation"
                 onClick={togglePlay}
               >
-                {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+                {isPlaying ? <Pause className="w-4 h-4 sm:w-5 sm:h-5" /> : <Play className="w-4 h-4 sm:w-5 sm:h-5" />}
               </Button>
               
+              {/* 모바일에서 건너뛰기 버튼 숨김 */}
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/20 w-8 h-8"
+                className="text-white hover:bg-white/20 w-7 h-7 sm:w-8 sm:h-8 hidden sm:flex touch-manipulation"
                 onClick={() => skip(-10)}
               >
-                <SkipBack className="w-4 h-4" />
+                <SkipBack className="w-3 h-3 sm:w-4 sm:h-4" />
               </Button>
               
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/20 w-8 h-8"
+                className="text-white hover:bg-white/20 w-7 h-7 sm:w-8 sm:h-8 hidden sm:flex touch-manipulation"
                 onClick={() => skip(10)}
               >
-                <SkipForward className="w-4 h-4" />
+                <SkipForward className="w-3 h-3 sm:w-4 sm:h-4" />
               </Button>
               
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/20 w-8 h-8"
+                className="text-white hover:bg-white/20 w-7 h-7 sm:w-8 sm:h-8 touch-manipulation"
                 onClick={toggleMute}
               >
-                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                {isMuted ? <VolumeX className="w-3 h-3 sm:w-4 sm:h-4" /> : <Volume2 className="w-3 h-3 sm:w-4 sm:h-4" />}
               </Button>
               
-              {/* 볼륨 슬라이더 */}
-              <div className="group/volume relative">
+              {/* 볼륨 슬라이더 - 데스크톱에서만 표시 */}
+              <div className="group/volume relative hidden lg:block">
                 <div className="w-0 group-hover/volume:w-20 transition-all duration-200 overflow-hidden">
                   <input
                     type="range"
@@ -387,27 +388,28 @@ export default function VideoPlayer({
                 </div>
               </div>
               
-              <span className="text-white text-sm ml-2">
+              <span className="text-white text-xs sm:text-sm ml-1 sm:ml-2 hidden sm:inline">
                 {formatDuration(currentTime)} / {formatDuration(videoDuration)}
               </span>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
+              {/* 설정 버튼 - 데스크톱에서만 */}
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/20 w-8 h-8"
+                className="text-white hover:bg-white/20 w-7 h-7 sm:w-8 sm:h-8 hidden sm:flex touch-manipulation"
               >
-                <Settings className="w-4 h-4" />
+                <Settings className="w-3 h-3 sm:w-4 sm:h-4" />
               </Button>
               
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/20 w-8 h-8"
+                className="text-white hover:bg-white/20 w-8 h-8 sm:w-8 sm:h-8 touch-manipulation"
                 onClick={toggleFullscreen}
               >
-                {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                {isFullscreen ? <Minimize2 className="w-4 h-4 sm:w-4 sm:h-4" /> : <Maximize2 className="w-4 h-4 sm:w-4 sm:h-4" />}
               </Button>
             </div>
           </div>

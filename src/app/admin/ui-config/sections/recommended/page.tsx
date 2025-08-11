@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { useUIConfigStore } from '@/lib/stores/ui-config.store';
 
 interface RecommendedSection {
   title: string;
@@ -20,15 +21,34 @@ interface RecommendedSection {
 
 export default function RecommendedSectionEditPage() {
   const router = useRouter();
+  const { config, updateMainPageRecommendedSection, loadSettingsFromAPI } = useUIConfigStore();
   const [recommendedSection, setRecommendedSection] = useState<RecommendedSection>({
-    title: '추천 캠페인',
-    subtitle: '지금 주목할만한 캠페인을 만나보세요',
+    title: '',
+    subtitle: '',
     visible: true,
     count: 10,
     selectionMode: 'auto',
     autoFilter: {}
   });
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // UI 설정에서 추천 비디오 섹션 데이터 로드
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      await loadSettingsFromAPI();
+      setLoading(false);
+    };
+    loadData();
+  }, []);
+
+  // config가 로드되면 recommendedSection 업데이트
+  useEffect(() => {
+    if (config.mainPage?.recommendedSection) {
+      setRecommendedSection(config.mainPage.recommendedSection);
+    }
+  }, [config]);
 
   const handleUpdate = (updates: Partial<RecommendedSection>) => {
     setRecommendedSection({ ...recommendedSection, ...updates });
@@ -37,10 +57,35 @@ export default function RecommendedSectionEditPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      alert('저장되었습니다.');
-      router.push('/admin/ui-config?tab=sections');
+      // Store에 업데이트
+      updateMainPageRecommendedSection(recommendedSection);
+      
+      // API 호출하여 설정 저장
+      const response = await fetch('/api/admin/ui-config', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          config: {
+            ...config,
+            mainPage: {
+              ...config.mainPage,
+              recommendedSection: recommendedSection
+            }
+          }
+        }),
+      });
+
+      if (response.ok) {
+        alert('저장되었습니다.');
+        router.push('/admin/ui-config?tab=sections');
+      } else {
+        throw new Error('저장 실패');
+      }
     } catch (error) {
+      console.error('Save error:', error);
       alert('저장 중 오류가 발생했습니다.');
     } finally {
       setSaving(false);
@@ -65,6 +110,19 @@ export default function RecommendedSectionEditPage() {
     { id: 'tiktok', name: '틱톡' },
     { id: 'blog', name: '블로그' },
   ];
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">설정을 불러오는 중...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto">

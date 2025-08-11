@@ -100,13 +100,13 @@ export default function Header({ variant = 'default', onSidebarToggle, onMobileS
 
   return (
     <header className="bg-gray-800 border-b border-gray-700 text-white fixed top-0 left-0 right-0 z-50">
-      <div className="w-full px-6 py-3">
+      <div className="w-full px-4 sm:px-6 py-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-8 flex-1">
+          <div className="flex items-center gap-4 sm:gap-8 flex-1">
             {/* Sidebar Toggle Button - Desktop */}
             <button
               onClick={onSidebarToggle}
-              className="hidden lg:block p-2 hover:bg-gray-800 rounded-lg transition-colors duration-200"
+              className="hidden lg:block p-2 hover:bg-gray-700 rounded-lg transition-colors duration-200 touch-manipulation"
               aria-label="Toggle sidebar"
             >
               <Menu className="w-6 h-6" />
@@ -115,19 +115,19 @@ export default function Header({ variant = 'default', onSidebarToggle, onMobileS
             {/* Mobile Hamburger Menu */}
             <button
               onClick={onMobileSidebarToggle}
-              className="lg:hidden p-2 hover:bg-gray-800 rounded-lg transition-colors duration-200"
+              className="lg:hidden p-2 hover:bg-gray-700 rounded-lg transition-colors duration-200 touch-manipulation"
               aria-label="Toggle mobile sidebar"
             >
-              <Menu className="w-6 h-6" />
+              <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
             
-            <Link href="/">
-              <h1 className="text-3xl font-black text-white">
+            <Link href="/" className="touch-manipulation">
+              <h1 className="text-2xl sm:text-3xl font-black text-white">
                 비디오픽
               </h1>
             </Link>
             
-            {/* 공통 메뉴 */}
+            {/* 공통 메뉴 - 데스크톱에서만 표시 */}
             <nav className="hidden lg:flex items-center gap-6">
               {(config.header?.menus || defaultMenus)
                 .filter(menu => menu.visible)
@@ -136,7 +136,7 @@ export default function Header({ variant = 'default', onSidebarToggle, onMobileS
                   <Link 
                     key={menu.id}
                     href={menu.href} 
-                    className="hover:opacity-80 transition font-medium text-white"
+                    className="hover:opacity-80 transition font-medium text-white touch-manipulation"
                   >
                     {menu.label}
                   </Link>
@@ -146,17 +146,17 @@ export default function Header({ variant = 'default', onSidebarToggle, onMobileS
           
 
           {/* 사용자 메뉴와 권한별 메뉴 */}
-          <nav className="flex items-center gap-6 flex-1 justify-end">
-            {/* 권한별 메뉴 - 로그인 전에도 노출 */}
+          <nav className="flex items-center gap-3 sm:gap-6 flex-1 justify-end">
+            {/* 권한별 메뉴 - 데스크톱에서만 표시 */}
             <div className="hidden lg:flex items-center gap-4">
               {/* 관리자 전용 메뉴 */}
               {isAdmin && (
                 <>
                   <div className="h-4 w-px bg-white/30" />
-                  <Link href="/admin/users" className="hover:opacity-80 transition font-medium text-white text-sm">
+                  <Link href="/admin/users" className="hover:opacity-80 transition font-medium text-white text-sm touch-manipulation">
                     사용자 관리
                   </Link>
-                  <Link href="/admin/videos" className="hover:opacity-80 transition font-medium text-white text-sm">
+                  <Link href="/admin/videos" className="hover:opacity-80 transition font-medium text-white text-sm touch-manipulation">
                     비디오 관리
                   </Link>
                 </>
@@ -166,7 +166,7 @@ export default function Header({ variant = 'default', onSidebarToggle, onMobileS
               {isInfluencer && user && (
                 <>
                   <div className="h-4 w-px bg-white/30" />
-                  <Link href="/mypage" className="flex flex-col items-center gap-1 hover:opacity-80 transition">
+                  <Link href="/mypage" className="flex flex-col items-center gap-1 hover:opacity-80 transition touch-manipulation">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
@@ -179,7 +179,7 @@ export default function Header({ variant = 'default', onSidebarToggle, onMobileS
               {isBusiness && (
                 <>
                   <div className="h-4 w-px bg-white/30" />
-                  <Link href="/studio/dashboard" className="flex flex-col items-center gap-1 hover:opacity-80 transition">
+                  <Link href="/studio/dashboard" className="flex flex-col items-center gap-1 hover:opacity-80 transition touch-manipulation">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
@@ -191,31 +191,32 @@ export default function Header({ variant = 'default', onSidebarToggle, onMobileS
             
             {isAuthenticated && user ? (
               <>
+                {/* 모바일에서는 아이콘만, 데스크톱에서는 아이콘+텍스트 */}
                 {/* 인플루언서가 아니고 비즈니스도 아닌 경우에만 마이 메뉴 표시 */}
                 {!isInfluencer && !isBusiness && (
                   <Link 
                     href={dashboardLink} 
-                    className="flex flex-col items-center gap-1 hover:opacity-80 transition"
+                    className="flex flex-col items-center gap-1 hover:opacity-80 transition touch-manipulation"
                   >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
-                    <span className="text-xs">마이</span>
+                    <span className="text-xs hidden sm:inline">마이</span>
                   </Link>
                 )}
-                <button onClick={handleLogout} className="flex flex-col items-center gap-1 hover:opacity-80 transition">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button onClick={handleLogout} className="flex flex-col items-center gap-1 hover:opacity-80 transition touch-manipulation">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
-                  <span className="text-xs">로그아웃</span>
+                  <span className="text-xs hidden sm:inline">로그아웃</span>
                 </button>
               </>
             ) : (
               <>
-                <Link href="/login" className="hover:opacity-80 transition text-sm text-white">
+                <Link href="/login" className="hover:opacity-80 transition text-xs sm:text-sm text-white touch-manipulation">
                   로그인
                 </Link>
-                <Link href="/register" className="bg-white/20 backdrop-blur px-4 py-2 rounded-full hover:bg-white/30 transition text-sm text-white">
+                <Link href="/register" className="bg-white/20 backdrop-blur px-3 sm:px-4 py-2 rounded-full hover:bg-white/30 transition text-xs sm:text-sm text-white touch-manipulation">
                   회원가입
                 </Link>
               </>

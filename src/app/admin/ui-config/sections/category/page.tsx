@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Plus, Trash2, Eye, EyeOff, Image } from 'lucide-react';
+import { useUIConfigStore } from '@/lib/stores/ui-config.store';
 
 interface CategoryMenu {
   id: string;
@@ -30,20 +31,27 @@ const categories = [
 
 export default function CategorySectionEditPage() {
   const router = useRouter();
-  const [categoryMenus, setCategoryMenus] = useState<CategoryMenu[]>([
-    { id: '1', name: '뷰티', categoryId: 'beauty', visible: true, order: 1 },
-    { id: '2', name: '패션', categoryId: 'fashion', visible: true, order: 2, badge: 'HOT' },
-    { id: '3', name: '맛집', categoryId: 'food', visible: true, order: 3 },
-    { id: '4', name: '여행', categoryId: 'travel', visible: true, order: 4 },
-    { id: '5', name: '테크', categoryId: 'tech', visible: true, order: 5, badge: '신규' },
-    { id: '6', name: '운동', categoryId: 'fitness', visible: true, order: 6 },
-    { id: '7', name: '라이프', categoryId: 'lifestyle', visible: true, order: 7 },
-    { id: '8', name: '반려동물', categoryId: 'pet', visible: true, order: 8 },
-    { id: '9', name: '육아', categoryId: 'parenting', visible: true, order: 9 },
-    { id: '10', name: '게임', categoryId: 'game', visible: true, order: 10 },
-    { id: '11', name: '교육', categoryId: 'education', visible: true, order: 11 },
-  ]);
+  const { config, updateMainPageCategoryMenus, loadSettingsFromAPI } = useUIConfigStore();
+  const [categoryMenus, setCategoryMenus] = useState<CategoryMenu[]>([]);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // UI 설정에서 카테고리 메뉴 데이터 로드
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      await loadSettingsFromAPI();
+      setLoading(false);
+    };
+    loadData();
+  }, []);
+
+  // config가 로드되면 categoryMenus 업데이트
+  useEffect(() => {
+    if (config.mainPage?.categoryMenus) {
+      setCategoryMenus(config.mainPage.categoryMenus);
+    }
+  }, [config]);
 
   const handleAddCategory = () => {
     const newCategory: CategoryMenu = {
@@ -84,10 +92,35 @@ export default function CategorySectionEditPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      alert('저장되었습니다.');
-      router.push('/admin/ui-config?tab=sections');
+      // Store에 업데이트
+      updateMainPageCategoryMenus(categoryMenus);
+      
+      // API 호출하여 설정 저장
+      const response = await fetch('/api/admin/ui-config', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          config: {
+            ...config,
+            mainPage: {
+              ...config.mainPage,
+              categoryMenus: categoryMenus
+            }
+          }
+        }),
+      });
+
+      if (response.ok) {
+        alert('저장되었습니다.');
+        router.push('/admin/ui-config?tab=sections');
+      } else {
+        throw new Error('저장 실패');
+      }
     } catch (error) {
+      console.error('Save error:', error);
       alert('저장 중 오류가 발생했습니다.');
     } finally {
       setSaving(false);
@@ -101,6 +134,19 @@ export default function CategorySectionEditPage() {
     { value: 'BEST', label: 'BEST', color: 'bg-green-500' },
     { value: '인기', label: '인기', color: 'bg-purple-500' },
   ];
+
+  if (loading) {
+    return (
+      <div className="max-w-6xl mx-auto">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">설정을 불러오는 중...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto">

@@ -45,28 +45,21 @@ export default function HomePage() {
   // 메뉴 카테고리 - UI 설정에서 가져오기
   const menuCategories = config.mainPage?.categoryMenus?.filter(menu => menu.visible) || []
   
-  // 섹션 순서 가져오기 - 부동산 섹션 강제 추가
+  // 섹션 순서 가져오기 - UI 설정에서 관리되는 순서 사용
   const defaultSectionOrder = [
     { id: 'hero', type: 'hero', order: 1, visible: true },
     { id: 'category', type: 'category', order: 2, visible: true },
     { id: 'quicklinks', type: 'quicklinks', order: 3, visible: true },
     { id: 'promo', type: 'promo', order: 4, visible: true },
     { id: 'ranking', type: 'ranking', order: 5, visible: true },
-    { id: 'realestate', type: 'realestate', order: 6, visible: true },
+    { id: 'youtube', type: 'youtube', order: 6, visible: true },
     { id: 'recommended', type: 'recommended', order: 7, visible: true },
   ]
   
-  // config가 있고 sectionOrder가 있으면 사용, 아니면 defaultSectionOrder 사용
-  // 하지만 realestate 섹션은 항상 포함되도록 보장
+  // config에서 sectionOrder를 사용, 없으면 defaultSectionOrder 사용
   let sectionOrder = config.mainPage?.sectionOrder && config.mainPage.sectionOrder.length > 0 
     ? [...config.mainPage.sectionOrder] 
     : [...defaultSectionOrder]
-  
-  // realestate 섹션이 없으면 추가
-  const hasRealEstate = sectionOrder.some(s => s.id === 'realestate' || s.type === 'realestate')
-  if (!hasRealEstate) {
-    sectionOrder.push({ id: 'realestate', type: 'realestate', order: 6, visible: true })
-  }
   
   // 커스텀 섹션들도 순서에 추가
   const customSectionOrders = (config.mainPage?.customSections || [])
@@ -411,120 +404,154 @@ export default function HomePage() {
 
   return (
     <PageLayout>
-      <div className="w-full max-w-[1920px] mx-auto px-6 py-8">
+      <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
         {/* 섹션들을 순서대로 렌더링 */}
         {visibleSections.map((section) => {
           switch (section.type) {
             case 'hero':
-              // 메인 배너 2단 슬라이드
-              return bannerSlides.length > 0 ? (
-                <div key={section.id} className="relative mb-8">
-                  <div className="overflow-hidden">
-                    <div 
-                      className="flex transition-transform duration-500 ease-out"
-                      style={{ transform: `translateX(-${currentSlide * 100}%)` }}
-                    >
-                      {/* 2개씩 그룹으로 묶어서 표시 */}
-                      {Array.from({ length: Math.ceil(bannerSlides.length / 2) }, (_, pageIndex) => (
-                        <div key={pageIndex} className="min-w-full grid grid-cols-1 lg:grid-cols-2 gap-4">
-                          {bannerSlides.slice(pageIndex * 2, pageIndex * 2 + 2).map((slide) => {
-                            const SlideContent = (
-                              <div
-                                className={`w-full h-64 md:h-80 ${slide.bgColor} text-white relative rounded-2xl overflow-hidden`}
-                                style={{
-                                  backgroundImage: slide.backgroundImage ? `url(${slide.backgroundImage})` : undefined,
-                                  backgroundSize: 'cover',
-                                  backgroundPosition: 'center'
-                                }}
-                              >
-                                <div className={`p-6 md:p-8 h-full flex flex-col justify-center ${slide.backgroundImage ? 'bg-black/30' : ''}`}>
-                                  <div>
-                                    {slide.tag && (
-                                      <span className="inline-block bg-white/20 backdrop-blur px-3 py-1 rounded-full text-xs font-medium mb-2">
-                                        {slide.tag}
-                                      </span>
-                                    )}
-                                    {!slide.tag && (
-                                      <span className="inline-block bg-white/20 backdrop-blur px-3 py-1 rounded-full text-xs font-medium mb-2">
-                                        🎬 VIDEO
-                                      </span>
-                                    )}
-                                    <h2 className="text-2xl md:text-3xl font-bold mb-2 whitespace-pre-line">
-                                      {slide.title || '최고의 비디오 콘텐츠를\n지금 만나보세요'}
-                                    </h2>
-                                    <p className="text-base opacity-90">{slide.subtitle || '다양한 크리에이터들의 창의적인 비디오를 시청하고 즐겨보세요'}</p>
-                                    {slide.link && !slide.backgroundImage && (
-                                      <Link 
-                                        href={slide.link}
-                                        className="inline-block mt-4 bg-white/20 backdrop-blur border border-white/30 px-4 py-2 rounded-full hover:bg-white/30 transition text-sm"
-                                      >
-                                        자세히 보기 →
-                                      </Link>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            );
-
-                            return slide.link && slide.backgroundImage ? (
-                              <Link key={slide.id} href={slide.link} className="block group">
-                                <div className="relative">
-                                  {SlideContent}
-                                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition rounded-2xl" />
-                                </div>
-                              </Link>
-                            ) : (
-                              <div key={slide.id}>
-                                {SlideContent}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      ))}
+              // 메인 배너 슬라이드 (모바일: 1개씩, 데스크톱: 2개씩)
+              if (bannerSlides.length === 0) return null;
+              
+              // 현재 표시할 슬라이드 렌더링 함수
+              const renderSlide = (slide: any) => {
+                const SlideContent = (
+                  <div
+                    className={`w-full h-40 sm:h-48 md:h-64 lg:h-80 ${slide.bgColor} text-white relative rounded-xl sm:rounded-2xl overflow-hidden`}
+                    style={{
+                      backgroundImage: slide.backgroundImage ? `url(${slide.backgroundImage})` : undefined,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center'
+                    }}
+                  >
+                    <div className={`p-3 sm:p-4 md:p-6 lg:p-8 h-full flex flex-col justify-center ${slide.backgroundImage ? 'bg-black/30' : ''}`}>
+                      <div>
+                        <span className="inline-block bg-white/20 backdrop-blur px-2 sm:px-3 py-1 rounded-full text-xs font-medium mb-2">
+                          {slide.tag || '🎬 VIDEO'}
+                        </span>
+                        <h2 className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 whitespace-pre-line leading-tight">
+                          {slide.title.replace(/\\n/g, '\n')}
+                        </h2>
+                        <p className="text-xs sm:text-sm md:text-base opacity-90 line-clamp-2">{slide.subtitle}</p>
+                        {slide.link && !slide.backgroundImage && (
+                          <Link 
+                            href={slide.link}
+                            className="inline-block mt-2 sm:mt-3 md:mt-4 bg-white/20 backdrop-blur border border-white/30 px-2 sm:px-3 md:px-4 py-1 sm:py-2 rounded-full hover:bg-white/30 transition text-xs touch-manipulation"
+                          >
+                            자세히 보기 →
+                          </Link>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  
-                  {/* 슬라이드 컨트롤 */}
-                  {Math.ceil(bannerSlides.length / 2) > 1 && (
-                    <div className="flex justify-center gap-2 mt-4">
-                      {Array.from({ length: Math.ceil(bannerSlides.length / 2) }, (_, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setCurrentSlide(index)}
-                          className={`w-2 h-2 rounded-full transition ${
-                            index === currentSlide ? 'bg-gray-800 w-8' : 'bg-gray-400'
-                          }`}
-                        />
-                      ))}
+                );
+
+                if (slide.link && slide.backgroundImage) {
+                  return (
+                    <Link href={slide.link} className="block group">
+                      <div className="relative">
+                        {SlideContent}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition rounded-2xl" />
+                      </div>
+                    </Link>
+                  );
+                }
+                return SlideContent;
+              };
+              
+              return (
+                <div key={section.id} className="relative mb-8">
+                  {/* 모바일 및 태블릿: 1개씩 표시 */}
+                  <div className="md:hidden">
+                    <div className="overflow-hidden">
+                      <div 
+                        className="flex transition-transform duration-500 ease-out"
+                        style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+                      >
+                        {bannerSlides.map((slide, index) => (
+                          <div key={index} className="min-w-full flex-shrink-0">
+                            {renderSlide(slide)}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  )}
+                    {/* 모바일 슬라이드 점 */}
+                    {bannerSlides.length > 1 && (
+                      <div className="flex justify-center gap-2 mt-4">
+                        {bannerSlides.map((_, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setCurrentSlide(index)}
+                            className={`w-2 h-2 rounded-full transition ${
+                              index === currentSlide ? 'bg-gray-800 w-8' : 'bg-gray-400'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 데스크톱: 2개씩 표시 */}
+                  <div className="hidden md:block">
+                    <div className="overflow-hidden">
+                      <div 
+                        className="flex transition-transform duration-500 ease-out"
+                        style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+                      >
+                        {Array.from({ length: Math.ceil(bannerSlides.length / 2) }, (_, pageIndex) => (
+                          <div key={pageIndex} className="min-w-full flex-shrink-0 grid grid-cols-2 gap-4">
+                            {bannerSlides.slice(pageIndex * 2, pageIndex * 2 + 2).map((slide, slideIndex) => (
+                              <div key={`${pageIndex}-${slideIndex}`}>
+                                {renderSlide(slide)}
+                              </div>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    {/* 데스크톱 페이지 점 */}
+                    {Math.ceil(bannerSlides.length / 2) > 1 && (
+                      <div className="flex justify-center gap-2 mt-4">
+                        {Array.from({ length: Math.ceil(bannerSlides.length / 2) }, (_, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setCurrentSlide(index)}
+                            className={`w-2 h-2 rounded-full transition ${
+                              index === currentSlide ? 'bg-gray-800 w-8' : 'bg-gray-400'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              ) : null;
+              );
               
             case 'category':
-              // 카테고리 메뉴 그리드
+              // 카테고리 메뉴 그리드 (모바일 최적화)
               return (
                 <div key={section.id} className="mb-8">
                   <div className="flex justify-center">
-                    <div className="grid grid-cols-6 md:grid-cols-11 gap-2">
+                    <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-11 gap-2 sm:gap-3">
                       {menuCategories.map((category) => (
                         <Link
                           key={category.id}
                           href={`/videos?category=${category.categoryId}`}
                           className="flex flex-col items-center gap-2 group"
                         >
-                          <div className="w-16 h-16 bg-gray-800 rounded-2xl flex items-center justify-center text-indigo-400 group-hover:bg-gray-700 transition relative">
+                          <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gray-800 rounded-xl sm:rounded-2xl flex items-center justify-center text-indigo-400 group-hover:bg-gray-700 transition relative">
                           {category.icon && (category.icon.startsWith('data:') || category.icon.startsWith('http')) ? (
-                            <img src={category.icon} alt={category.name} className="w-8 h-8 object-contain" />
+                            <img src={category.icon} alt={category.name} className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 object-contain" />
                           ) : (
-                            defaultCategoryIcons[category.categoryId] || (
-                              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                              </svg>
-                            )
+                            <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8">
+                              {defaultCategoryIcons[category.categoryId] || (
+                                <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                </svg>
+                              )}
+                            </div>
                           )}
                           {category.badge && (
-                            <span className={`absolute -top-1 -right-1 text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                            <span className={`absolute -top-1 -right-1 text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
                               category.badge === 'HOT' ? 'bg-red-500 text-white' : 
                               category.badge === '신규' ? 'bg-blue-500 text-white' : 
                               'bg-gray-500 text-white'
@@ -533,7 +560,7 @@ export default function HomePage() {
                             </span>
                           )}
                         </div>
-                        <span className="text-sm text-gray-300">{category.name}</span>
+                        <span className="text-xs sm:text-sm text-gray-300 text-center line-clamp-2 leading-tight">{category.name}</span>
                       </Link>
                     ))}
                     </div>
@@ -542,25 +569,50 @@ export default function HomePage() {
               );
               
             case 'quicklinks':
-              // 바로가기 링크
+              // 바로가기 링크 (모바일: 1단 가로 스크롤, 데스크톱: 3단 그리드)
               return config.mainPage?.quickLinks && config.mainPage.quickLinks.filter(link => link.visible).length > 0 ? (
-                <div key={section.id} className="grid grid-cols-3 gap-4 mb-8">
-                  {config.mainPage.quickLinks.filter(link => link.visible).map((link) => (
-                    <Link 
-                      key={link.id}
-                      href={link.link} 
-                      className="bg-gray-800 rounded-xl p-5 flex items-center justify-center gap-3 hover:bg-gray-700 transition"
-                    >
-                      {link.icon && (
-                        link.icon.startsWith('data:') || link.icon.startsWith('http') ? (
-                          <img src={link.icon} alt={link.title} className="w-8 h-8 object-contain" />
-                        ) : (
-                          <span className="text-2xl">{link.icon}</span>
-                        )
-                      )}
-                      <span className="font-medium text-white">{link.title}</span>
-                    </Link>
-                  ))}
+                <div key={section.id} className="mb-8">
+                  {/* 모바일 및 태블릿: 가로 스크롤 */}
+                  <div className="md:hidden">
+                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                      {config.mainPage.quickLinks.filter(link => link.visible).map((link) => (
+                        <Link 
+                          key={link.id}
+                          href={link.link} 
+                          className="bg-gray-800 rounded-xl p-4 flex items-center gap-3 hover:bg-gray-700 transition touch-manipulation flex-shrink-0 min-w-[180px]"
+                        >
+                          {link.icon && (
+                            link.icon.startsWith('data:') || link.icon.startsWith('http') ? (
+                              <img src={link.icon} alt={link.title} className="w-6 h-6 object-contain" />
+                            ) : (
+                              <span className="text-lg">{link.icon}</span>
+                            )
+                          )}
+                          <span className="font-medium text-white text-sm whitespace-nowrap">{link.title}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* 데스크톱: 그리드 레이아웃 */}
+                  <div className="hidden md:grid grid-cols-3 gap-4">
+                    {config.mainPage.quickLinks.filter(link => link.visible).map((link) => (
+                      <Link 
+                        key={link.id}
+                        href={link.link} 
+                        className="bg-gray-800 rounded-xl p-5 flex items-center justify-center gap-3 hover:bg-gray-700 transition touch-manipulation"
+                      >
+                        {link.icon && (
+                          link.icon.startsWith('data:') || link.icon.startsWith('http') ? (
+                            <img src={link.icon} alt={link.title} className="w-8 h-8 object-contain" />
+                          ) : (
+                            <span className="text-2xl">{link.icon}</span>
+                          )
+                        )}
+                        <span className="font-medium text-white text-base">{link.title}</span>
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               ) : null;
               
@@ -686,20 +738,23 @@ export default function HomePage() {
                 </section>
               );
               
-            case 'realestate':
-              // 부동산 YouTube 비디오 섹션
-              const realEstateVideos = homeData?.sections?.realestate || []
+            case 'youtube':
+              // YouTube 비디오 섹션
+              const youtubeConfig = config.mainPage?.youtubeSection;
+              if (!youtubeConfig || !youtubeConfig.visible) return null;
               
-              console.log('Rendering realestate section:', {
+              // 카테고리에 따라 YouTube 비디오 가져오기
+              const youtubeSectionVideos = homeData?.sections?.[youtubeConfig.category] || homeData?.sections?.realestate || []
+              
+              console.log('Rendering youtube section:', {
                 sectionId: section.id,
-                sectionType: section.type,
-                realEstateVideosCount: realEstateVideos.length,
-                fromHomeData: !!homeData?.sections?.realestate,
-                fromYoutubeVideos: !homeData?.sections?.realestate && youtubeVideos.length > 0
+                category: youtubeConfig.category,
+                videosCount: youtubeSectionVideos.length,
+                config: youtubeConfig
               })
               
-              if (realEstateVideos.length === 0) {
-                console.log('No real estate videos found, returning null')
+              if (youtubeSectionVideos.length === 0) {
+                console.log('No youtube videos found, returning null')
                 return null
               }
               
@@ -707,16 +762,22 @@ export default function HomePage() {
                 <section key={section.id} className="mb-12">
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h2 className="text-2xl font-bold text-white">최신 부동산 유튜브</h2>
-                      <p className="text-gray-400 mt-1">부동산 전문 유튜버들의 최신 영상</p>
+                      <h2 className="text-2xl font-bold text-white">{youtubeConfig.title}</h2>
+                      {youtubeConfig.subtitle && (
+                        <p className="text-gray-400 mt-1">{youtubeConfig.subtitle}</p>
+                      )}
                     </div>
-                    <Link href="/videos/youtube?category=realestate" className="text-indigo-400 hover:text-indigo-300 font-medium">
+                    <Link href={youtubeConfig.viewAllLink || '/videos/youtube'} className="text-indigo-400 hover:text-indigo-300 font-medium">
                       전체보기 →
                     </Link>
                   </div>
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {realEstateVideos.slice(0, 6).map((video: any) => (
+                  <div className={`grid gap-4 sm:gap-6 ${
+                    youtubeConfig.count <= 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' :
+                    youtubeConfig.count <= 6 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' :
+                    'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                  }`}>
+                    {youtubeSectionVideos.slice(0, youtubeConfig.count).map((video: any) => (
                       <div key={video.id} className="group">
                         <Link href={`/videos/youtube/${video.id}`} className="block">
                           <div className="relative aspect-video bg-gray-800 rounded-lg overflow-hidden mb-3">
@@ -750,17 +811,33 @@ export default function HomePage() {
               
             case 'recommended':
               // 추천 비디오
+              const recommendedConfig = config.mainPage?.recommendedSection;
+              if (!recommendedConfig || !recommendedConfig.visible) return null;
+              
+              // 추천 비디오 데이터 (homeData의 recommended 섹션 사용)
+              const recommendedVideos = homeData?.sections?.recommended || [];
+              
+              if (recommendedVideos.length === 0) {
+                console.log('No recommended videos found, returning null');
+                return null;
+              }
+              
               return (
                 <section key={section.id} className="mb-12">
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-white">추천 비디오</h2>
+                    <div>
+                      <h2 className="text-2xl font-bold text-white">{recommendedConfig.title || '추천 비디오'}</h2>
+                      {recommendedConfig.subtitle && (
+                        <p className="text-gray-400 mt-1">{recommendedConfig.subtitle}</p>
+                      )}
+                    </div>
                     <Link href="/videos" className="text-indigo-400 hover:text-indigo-300 font-medium">
                       전체보기 →
                     </Link>
                   </div>
                   
                   <VideoList
-                    videos={loading ? [] : videos.slice(0, 10)}
+                    videos={loading ? [] : recommendedVideos.slice(0, recommendedConfig.count || 10)}
                     loading={loading}
                     variant="default"
                     columns={4}
@@ -798,7 +875,7 @@ export default function HomePage() {
                       if (customSection.filter.category === 'realestate') {
                         console.log('Rendering realestate section, youtubeVideos:', youtubeVideos.length)
                         return youtubeVideos.length > 0 ? (
-                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                             {youtubeVideos.slice(0, displayCount).map((video) => (
                               <div key={video.id} className="group cursor-pointer">
                                 <Link 
@@ -917,20 +994,20 @@ export default function HomePage() {
           }
         })}
 
-        {/* 하단 CTA */}
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-center text-white">
-          <h3 className="text-2xl font-bold mb-2">비디오 크리에이터가 되어보세요</h3>
-          <p className="text-white/80 mb-6">창의적인 비디오 콘텐츠를 만들고 시청자들과 소통해보세요.</p>
-          <div className="flex gap-4 justify-center">
+        {/* 하단 CTA (모바일 최적화) */}
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 sm:p-8 text-center text-white">
+          <h3 className="text-xl sm:text-2xl font-bold mb-2">비디오 크리에이터가 되어보세요</h3>
+          <p className="text-white/80 mb-6 text-sm sm:text-base">창의적인 비디오 콘텐츠를 만들고 시청자들과 소통해보세요.</p>
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <Link
               href="/register?type=creator"
-              className="bg-white text-indigo-600 px-6 py-3 rounded-full font-medium hover:shadow-lg transition"
+              className="bg-white text-indigo-600 px-6 py-3 rounded-full font-medium hover:shadow-lg transition touch-manipulation text-sm sm:text-base"
             >
               크리에이터로 시작하기
             </Link>
             <Link
               href="/register?type=viewer"
-              className="bg-white/20 backdrop-blur text-white px-6 py-3 rounded-full font-medium hover:bg-white/30 transition"
+              className="bg-white/20 backdrop-blur text-white px-6 py-3 rounded-full font-medium hover:bg-white/30 transition touch-manipulation text-sm sm:text-base"
             >
               시청자로 시작하기
             </Link>
