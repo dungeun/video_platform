@@ -91,8 +91,12 @@ export default function HeroSectionEditPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Store에 업데이트
-      updateMainPageHeroSlides(slides);
+      // Store에 업데이트 - type 필드가 undefined인 경우 기본값 설정
+      const slidesWithDefaults = slides.map(slide => ({
+        ...slide,
+        type: slide.type || 'blue' as 'blue' | 'dark' | 'green' | 'pink'
+      }));
+      updateMainPageHeroSlides(slidesWithDefaults);
       
       // API 호출하여 설정 저장
       const response = await fetch('/api/admin/ui-config', {

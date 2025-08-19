@@ -581,7 +581,7 @@
         "id": "recommended",
         "type": "recommended",
         "order": 7,
-        "visible": true
+        "visible": false
       }
     ]
   }

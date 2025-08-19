@@ -44,7 +44,11 @@ export default function PromoSectionEditPage() {
   // config가 로드되면 promoBanner 업데이트
   useEffect(() => {
     if (config.mainPage?.promoBanner) {
-      setPromoBanner(config.mainPage.promoBanner);
+      setPromoBanner({
+        ...config.mainPage.promoBanner,
+        backgroundColor: config.mainPage.promoBanner.backgroundColor || '#FEF3C7',
+        textColor: config.mainPage.promoBanner.textColor || '#000000'
+      });
     }
   }, [config]);
 
@@ -55,8 +59,12 @@ export default function PromoSectionEditPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Store에 업데이트
-      updateMainPagePromoBanner(promoBanner);
+      // Store에 업데이트 - icon 필드가 undefined인 경우 빈 문자열로 변환
+      const bannerWithDefaults = {
+        ...promoBanner,
+        icon: promoBanner.icon || ''
+      };
+      updateMainPagePromoBanner(bannerWithDefaults);
       
       // API 호출하여 설정 저장
       const response = await fetch('/api/admin/ui-config', {

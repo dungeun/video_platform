@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
     });
 
     const transformYouTubeVideo = (video: any) => ({
-      id: video.id,
+      id: `yt_${video.youtubeId}_${video.id}`, // YouTube 비디오임을 명확히 하기 위해 yt_ 접두사 추가
       title: video.title || '',
       description: video.description,
       thumbnailUrl: video.thumbnailUrl || '',
@@ -97,6 +97,8 @@ export async function GET(request: NextRequest) {
       isLive: false,
       isPublic: true,
       category: video.category,
+      isYouTube: true, // YouTube 비디오 식별 플래그 추가
+      youtubeId: video.youtubeId, // YouTube ID 포함
       creator: {
         id: video.channelId || '',
         name: video.channelTitle || 'Unknown Creator',
@@ -107,26 +109,73 @@ export async function GET(request: NextRequest) {
 
     // 섹션별로 데이터 분류
     if (section === 'all' || section === 'trending') {
-      // 조회수 기준 인기 비디오
-      const trendingVideos = [...videos]
-        .sort((a, b) => (parseInt(b.viewCount || '0')) - (parseInt(a.viewCount || '0')))
-        .slice(0, 10)
-        .map(transformRegularVideo);
-      result.sections.trending = trendingVideos;
+      // 조회수 기준 인기 비디오 (일반 비디오 우선, 없으면 YouTube)
+      if (videos.length > 0) {
+        const trendingVideos = [...videos]
+          .sort((a, b) => {
+            const bView = typeof b.viewCount === 'bigint' ? Number(b.viewCount) : parseInt(b.viewCount || '0');
+            const aView = typeof a.viewCount === 'bigint' ? Number(a.viewCount) : parseInt(a.viewCount || '0');
+            return bView - aView;
+          })
+          .slice(0, 10)
+          .map(transformRegularVideo);
+        result.sections.trending = trendingVideos;
+      } else if (youtubeVideos.length > 0) {
+        // 일반 비디오가 없으면 YouTube 비디오 사용
+        const trendingVideos = [...youtubeVideos]
+          .sort((a, b) => {
+            const bView = typeof b.viewCount === 'bigint' ? Number(b.viewCount) : parseInt(b.viewCount || '0');
+            const aView = typeof a.viewCount === 'bigint' ? Number(a.viewCount) : parseInt(a.viewCount || '0');
+            return bView - aView;
+          })
+          .slice(0, 10)
+          .map(transformYouTubeVideo);
+        result.sections.trending = trendingVideos;
+      }
     }
 
     if (section === 'all' || section === 'popular') {
-      // 좋아요 수 기준 인기 비디오
-      const popularVideos = [...videos]
-        .sort((a, b) => (parseInt(b.likeCount || '0')) - (parseInt(a.likeCount || '0')))
-        .slice(0, 8)
-        .map(transformRegularVideo);
-      result.sections.popular = popularVideos;
+      // 좋아요 수 기준 인기 비디오 (일반 비디오 우선, 없으면 YouTube)
+      if (videos.length > 0) {
+        const popularVideos = [...videos]
+          .sort((a, b) => {
+            const bLike = typeof b.likeCount === 'bigint' 
+              ? Number(b.likeCount) 
+              : typeof b.likeCount === 'number'
+              ? b.likeCount
+              : parseInt(b.likeCount || '0');
+            const aLike = typeof a.likeCount === 'bigint' 
+              ? Number(a.likeCount) 
+              : typeof a.likeCount === 'number'
+              ? a.likeCount
+              : parseInt(a.likeCount || '0');
+            return bLike - aLike;
+          })
+          .slice(0, 8)
+          .map(transformRegularVideo);
+        result.sections.popular = popularVideos;
+      } else if (youtubeVideos.length > 0) {
+        // 일반 비디오가 없으면 YouTube 비디오를 조회수 기준으로 정렬
+        const popularVideos = [...youtubeVideos]
+          .sort((a, b) => {
+            const bView = typeof b.viewCount === 'bigint' ? Number(b.viewCount) : parseInt(b.viewCount || '0');
+            const aView = typeof a.viewCount === 'bigint' ? Number(a.viewCount) : parseInt(a.viewCount || '0');
+            return bView - aView;
+          })
+          .slice(0, 8)
+          .map(transformYouTubeVideo);
+        result.sections.popular = popularVideos;
+      }
     }
 
     if (section === 'all' || section === 'latest') {
-      // 최신 비디오
-      result.sections.latest = videos.slice(0, 12).map(transformRegularVideo);
+      // 최신 YouTube 비디오
+      const latestYoutubeVideos = youtubeVideos
+        .slice(0, 12)
+        .map(transformYouTubeVideo);
+      
+      result.sections.latest = latestYoutubeVideos;
+      console.log(`Added ${latestYoutubeVideos.length} latest YouTube videos`);
     }
 
     if (section === 'all' || section === 'realestate') {
@@ -153,17 +202,23 @@ export async function GET(request: NextRequest) {
       result.sections.youtube = youtubeVideos.slice(0, 12).map(transformYouTubeVideo);
     }
 
-    // 추천 비디오 (일반 비디오 + YouTube 비디오 혼합)
+    // 추천 비디오 (일반 비디오만 사용, YouTube는 별도 섹션)
     if (section === 'all' || section === 'recommended') {
-      const transformedRegularVideos = videos.slice(0, 6).map(transformRegularVideo);
-      const transformedYouTubeVideos = youtubeVideos.slice(0, 6).map(transformYouTubeVideo);
-      
-      const mixedVideos = [
-        ...transformedRegularVideos,
-        ...transformedYouTubeVideos
-      ].sort(() => Math.random() - 0.5).slice(0, 10);
-      
-      result.sections.recommended = mixedVideos;
+      // 일반 비디오가 없으면 YouTube 비디오를 사용
+      if (videos.length === 0 && youtubeVideos.length > 0) {
+        const transformedYouTubeVideos = youtubeVideos
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 10)
+          .map(transformYouTubeVideo);
+        result.sections.recommended = transformedYouTubeVideos;
+      } else {
+        // 일반 비디오가 있으면 일반 비디오만 사용
+        const recommendedVideos = videos
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 10)
+          .map(transformRegularVideo);
+        result.sections.recommended = recommendedVideos;
+      }
     }
 
     // BigInt을 문자열로 변환

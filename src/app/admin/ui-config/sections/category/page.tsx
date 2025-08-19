@@ -92,8 +92,12 @@ export default function CategorySectionEditPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Store에 업데이트
-      updateMainPageCategoryMenus(categoryMenus);
+      // Store에 업데이트 - icon 필드가 undefined인 경우 빈 문자열로 변환
+      const menuWithDefaults = categoryMenus.map(menu => ({
+        ...menu,
+        icon: menu.icon || ''
+      }));
+      updateMainPageCategoryMenus(menuWithDefaults);
       
       // API 호출하여 설정 저장
       const response = await fetch('/api/admin/ui-config', {

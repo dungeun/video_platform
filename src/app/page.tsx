@@ -739,12 +739,13 @@ export default function HomePage() {
               );
               
             case 'youtube':
-              // YouTube 비디오 섹션
-              const youtubeConfig = config.mainPage?.youtubeSection;
+              // YouTube 비디오 섹션 - 다중 섹션 지원
+              // section.id를 사용하여 해당하는 YouTube 섹션 설정 찾기
+              const youtubeConfig = config.mainPage?.youtubeSections?.find(ys => ys.id === section.id);
               if (!youtubeConfig || !youtubeConfig.visible) return null;
               
               // 카테고리에 따라 YouTube 비디오 가져오기
-              const youtubeSectionVideos = homeData?.sections?.[youtubeConfig.category] || homeData?.sections?.realestate || []
+              const youtubeSectionVideos = homeData?.sections?.[youtubeConfig.category] || []
               
               console.log('Rendering youtube section:', {
                 sectionId: section.id,
@@ -754,7 +755,7 @@ export default function HomePage() {
               })
               
               if (youtubeSectionVideos.length === 0) {
-                console.log('No youtube videos found, returning null')
+                console.log('No youtube videos found for category:', youtubeConfig.category)
                 return null
               }
               

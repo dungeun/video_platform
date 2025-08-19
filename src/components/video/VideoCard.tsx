@@ -165,6 +165,26 @@ export default function VideoCard({
     }
   }
 
+  // YouTube 비디오인지 확인
+  const isYouTubeVideo = video.videoUrl && video.videoUrl.includes('youtube.com');
+  
+  // YouTube 비디오의 경우 ID에서 YouTube ID 추출 또는 다른 라우팅 사용
+  const getVideoHref = () => {
+    if (isYouTubeVideo) {
+      // YouTube 비디오는 /videos/youtube/[id] 경로 사용
+      // ID가 yt_로 시작하면 YouTube 비디오
+      if (video.id.startsWith('yt_')) {
+        return `/videos/youtube/${video.id}`;
+      }
+      // 또는 videoUrl에서 YouTube ID 추출
+      const youtubeIdMatch = video.videoUrl?.match(/watch\?v=([^&]+)/);
+      if (youtubeIdMatch) {
+        return `/videos/youtube/yt_${youtubeIdMatch[1]}`;
+      }
+    }
+    return `/videos/${video.id}`;
+  };
+
   const cardContent = (
     <Card 
       variant="default" 
@@ -202,7 +222,7 @@ export default function VideoCard({
   } else {
     return (
       <Link 
-        href={`/videos/${video.id}`}
+        href={getVideoHref()}
         aria-label={`${video.title} 비디오 페이지로 이동`}
         className={cn(
           'group block',
