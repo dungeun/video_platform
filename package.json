@@ -4,10 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "node scripts/dev-server.js",
+    "dev:streaming": "node scripts/dev-with-streaming.js",
     "dev:debug": "NODE_ENV=development DEBUG=true node scripts/server-startup.js",
     "build": "prisma generate && prisma db push --accept-data-loss && next build",
     "start": "node scripts/prod-server.js",
     "start:debug": "NODE_ENV=production node scripts/server-startup.js",
+    "streaming:start": "node scripts/start-streaming-services.js",
+    "streaming:stop": "pkill -f 'start-streaming-services'",
     "logs": "tail -f logs/app-*.log",
     "logs:error": "tail -f logs/error-*.log",
     "lint": "next lint",
@@ -66,7 +69,16 @@
     "socket.io-client": "^4.6.0",
     "tailwind-merge": "^3.3.1",
     "zod": "^4.0.5",
-    "zustand": "^4.4.7"
+    "zustand": "^4.4.7",
+    "node-media-server": "^2.6.3",
+    "@tus/server": "^1.5.0",
+    "@tus/file-store": "^1.4.0",
+    "fluent-ffmpeg": "^2.1.3",
+    "socket.io": "^4.7.5",
+    "hls.js": "^1.5.15",
+    "flv.js": "^1.6.2",
+    "express": "^4.19.2",
+    "tus-js-client": "^4.1.0"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
@@ -89,6 +101,8 @@
     "puppeteer": "^24.15.0",
     "tailwindcss": "^3.4.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "@types/fluent-ffmpeg": "^2.1.26",
+    "@types/express": "^4.17.21"
   }
 }
