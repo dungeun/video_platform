@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  name      String?
+  avatar    String?
+  bio       String?
+  role      Role     @default(USER)
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  streams   Stream[]
+  videos    Video[]
+  chats     Chat[]
+  followers Follow[] @relation("following")
+  following Follow[] @relation("follower")
+  likes     Like[]
+  comments  Comment[]
+}
+
+model Stream {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  thumbnail   String?
+  streamKey   String   @unique
+  rtmpUrl     String
+  hlsUrl      String
+  status      StreamStatus @default(IDLE)
+  viewerCount Int      @default(0)
+  startedAt   DateTime?
+  endedAt     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  chats  Chat[]
+  recording Video?
+}
+
+model Video {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  thumbnail   String?
+  url         String
+  duration    Int?
+  views       Int      @default(0)
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId   String
+  user     User      @relation(fields: [userId], references: [id])
+  streamId String?   @unique
+  stream   Stream?   @relation(fields: [streamId], references: [id])
+  likes    Like[]
+  comments Comment[]
+}
+
+model Chat {
+  id        String   @id @default(cuid())
+  message   String
+  type      ChatType @default(TEXT)
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  userId   String
+  user     User   @relation(fields: [userId], references: [id])
+  streamId String
+  stream   Stream @relation(fields: [streamId], references: [id])
+}
+
+model Follow {
+  id         String   @id @default(cuid())
+  followerId String
+  follower   User     @relation("follower", fields: [followerId], references: [id])
+  followingId String
+  following  User     @relation("following", fields: [followingId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@unique([followerId, followingId])
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  videoId   String
+  video     Video    @relation(fields: [videoId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, videoId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  videoId   String
+  video     Video    @relation(fields: [videoId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  USER
+  STREAMER
+  MODERATOR
+  ADMIN
+}
+
+enum StreamStatus {
+  IDLE
+  LIVE
+  ENDED
+  ERROR
+}
+
+enum ChatType {
+  TEXT
+  EMOJI
+  GIFT
+  SYSTEM
+  ANNOUNCEMENT
+}

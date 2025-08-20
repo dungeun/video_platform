@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verify } from 'jsonwebtoken'
 import { prisma } from '@/lib/db/prisma'
 import crypto from 'crypto'
+import { v4 as uuidv4 } from 'uuid'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
 
@@ -49,6 +50,7 @@ export async function POST(req: NextRequest) {
 
     const newStreamKey = await prisma.stream_keys.create({
       data: {
+        id: uuidv4(),
         channelId: user.channels.id,
         keyName: keyName,
         streamKey: streamKey,

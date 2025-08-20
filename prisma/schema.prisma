@@ -163,6 +163,7 @@ model channels {
   creator_earnings     creator_earnings[]
   live_streams         live_streams[]
   settlement_requests  settlement_requests[]
+  stream_keys          stream_keys[]
   subscriptions        subscriptions[]
   super_chats          super_chats[]
   videos               videos[]
@@ -293,12 +294,14 @@ model live_streams {
   description        String?
   thumbnailUrl       String?
   streamKey          String               @unique
+  streamKeyId        String?
   rtmpUrl            String
   webrtcUrl          String?
   hlsUrl             String?
   status             String               @default("preparing")
   viewerCount        Int                  @default(0)
   peakViewers        Int                  @default(0)
+  duration           Int?
   startedAt          DateTime?
   endedAt            DateTime?
   recordingUrl       String?
@@ -307,10 +310,12 @@ model live_streams {
   updatedAt          DateTime
   live_chat_messages live_chat_messages[]
   channels           channels             @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  stream_keys        stream_keys?         @relation(fields: [streamKeyId], references: [id])
   super_chats        super_chats[]
 
   @@index([channelId])
   @@index([status])
+  @@index([streamKeyId])
 }
 
 model notification_settings {
@@ -530,6 +535,28 @@ model site_config {
   createdAt DateTime @default(now())
 
   @@index([key])
+}
+
+model stream_keys {
+  id               String        @id
+  channelId        String
+  keyName          String
+  streamKey        String        @unique
+  status           String        @default("ACTIVE")
+  permissions      String[]      @default(["STREAM", "RECORD"])
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @default(now())
+  lastUsedAt       DateTime?
+  expiresAt        DateTime?
+  regeneratedAt    DateTime?
+  statusUpdatedAt  DateTime?
+  deletedAt        DateTime?
+  channels         channels      @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  live_streams     live_streams[]
+
+  @@index([channelId])
+  @@index([status])
+  @@index([streamKey])
 }
 
 model subscriptions {

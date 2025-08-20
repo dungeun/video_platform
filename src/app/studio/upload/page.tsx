@@ -2,356 +2,339 @@
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Upload, Film, Image, FileText, AlertCircle, X, CheckCircle } from 'lucide-react'
-import { AuthService } from '@/lib/auth'
+import { Upload, CheckCircle2, AlertTriangle, Clock } from 'lucide-react'
+import TUSFileUploader from '@/components/studio/TUSFileUploader'
+import VideoMetadataForm, { VideoMetadata } from '@/components/studio/VideoMetadataForm'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+
+interface UploadStep {
+  id: string
+  title: string
+  status: 'waiting' | 'current' | 'completed' | 'error'
+}
 
 export default function StudioUpload() {
   const router = useRouter()
-  const [uploading, setUploading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState(0)
-  const [uploadError, setUploadError] = useState<string | null>(null)
-  const [uploadSuccess, setUploadSuccess] = useState(false)
-  
-  const [videoFile, setVideoFile] = useState<File | null>(null)
-  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
-  const [videoData, setVideoData] = useState({
-    title: '',
-    description: '',
-    category: '',
-    tags: '',
-    visibility: 'public'
-  })
+  const [currentStep, setCurrentStep] = useState(0)
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
+  const [uploadedVideoUrl, setUploadedVideoUrl] = useState<string | null>(null)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [processingError, setProcessingError] = useState<string | null>(null)
+  const [videoId, setVideoId] = useState<string | null>(null)
 
-  const handleVideoSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      if (file.size > 2 * 1024 * 1024 * 1024) { // 2GB 제한
-        setUploadError('파일 크기는 2GB를 초과할 수 없습니다.')
-        return
-      }
-      setVideoFile(file)
-      setUploadError(null)
-      
-      // 파일 이름에서 제목 자동 설정
-      const titleFromFile = file.name.replace(/\.[^/.]+$/, "")
-      setVideoData(prev => ({ ...prev, title: titleFromFile }))
-    }
+  const steps: UploadStep[] = [
+    { id: 'upload', title: '파일 업로드', status: currentStep === 0 ? 'current' : currentStep > 0 ? 'completed' : 'waiting' },
+    { id: 'metadata', title: '비디오 정보', status: currentStep === 1 ? 'current' : currentStep > 1 ? 'completed' : 'waiting' },
+    { id: 'processing', title: '처리 중', status: currentStep === 2 ? 'current' : currentStep > 2 ? 'completed' : 'waiting' },
+    { id: 'complete', title: '완료', status: currentStep === 3 ? 'completed' : 'waiting' }
+  ]
+
+  const handleFileUploadComplete = useCallback((url: string, file: File) => {
+    console.log('Upload completed:', { url, fileName: file.name })
+    setUploadedVideoUrl(url)
+    setUploadedFile(file)
+    setCurrentStep(1) // 메타데이터 입력 단계로 이동
   }, [])
 
-  const handleThumbnailSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      if (file.size > 10 * 1024 * 1024) { // 10MB 제한
-        setUploadError('썸네일 크기는 10MB를 초과할 수 없습니다.')
-        return
-      }
-      setThumbnailFile(file)
-      setUploadError(null)
-    }
+  const handleFileUploadStart = useCallback((file: File) => {
+    console.log('Upload started:', { fileName: file.name, size: file.size })
+    setUploadedFile(file)
   }, [])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!videoFile) {
-      setUploadError('비디오 파일을 선택해주세요.')
+  const handleFileUploadError = useCallback((error: Error) => {
+    console.error('Upload failed:', error)
+    setProcessingError(error.message)
+  }, [])
+
+  const handleMetadataSubmit = useCallback(async (metadata: VideoMetadata) => {
+    if (!uploadedVideoUrl || !uploadedFile) {
+      setProcessingError('업로드된 파일이 없습니다.')
       return
     }
 
-    if (!videoData.title.trim()) {
-      setUploadError('제목을 입력해주세요.')
-      return
-    }
-
-    setUploading(true)
-    setUploadError(null)
-    setUploadProgress(0)
+    setCurrentStep(2) // 처리 중 단계로 이동
+    setIsProcessing(true)
+    setProcessingError(null)
 
     try {
+      // 비디오 정보를 서버에 저장
       const formData = new FormData()
-      formData.append('video', videoFile)
-      if (thumbnailFile) {
-        formData.append('thumbnail', thumbnailFile)
-      }
-      formData.append('title', videoData.title)
-      formData.append('description', videoData.description)
-      formData.append('category', videoData.category)
-      formData.append('tags', videoData.tags)
-      formData.append('visibility', videoData.visibility)
-
-      const xhr = new XMLHttpRequest()
+      formData.append('videoUrl', uploadedVideoUrl)
+      formData.append('title', metadata.title)
+      formData.append('description', metadata.description)
+      formData.append('category', metadata.category)
+      formData.append('tags', JSON.stringify(metadata.tags))
+      formData.append('visibility', metadata.visibility)
+      formData.append('language', metadata.language)
+      formData.append('isCommentsEnabled', metadata.isCommentsEnabled.toString())
+      formData.append('isRatingsEnabled', metadata.isRatingsEnabled.toString())
+      formData.append('isMonetizationEnabled', metadata.isMonetizationEnabled.toString())
+      formData.append('ageRestriction', metadata.ageRestriction.toString())
+      formData.append('license', metadata.license)
       
-      xhr.upload.addEventListener('progress', (event) => {
-        if (event.lengthComputable) {
-          const percentComplete = (event.loaded / event.total) * 100
-          setUploadProgress(Math.round(percentComplete))
-        }
-      })
-
-      xhr.addEventListener('load', () => {
-        if (xhr.status === 200) {
-          const response = JSON.parse(xhr.responseText)
-          setUploadSuccess(true)
-          setTimeout(() => {
-            router.push(`/videos/${response.videoId}`)
-          }, 2000)
-        } else {
-          throw new Error('업로드 실패')
-        }
-      })
-
-      xhr.addEventListener('error', () => {
-        throw new Error('네트워크 오류')
-      })
-
-      // 토큰은 localStorage에서 직접 가져오기 (AuthService에 getToken 메서드가 없음)
-      const storedUser = localStorage.getItem('user')
-      const token = storedUser ? JSON.parse(storedUser).token : null
-      xhr.open('POST', '/api/upload/video')
-      if (token) {
-        xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+      if (metadata.scheduledAt) {
+        formData.append('scheduledAt', metadata.scheduledAt)
       }
-      xhr.send(formData)
+      
+      if (metadata.thumbnail && metadata.thumbnail instanceof File) {
+        formData.append('thumbnail', metadata.thumbnail)
+      }
+
+      const response = await fetch('/api/videos/create', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: formData
+      })
+
+      if (!response.ok) {
+        throw new Error('비디오 정보 저장에 실패했습니다')
+      }
+
+      const result = await response.json()
+      setVideoId(result.videoId)
+      
+      // 완료 단계로 이동
+      setTimeout(() => {
+        setCurrentStep(3)
+        setIsProcessing(false)
+      }, 2000)
 
     } catch (error) {
-      console.error('Upload error:', error)
-      setUploadError('업로드 중 오류가 발생했습니다.')
-      setUploading(false)
+      console.error('Video creation failed:', error)
+      setProcessingError(error instanceof Error ? error.message : '비디오 처리 중 오류가 발생했습니다')
+      setIsProcessing(false)
+    }
+  }, [uploadedVideoUrl, uploadedFile])
+
+  const handleMetadataSave = useCallback(async (metadata: VideoMetadata) => {
+    // 임시저장 로직
+    try {
+      localStorage.setItem('video-draft', JSON.stringify(metadata))
+      console.log('Draft saved to localStorage')
+    } catch (error) {
+      console.error('Failed to save draft:', error)
+    }
+  }, [])
+
+  const getStepIcon = (step: UploadStep, index: number) => {
+    if (step.status === 'completed') {
+      return <CheckCircle2 className="h-5 w-5 text-green-500" />
+    } else if (step.status === 'current') {
+      return <div className="h-5 w-5 rounded-full border-2 border-primary bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">{index + 1}</div>
+    } else if (step.status === 'error') {
+      return <AlertTriangle className="h-5 w-5 text-destructive" />
+    } else {
+      return <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/30 bg-background text-muted-foreground flex items-center justify-center text-xs">{index + 1}</div>
     }
   }
 
+  const handleGoToVideo = () => {
+    if (videoId) {
+      router.push(`/watch/${videoId}`)
+    }
+  }
+
+  const handleUploadAnother = () => {
+    setCurrentStep(0)
+    setUploadedFile(null)
+    setUploadedVideoUrl(null)
+    setVideoId(null)
+    setProcessingError(null)
+    setIsProcessing(false)
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="container mx-auto px-6 max-w-4xl">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">비디오 업로드</h1>
+    <div className="min-h-screen bg-background py-8">
+      <div className="container mx-auto px-4 max-w-4xl">
+        {/* 헤더 */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">비디오 업로드</h1>
+          <p className="text-muted-foreground">
+            TUS 프로토콜을 활용한 안정적이고 빠른 대용량 파일 업로드
+          </p>
+        </div>
 
-        {uploadSuccess ? (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-8 text-center">
-            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-semibold text-green-800 mb-2">업로드 완료!</h2>
-            <p className="text-green-600">비디오가 성공적으로 업로드되었습니다.</p>
-            <p className="text-sm text-green-500 mt-2">잠시 후 비디오 페이지로 이동합니다...</p>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* 비디오 업로드 */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <Film className="w-5 h-5 mr-2" />
-                비디오 파일
-              </h2>
-              
-              {!videoFile ? (
-                <label className="block">
-                  <input
-                    type="file"
-                    accept="video/*"
-                    onChange={handleVideoSelect}
-                    className="hidden"
-                  />
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-indigo-400 cursor-pointer transition-colors">
-                    <Upload className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                    <p className="text-gray-600 mb-1">클릭하여 비디오 파일 선택</p>
-                    <p className="text-sm text-gray-500">MP4, AVI, MOV 등 (최대 2GB)</p>
+        {/* 진행 단계 */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>업로드 진행 상황</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              {steps.map((step, index) => (
+                <div key={step.id} className="flex items-center">
+                  <div className="flex flex-col items-center">
+                    {getStepIcon(step, index)}
+                    <span className={`text-sm mt-2 ${step.status === 'current' ? 'font-medium text-primary' : step.status === 'completed' ? 'text-green-600' : 'text-muted-foreground'}`}>
+                      {step.title}
+                    </span>
                   </div>
-                </label>
-              ) : (
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center">
-                    <Film className="w-8 h-8 text-indigo-600 mr-3" />
-                    <div>
-                      <p className="font-medium text-gray-900">{videoFile.name}</p>
-                      <p className="text-sm text-gray-500">
-                        {(videoFile.size / (1024 * 1024)).toFixed(2)} MB
-                      </p>
+                  {index < steps.length - 1 && (
+                    <div className={`flex-1 h-0.5 mx-4 ${step.status === 'completed' ? 'bg-green-500' : 'bg-muted'}`} />
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 단계별 콘텐츠 */}
+        <div className="space-y-6">
+          {/* 1단계: 파일 업로드 */}
+          {currentStep === 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Upload className="h-5 w-5" />
+                  1단계: 비디오 파일 업로드
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <TUSFileUploader
+                  accept="video/*"
+                  maxSizeBytes={2 * 1024 * 1024 * 1024} // 2GB
+                  onUploadComplete={handleFileUploadComplete}
+                  onUploadStart={handleFileUploadStart}
+                  onUploadError={handleFileUploadError}
+                  metadata={{
+                    category: 'video',
+                    source: 'web_upload'
+                  }}
+                />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 2단계: 비디오 정보 입력 */}
+          {currentStep === 1 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>2단계: 비디오 정보 입력</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {uploadedFile && (
+                  <div className="mb-6 p-4 bg-muted rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                      <div>
+                        <p className="font-medium">업로드 완료</p>
+                        <p className="text-sm text-muted-foreground">{uploadedFile.name}</p>
+                      </div>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setVideoFile(null)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-              )}
-            </div>
+                )}
+                
+                <VideoMetadataForm
+                  initialData={{
+                    title: uploadedFile ? uploadedFile.name.replace(/\.[^/.]+$/, '') : '',
+                    ...(() => {
+                      try {
+                        const draft = localStorage.getItem('video-draft')
+                        return draft ? JSON.parse(draft) : {}
+                      } catch {
+                        return {}
+                      }
+                    })()
+                  }}
+                  onSubmit={handleMetadataSubmit}
+                  onSave={handleMetadataSave}
+                  isSubmitting={isProcessing}
+                />
+              </CardContent>
+            </Card>
+          )}
 
-            {/* 썸네일 업로드 */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <Image className="w-5 h-5 mr-2" />
-                썸네일 이미지 (선택사항)
-              </h2>
-              
-              {!thumbnailFile ? (
-                <label className="block">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleThumbnailSelect}
-                    className="hidden"
-                  />
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-indigo-400 cursor-pointer transition-colors">
-                    <Image className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                    <p className="text-gray-600 mb-1">클릭하여 썸네일 선택</p>
-                    <p className="text-sm text-gray-500">JPG, PNG 등 (최대 10MB)</p>
-                  </div>
-                </label>
-              ) : (
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center">
-                    <Image className="w-8 h-8 text-indigo-600 mr-3" />
-                    <div>
-                      <p className="font-medium text-gray-900">{thumbnailFile.name}</p>
-                      <p className="text-sm text-gray-500">
-                        {(thumbnailFile.size / 1024).toFixed(2)} KB
-                      </p>
+          {/* 3단계: 처리 중 */}
+          {currentStep === 2 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  3단계: 비디오 처리 중
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
+                  <h3 className="text-lg font-medium mb-2">비디오를 처리하고 있습니다...</h3>
+                  <p className="text-muted-foreground mb-6">
+                    비디오 정보가 저장되고 시스템에서 처리 중입니다. 잠시만 기다려주세요.
+                  </p>
+                  
+                  <div className="space-y-2 text-sm text-left max-w-md mx-auto">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      <span>파일 업로드 완료</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      <span>메타데이터 저장 완료</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                      <span>비디오 인코딩 중...</span>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setThumbnailFile(null)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
                 </div>
-              )}
-            </div>
+              </CardContent>
+            </Card>
+          )}
 
-            {/* 비디오 정보 */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <FileText className="w-5 h-5 mr-2" />
-                비디오 정보
-              </h2>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    제목 *
-                  </label>
-                  <input
-                    type="text"
-                    value={videoData.title}
-                    onChange={(e) => setVideoData(prev => ({ ...prev, title: e.target.value }))}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="비디오 제목을 입력하세요"
-                    required
-                  />
+          {/* 4단계: 완료 */}
+          {currentStep === 3 && (
+            <Card>
+              <CardContent className="py-8">
+                <div className="text-center">
+                  <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
+                  <h2 className="text-2xl font-bold text-green-700 mb-2">업로드 완료!</h2>
+                  <p className="text-muted-foreground mb-6">
+                    비디오가 성공적으로 업로드되어 처리가 완료되었습니다.
+                  </p>
+                  
+                  <div className="flex gap-4 justify-center">
+                    <Button onClick={handleGoToVideo} disabled={!videoId}>
+                      비디오 보기
+                    </Button>
+                    <Button variant="outline" onClick={handleUploadAnother}>
+                      새 비디오 업로드
+                    </Button>
+                    <Button variant="outline" onClick={() => router.push('/studio/videos')}>
+                      비디오 관리
+                    </Button>
+                  </div>
                 </div>
+              </CardContent>
+            </Card>
+          )}
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    설명
-                  </label>
-                  <textarea
-                    value={videoData.description}
-                    onChange={(e) => setVideoData(prev => ({ ...prev, description: e.target.value }))}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    rows={4}
-                    placeholder="비디오에 대한 설명을 입력하세요"
-                  />
-                </div>
+          {/* 에러 메시지 */}
+          {processingError && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>{processingError}</AlertDescription>
+            </Alert>
+          )}
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    카테고리
-                  </label>
-                  <select
-                    value={videoData.category}
-                    onChange={(e) => setVideoData(prev => ({ ...prev, category: e.target.value }))}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  >
-                    <option value="">카테고리 선택</option>
-                    <option value="entertainment">엔터테인먼트</option>
-                    <option value="education">교육</option>
-                    <option value="gaming">게임</option>
-                    <option value="music">음악</option>
-                    <option value="sports">스포츠</option>
-                    <option value="tech">기술</option>
-                    <option value="cooking">요리</option>
-                    <option value="travel">여행</option>
-                    <option value="vlog">일상</option>
-                    <option value="other">기타</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    태그
-                  </label>
-                  <input
-                    type="text"
-                    value={videoData.tags}
-                    onChange={(e) => setVideoData(prev => ({ ...prev, tags: e.target.value }))}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="태그를 쉼표로 구분하여 입력하세요"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    공개 설정
-                  </label>
-                  <select
-                    value={videoData.visibility}
-                    onChange={(e) => setVideoData(prev => ({ ...prev, visibility: e.target.value }))}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  >
-                    <option value="public">공개</option>
-                    <option value="unlisted">일부 공개</option>
-                    <option value="private">비공개</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {/* 오류 메시지 */}
-            {uploadError && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start">
-                <AlertCircle className="w-5 h-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" />
-                <p className="text-red-700">{uploadError}</p>
-              </div>
-            )}
-
-            {/* 업로드 진행 상태 */}
-            {uploading && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">업로드 중...</span>
-                  <span className="text-sm font-medium text-indigo-600">{uploadProgress}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${uploadProgress}%` }}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* 제출 버튼 */}
-            <div className="flex justify-end gap-4">
-              <button
-                type="button"
-                onClick={() => router.push('/studio/dashboard')}
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
-                disabled={uploading}
-              >
-                취소
-              </button>
-              <button
-                type="submit"
-                className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={uploading || !videoFile}
-              >
-                {uploading ? '업로드 중...' : '업로드'}
-              </button>
-            </div>
-          </form>
-        )}
+          {/* 업로드 팁 */}
+          {currentStep === 0 && (
+            <Card className="bg-blue-50 border-blue-200">
+              <CardContent className="pt-6">
+                <h3 className="font-medium text-blue-900 mb-2">💡 업로드 팁</h3>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• TUS 프로토콜을 사용하여 네트워크 오류 시 자동으로 업로드를 재개합니다</li>
+                  <li>• 업로드 중 일시정지/재개가 가능합니다</li>
+                  <li>• 최적의 화질을 위해 1080p 이상의 해상도를 권장합니다</li>
+                  <li>• 파일 크기는 최대 2GB까지 지원합니다</li>
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
     </div>
   )

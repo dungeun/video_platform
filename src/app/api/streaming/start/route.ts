@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verify } from 'jsonwebtoken'
 import { prisma } from '@/lib/db/prisma'
 import crypto from 'crypto'
+import { v4 as uuidv4 } from 'uuid'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
 
@@ -51,18 +52,17 @@ export async function POST(req: NextRequest) {
     // 라이브 스트림 생성
     const liveStream = await prisma.live_streams.create({
       data: {
+        id: uuidv4(),
         title,
         description,
         channelId: user.channels.id,
         streamKey,
-        category,
         status: scheduled ? 'SCHEDULED' : 'PREPARING',
-        scheduledAt: scheduled ? new Date(scheduledAt) : null,
         rtmpUrl: `rtmp://localhost:1935/live/${streamKey}`,
         hlsUrl: `http://localhost:8000/live/${streamKey}/index.m3u8`,
-        flvUrl: `http://localhost:8000/live/${streamKey}.flv`,
         viewerCount: 0,
-        maxViewers: 0
+        peakViewers: 0,
+        updatedAt: new Date()
       }
     })
 
@@ -75,8 +75,7 @@ export async function POST(req: NextRequest) {
         status: liveStream.status,
         urls: {
           rtmp: liveStream.rtmpUrl,
-          hls: liveStream.hlsUrl,
-          flv: liveStream.flvUrl
+          hls: liveStream.hlsUrl
         },
         instructions: {
           rtmp: {

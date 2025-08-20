@@ -1,338 +1,277 @@
-# LinkPick - 인플루언서 마케팅 플랫폼
+# 🎬 VideoPick - 비디오 콘텐츠 플랫폼
 
-<div align="center">
-  <img src="/public/logo.svg" alt="LinkPick Logo" width="200"/>
-  
-  **AI 기반 인플루언서 마케팅 매칭 플랫폼**
-  
-  [![Next.js](https://img.shields.io/badge/Next.js-14.2.0-black)](https://nextjs.org/)
-  [![TypeScript](https://img.shields.io/badge/TypeScript-5.3.3-blue)](https://www.typescriptlang.org/)
-  [![Prisma](https://img.shields.io/badge/Prisma-5.22.0-2D3748)](https://www.prisma.io/)
-  [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-</div>
+[![Next.js](https://img.shields.io/badge/Next.js-14.2.0-black)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-18.3.1-blue)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-5.22.0-green)](https://www.prisma.io/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)](https://www.postgresql.org/)
 
-## 📋 목차
+비디오 콘텐츠 스트리밍과 인플루언서 마케팅을 결합한 차세대 플랫폼입니다.
 
-- [소개](#-소개)
-- [주요 기능](#-주요-기능)
-- [기술 스택](#-기술-스택)
-- [시작하기](#-시작하기)
-- [프로젝트 구조](#-프로젝트-구조)
-- [API 문서](#-api-문서)
-- [환경 변수](#-환경-변수)
-- [데이터베이스](#-데이터베이스)
-- [배포](#-배포)
-- [기여하기](#-기여하기)
-- [라이선스](#-라이선스)
+## 🌟 주요 기능
 
-## 🎯 소개
+### 📺 비디오 스트리밍
+- **라이브 스트리밍**: RTMP 지원 실시간 방송
+- **VOD 서비스**: 다양한 비디오 콘텐츠 재생
+- **멀티 해상도**: 자동 화질 조정 (HLS)
+- **실시간 채팅**: 시청자와 실시간 소통
 
-LinkPick은 브랜드와 인플루언서를 연결하는 AI 기반 마케팅 플랫폼입니다. 정밀한 매칭 알고리즘을 통해 최적의 파트너를 찾고, 투명한 성과 분석으로 캠페인의 성공을 보장합니다.
+### 💼 인플루언서 마케팅
+- **캠페인 관리**: 브랜드-인플루언서 매칭
+- **콘텐츠 협업**: 협찬 콘텐츠 제작 관리
+- **수익 정산**: 자동 수익 분배 시스템
+- **성과 분석**: 상세한 캠페인 리포트
 
-### 핵심 가치
+### 🎯 타겟팅 기능
+- **개인화 추천**: AI 기반 콘텐츠 큐레이션
+- **카테고리 분류**: 다양한 주제별 분류
+- **트렌드 분석**: 실시간 인기 콘텐츠 추적
+- **사용자 프로필**: 맞춤형 사용자 경험
 
-- **🤖 AI 기반 매칭**: 브랜드 특성과 타겟 오디언스를 분석하여 최적의 인플루언서 추천
-- **📊 실시간 성과 분석**: 캠페인 진행 상황과 ROI를 실시간으로 추적
-- **🔒 안전한 에스크로**: 캠페인 완료 시까지 대금을 안전하게 보관
-- **💬 원활한 커뮤니케이션**: 실시간 메시징과 협업 도구 제공
-
-## ✨ 주요 기능
-
-### 브랜드를 위한 기능
-
-- **캠페인 관리**: 캠페인 생성, 수정, 모니터링
-- **인플루언서 검색**: 카테고리, 팔로워 수, 참여율 기반 검색
-- **성과 분석**: 실시간 통계 및 ROI 분석
-- **결제 관리**: 안전한 에스크로 시스템
-
-### 인플루언서를 위한 기능
-
-- **캠페인 탐색**: 맞춤형 캠페인 추천
-- **포트폴리오 관리**: 프로필 및 콘텐츠 관리
-- **수익 관리**: 투명한 정산 시스템
-- **성장 도구**: 참여율 분석 및 성장 가이드
-
-### 관리자 기능
-
-- **사용자 관리**: 회원 승인 및 상태 관리
-- **캠페인 검토**: 캠페인 승인 및 모니터링
-- **통계 대시보드**: 플랫폼 전체 통계
-- **UI 설정**: 동적 UI 구성 관리
-
-## 🛠 기술 스택
+## 🏗️ 기술 스택
 
 ### Frontend
-
-- **Framework**: Next.js 14.2.0 (App Router)
-- **Language**: TypeScript 5.3.3
-- **Styling**: Tailwind CSS 3.4.0
-- **UI Components**: Radix UI + shadcn/ui
-- **State Management**: Zustand 4.4.7
-- **API Client**: Axios + React Query
+- **Next.js 14**: App Router, Server Components
+- **React 18**: 최신 React 기능 활용
+- **TypeScript**: 타입 안전성 보장
+- **Tailwind CSS**: 유틸리티 기반 스타일링
+- **HLS.js**: 비디오 스트리밍 플레이어
 
 ### Backend
+- **Next.js API Routes**: RESTful API 구현
+- **Prisma ORM**: 데이터베이스 추상화
+- **PostgreSQL**: 관계형 데이터베이스
+- **Redis**: 캐싱 및 세션 관리
+- **JWT**: 인증 시스템
 
-- **Runtime**: Node.js (Next.js API Routes)
-- **Database**: PostgreSQL + Prisma ORM
-- **Authentication**: JWT (자체 구현)
-- **Caching**: Redis (ioredis)
-- **File Upload**: Local Storage / Cloud Storage
+### Infrastructure
+- **Docker**: 컨테이너화 배포
+- **Nginx**: 리버스 프록시 및 로드 밸런싱
+- **MediaMTX**: RTMP/HLS 스트리밍 서버
+- **Centrifugo**: 실시간 통신
+- **MinIO**: 객체 스토리지
+- **TUS**: 대용량 파일 업로드
 
-### DevOps
+### Monitoring
+- **Prometheus**: 메트릭 수집
+- **Grafana**: 시각화 대시보드
+- **Node Exporter**: 시스템 메트릭
 
-- **Container**: Docker
-- **Development**: Docker Compose
-- **Type Checking**: TypeScript
-- **Linting**: ESLint + Next.js config
+## 🚀 빠른 시작
 
-## 🚀 시작하기
-
-### 필수 요구사항
-
-- Node.js 18.0.0 이상
+### 사전 요구사항
+- Node.js 18 이상
 - PostgreSQL 15 이상
-- Redis 7.0 이상 (선택사항)
-- pnpm 또는 npm
+- Docker & Docker Compose
+- Redis (선택사항)
 
-### 설치
+### 개발 환경 설정
 
 1. **저장소 클론**
-
-```bash
-git clone https://github.com/your-org/revu-platform.git
-cd revu-platform
-```
+   ```bash
+   git clone https://github.com/your-repo/videopick.git
+   cd videopick
+   ```
 
 2. **의존성 설치**
-
-```bash
-pnpm install
-# 또는
-npm install
-```
+   ```bash
+   npm install
+   ```
 
 3. **환경 변수 설정**
-
-```bash
-cp .env.example .env.local
-```
-
-`.env.local` 파일을 열어 필요한 환경 변수를 설정합니다.
+   ```bash
+   cp .env.example .env.local
+   # .env.local 파일을 편집하여 필요한 환경 변수 설정
+   ```
 
 4. **데이터베이스 설정**
+   ```bash
+   # Prisma 클라이언트 생성
+   npx prisma generate
+   
+   # 데이터베이스 스키마 적용
+   npx prisma db push
+   
+   # (선택) 샘플 데이터 생성
+   npx prisma db seed
+   ```
+
+5. **개발 서버 시작**
+   ```bash
+   npm run dev
+   ```
+
+6. **브라우저에서 확인**
+   ```
+   http://localhost:3000
+   ```
+
+## 📱 주요 페이지
+
+### 사용자 페이지
+- **메인페이지** (`/`): 인기 콘텐츠 및 추천 영상
+- **비디오 목록** (`/videos`): 전체 비디오 카탈로그
+- **라이브** (`/live`): 실시간 방송 목록
+- **커뮤니티** (`/community`): 사용자 게시판
+- **마이페이지** (`/mypage`): 개인 설정 및 구독 관리
+
+### 크리에이터 페이지
+- **스튜디오** (`/studio`): 콘텐츠 관리 허브
+- **업로드** (`/studio/upload`): 비디오 업로드
+- **수익** (`/studio/earnings`): 수익 현황
+- **분석** (`/studio/analytics`): 성과 분석
+
+### 비즈니스 페이지
+- **대시보드** (`/dashboard`): 캠페인 관리 허브
+- **캠페인** (`/dashboard/campaigns`): 마케팅 캠페인
+- **인플루언서** (`/dashboard/influencers`): 크리에이터 매칭
+- **결제** (`/dashboard/payments`): 정산 관리
+
+### 관리자 페이지
+- **관리 콘솔** (`/admin`): 전체 시스템 관리
+- **사용자 관리** (`/admin/users`): 회원 관리
+- **콘텐츠 관리** (`/admin/content`): 콘텐츠 모더레이션
+- **시스템 설정** (`/admin/settings`): 플랫폼 설정
+
+## 🗄️ 데이터베이스 스키마
+
+### 핵심 엔티티
+```sql
+-- 사용자 관리
+users              # 기본 사용자 정보
+profiles           # 확장 프로필 정보
+channels           # 크리에이터 채널
+
+-- 콘텐츠 관리
+videos             # 비디오 콘텐츠
+live_streams       # 라이브 스트림
+posts              # 커뮤니티 게시글
+comments           # 댓글 시스템
+
+-- 마케팅 캠페인
+campaigns          # 마케팅 캠페인
+campaign_applications # 지원 관리
+contents           # 협찬 콘텐츠
+
+-- 수익 시스템
+payments           # 결제 정보
+super_chats        # 슈퍼챗 후원
+creator_earnings   # 크리에이터 수익
+```
+
+### 관계도
+```
+users (1:1) profiles
+users (1:1) channels
+channels (1:N) videos
+channels (1:N) live_streams
+campaigns (1:N) campaign_applications
+users (1:N) campaign_applications
+```
+
+## 🔧 스크립트 명령어
 
 ```bash
-# Docker를 사용하는 경우
-docker-compose -f docker-compose.dev.yml up -d
+# 개발
+npm run dev          # 개발 서버 시작
+npm run build        # 프로덕션 빌드
+npm run start        # 프로덕션 서버 시작
+npm run lint         # 코드 린팅
+npm run type-check   # TypeScript 타입 검사
 
-# 데이터베이스 마이그레이션
-pnpm prisma migrate dev
+# 데이터베이스
+npm run db:generate  # Prisma 클라이언트 생성
+npm run db:push      # 스키마 적용
+npm run db:migrate   # 마이그레이션 실행
+npm run db:seed      # 샘플 데이터 생성
+npm run db:studio    # Prisma Studio 실행
 
-# 시드 데이터 추가 (선택사항)
-pnpm db:seed
+# 테스트
+npm run test         # 단위 테스트 실행
+npm run test:e2e     # E2E 테스트 실행
+npm run test:watch   # 테스트 감시 모드
 ```
 
-5. **개발 서버 실행**
-
-```bash
-pnpm dev
-# 또는
-npm run dev
-```
-
-브라우저에서 [http://localhost:3000](http://localhost:3000)으로 접속합니다.
-
-### 빠른 시작 (Docker)
-
-```bash
-# 개발 환경 전체 실행
-docker-compose -f docker-compose.dev.yml up
-
-# 백그라운드 실행
-docker-compose -f docker-compose.dev.yml up -d
-```
-
-## 📁 프로젝트 구조
-
-```
-revu-platform/
-├── prisma/              # Prisma 스키마 및 마이그레이션
-│   ├── schema.prisma    # 데이터베이스 스키마
-│   └── migrations/      # 마이그레이션 파일
-├── public/              # 정적 파일
-├── src/                 # 소스 코드
-│   ├── app/            # Next.js App Router
-│   │   ├── (auth)/     # 인증 페이지
-│   │   ├── admin/      # 관리자 페이지
-│   │   ├── api/        # API 라우트
-│   │   ├── business/   # 비즈니스 페이지
-│   │   └── campaigns/  # 캠페인 페이지
-│   ├── components/     # React 컴포넌트
-│   ├── hooks/          # Custom React Hooks
-│   ├── lib/            # 유틸리티 및 라이브러리
-│   │   ├── auth/       # 인증 관련
-│   │   ├── cache/      # Redis 캐싱
-│   │   ├── db/         # 데이터베이스 연결
-│   │   └── services/   # 비즈니스 로직
-│   └── types/          # TypeScript 타입 정의
-├── .env.example        # 환경 변수 예제
-├── docker-compose.dev.yml # 개발 환경 Docker 설정
-├── next.config.js      # Next.js 설정
-├── package.json        # 프로젝트 의존성
-└── tsconfig.json       # TypeScript 설정
-```
-
-## 📚 API 문서
-
-### 인증 API
-
-#### 로그인
-```http
-POST /api/auth/login
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "password": "password123"
-}
-```
-
-#### 회원가입
-```http
-POST /api/auth/register
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "password": "password123",
-  "name": "홍길동",
-  "type": "INFLUENCER" | "BUSINESS"
-}
-```
-
-### 캠페인 API
-
-#### 캠페인 목록 조회
-```http
-GET /api/campaigns?page=1&limit=10&filter=active
-```
-
-#### 캠페인 상세 조회
-```http
-GET /api/campaigns/:id
-```
-
-#### 캠페인 생성 (비즈니스)
-```http
-POST /api/business/campaigns
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "title": "신제품 런칭 캠페인",
-  "description": "...",
-  "platform": "Instagram",
-  "budget": 1000000,
-  "startDate": "2024-01-01",
-  "endDate": "2024-01-31"
-}
-```
-
-> 📖 전체 API 문서는 개발 서버 실행 후 `/api-docs`에서 확인할 수 있습니다.
-
-## 🔐 환경 변수
-
-`.env.example` 파일을 참고하여 `.env.local` 파일을 생성하고 다음 환경 변수를 설정합니다:
-
-```env
-# Database
-DATABASE_URL="postgresql://user:password@localhost:5432/linkpick"
-
-# JWT
-JWT_SECRET="your-super-secret-jwt-key"
-JWT_REFRESH_SECRET="your-super-secret-refresh-jwt-key"
-
-# Redis (선택사항)
-REDIS_URL="redis://localhost:6379"
-
-# Application
-NEXT_PUBLIC_API_URL="http://localhost:3000"
-NODE_ENV="development"
-```
-
-## 🗄 데이터베이스
-
-### 주요 모델
-
-- **User**: 사용자 (인플루언서, 비즈니스, 관리자)
-- **Profile**: 인플루언서 프로필
-- **BusinessProfile**: 비즈니스 프로필
-- **Campaign**: 캠페인 정보
-- **CampaignApplication**: 캠페인 지원
-- **Payment**: 결제 정보
-- **Settlement**: 정산 정보
-
-### 마이그레이션
-
-```bash
-# 새 마이그레이션 생성
-pnpm prisma migrate dev --name feature_name
-
-# 마이그레이션 적용
-pnpm prisma migrate deploy
-
-# 데이터베이스 리셋
-pnpm prisma migrate reset
-```
-
-## 🚢 배포
-
-### Vercel 배포
-
-```bash
-# Vercel CLI 설치
-npm i -g vercel
-
-# 배포
-vercel
-```
+## 📦 배포
 
 ### Docker 배포
-
 ```bash
-# 프로덕션 이미지 빌드
-docker build -t linkpick:latest .
+# Docker 이미지 빌드
+docker build -t videopick:latest .
 
-# 컨테이너 실행
-docker run -p 3000:3000 --env-file .env.production linkpick:latest
+# Docker Compose로 전체 스택 실행
+docker-compose up -d
 ```
+
+### 클라우드 배포
+현재 Vultr 클라우드에 배포되어 운영 중입니다.
+
+- **메인 사이트**: https://main.one-q.xyz
+- **모니터링**: http://monitor.one-q.xyz
+
+자세한 배포 가이드는 [DEPLOYMENT.md](./DEPLOYMENT.md)를 참조하세요.
+
+## 🧪 테스트
+
+### 단위 테스트
+```bash
+npm run test
+```
+
+### E2E 테스트
+```bash
+npm run test:e2e
+```
+
+### API 테스트
+```bash
+# 헬스 체크
+curl http://localhost:3000/api/health
+
+# 인증 테스트
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"password"}'
+```
+
+## 📚 문서
+
+- [배포 가이드](./DEPLOYMENT.md): 프로덕션 배포 상세 가이드
+- [API 문서](./docs/API.md): REST API 레퍼런스
+- [데이터베이스 스키마](./docs/SCHEMA.md): DB 구조 문서
+- [개발 가이드](./docs/DEVELOPMENT.md): 개발자 가이드
 
 ## 🤝 기여하기
 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-### 코드 스타일
-
-- ESLint 규칙을 준수합니다
-- TypeScript strict mode를 사용합니다
-- 커밋 메시지는 [Conventional Commits](https://www.conventionalcommits.org/)를 따릅니다
+1. 이 저장소를 포크합니다
+2. 기능 브랜치를 생성합니다 (`git checkout -b feature/amazing-feature`)
+3. 변경사항을 커밋합니다 (`git commit -m 'Add some amazing feature'`)
+4. 브랜치에 푸시합니다 (`git push origin feature/amazing-feature`)
+5. Pull Request를 생성합니다
 
 ## 📄 라이선스
 
-이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
+이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 [LICENSE](./LICENSE) 파일을 참조하세요.
 
-## 📞 문의
+## 🆘 지원
 
-- 이메일: support@linkpick.com
-- 웹사이트: https://linkpick.com
-- GitHub Issues: https://github.com/your-org/revu-platform/issues
+### 기술 지원
+- GitHub Issues: 버그 리포트 및 기능 요청
+- 이메일: support@videopick.com
+
+### FAQ
+
+**Q: 개발 환경에서 비디오 업로드가 안 됩니다.**
+A: MinIO 스토리지 서버와 TUS 업로드 서버가 실행되고 있는지 확인하세요.
+
+**Q: 라이브 스트리밍 테스트는 어떻게 하나요?**
+A: OBS Studio에서 RTMP 설정을 `rtmp://localhost:1935/live/{stream_key}`로 설정하세요.
+
+**Q: 데이터베이스 마이그레이션 오류가 발생합니다.**
+A: PostgreSQL이 실행 중이고 연결 문자열이 올바른지 확인하세요.
 
 ---
 
-<div align="center">
-  Made with ❤️ by LinkPick Team
-</div>
+**🎬 VideoPick** - 다음 세대의 비디오 플랫폼을 만들어갑니다.
+
+Made with ❤️ by VideoPick Team

@@ -1,0 +1,45 @@
+{
+  "name": "videopick-platform",
+  "version": "1.0.0",
+  "description": "VideoPick - Live Streaming Platform",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "migrate": "prisma migrate deploy",
+    "db:push": "prisma db push",
+    "db:seed": "prisma db seed"
+  },
+  "dependencies": {
+    "next": "14.1.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "@prisma/client": "5.8.0",
+    "prisma": "5.8.0",
+    "@tus/server": "1.4.0",
+    "@tus/file-store": "1.3.0",
+    "centrifuge": "5.0.0",
+    "hls.js": "1.5.0",
+    "minio": "7.1.3",
+    "redis": "4.6.12",
+    "axios": "1.6.5",
+    "bcryptjs": "2.4.3",
+    "jsonwebtoken": "9.0.2",
+    "next-auth": "4.24.5",
+    "react-query": "3.39.3",
+    "socket.io": "4.6.0",
+    "socket.io-client": "4.6.0",
+    "tailwindcss": "3.4.1",
+    "autoprefixer": "10.4.17",
+    "postcss": "8.4.33",
+    "@types/node": "20.11.5",
+    "@types/react": "18.2.48",
+    "@types/react-dom": "18.2.18",
+    "typescript": "5.3.3"
+  },
+  "devDependencies": {
+    "eslint": "8.56.0",
+    "eslint-config-next": "14.1.0"
+  }
+}
