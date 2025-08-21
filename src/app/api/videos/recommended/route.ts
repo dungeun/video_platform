@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
       let thumbnailUrl = video.thumbnailUrl || '/default-thumbnail.jpg';
       if (thumbnailUrl && thumbnailUrl.startsWith('/')) {
         // 상대 경로인 경우 스토리지 서버 URL 추가
-        thumbnailUrl = `http://storage.one-q.xyz${thumbnailUrl}`;
+        thumbnailUrl = `http://64.176.226.119:9000${thumbnailUrl}`;
       }
       
       return {
