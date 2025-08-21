@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
-import Minio from 'minio'
+import * as Minio from 'minio'
 import { authService } from '@/lib/auth/services'
 
 // MinIO 클라이언트 설정
