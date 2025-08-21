@@ -272,6 +272,7 @@ export default function VideoPlayer({
           autoPlay={autoPlay}
           muted={isMuted}
           playsInline
+          crossOrigin="anonymous"
         />
       ) : (
         // 썸네일 표시 (비디오 URL이 없을 때)

@@ -13,7 +13,10 @@ import { Save, Settings, Monitor, Mic, Camera, Users, Zap } from 'lucide-react'
 
 interface StreamSettingsProps {
   streamKey?: string
+  settings?: any
   onSave?: (settings: StreamSettingsData) => void
+  onUpdate?: (settings: any) => void
+  isLive?: boolean
 }
 
 export interface StreamSettingsData {
@@ -48,7 +51,7 @@ const languages = [
   { value: 'fr', label: 'Français' }
 ]
 
-export default function StreamSettings({ streamKey, onSave }: StreamSettingsProps) {
+export default function StreamSettings({ streamKey, settings: initialSettings, onSave, onUpdate, isLive }: StreamSettingsProps) {
   const [settings, setSettings] = useState<StreamSettingsData>({
     title: '',
     description: '',
@@ -70,12 +73,14 @@ export default function StreamSettings({ streamKey, onSave }: StreamSettingsProp
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
-  // 기존 설정 불러오기
+  // 초기 설정 적용
   useEffect(() => {
-    if (streamKey) {
+    if (initialSettings) {
+      setSettings(prev => ({ ...prev, ...initialSettings }))
+    } else if (streamKey) {
       loadStreamSettings()
     }
-  }, [streamKey])
+  }, [streamKey, initialSettings])
 
   const loadStreamSettings = async () => {
     if (!streamKey) return
@@ -108,9 +113,11 @@ export default function StreamSettings({ streamKey, onSave }: StreamSettingsProp
         
         if (response.ok) {
           onSave?.(settings)
+          onUpdate?.(settings)
         }
       } else {
         onSave?.(settings)
+        onUpdate?.(settings)
       }
     } catch (error) {
       console.error('설정 저장에 실패했습니다:', error)
@@ -443,7 +450,7 @@ export default function StreamSettings({ streamKey, onSave }: StreamSettingsProp
       <div className="flex justify-end">
         <Button 
           onClick={handleSave} 
-          disabled={isLoading || isSaving || !settings.title.trim()}
+          disabled={isLoading || isSaving || !settings.title.trim() || isLive}
           className="min-w-[100px]"
         >
           {isSaving ? (

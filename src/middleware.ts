@@ -65,8 +65,14 @@ export async function middleware(request: NextRequest) {
     console.log('[Middleware] Request to:', pathname);
   }
 
-  // Page route redirection: /studio -> /business for backward compatibility
-  if (pathname.startsWith('/studio')) {
+  // Page route redirection: /studio/* -> /business/* for backward compatibility (except specific studio routes)
+  if (pathname.startsWith('/studio') && 
+      pathname !== '/studio' && // Don't redirect the main studio page
+      !pathname.startsWith('/studio/live') && 
+      !pathname.startsWith('/studio/upload') &&
+      !pathname.startsWith('/studio/dashboard') &&
+      !pathname.startsWith('/studio/videos') &&
+      !pathname.startsWith('/studio/earnings')) {
     // Extract the path after /studio
     const businessPath = pathname.replace('/studio', '/business');
     
@@ -135,8 +141,8 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/', request.url));
       }
       
-      // Studio 라우트는 BUSINESS 권한 필요 (비디오 크리에이터용)
-      if (pathname.startsWith('/studio') && payload.type !== 'BUSINESS') {
+      // Studio 라우트는 BUSINESS, INFLUENCER, ADMIN 권한 필요 (비디오 크리에이터용)
+      if (pathname.startsWith('/studio') && !['BUSINESS', 'INFLUENCER', 'ADMIN'].includes(payload.type)) {
         return NextResponse.redirect(new URL('/', request.url));
       }
       

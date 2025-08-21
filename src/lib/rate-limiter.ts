@@ -162,6 +162,11 @@ export async function checkRateLimit(
   req: NextRequest,
   config?: Partial<RateLimitConfig>
 ): Promise<{ allowed: boolean; remaining: number; resetAt: Date }> {
+  // 개발 환경에서는 Rate Limiting 비활성화
+  if (process.env.NODE_ENV === 'development') {
+    return { allowed: true, remaining: 999, resetAt: new Date() };
+  }
+  
   const pathname = new URL(req.url).pathname;
   
   // 엔드포인트별 설정 가져오기

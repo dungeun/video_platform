@@ -1,9 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/db/prisma'
 
 export async function GET(request: NextRequest) {
   try {
-    // 공개적으로 접근 가능한 설정만 반환
-    const publicSettings = {
+    // DB에서 공개 설정 조회
+    const publicSettingKeys = ['general', 'website']
+    const settings: Record<string, any> = {}
+    
+    // 각 설정 키에 대해 DB 조회
+    for (const key of publicSettingKeys) {
+      const config = await prisma.site_config.findUnique({
+        where: { key }
+      })
+      
+      if (config) {
+        try {
+          settings[key] = JSON.parse(config.value)
+        } catch (e) {
+          // JSON 파싱 실패 시 문자열 그대로 사용
+          settings[key] = config.value
+        }
+      }
+    }
+
+    // 기본값 설정
+    const defaultSettings = {
       website: {
         logo: '/logo.png',
         favicon: '/favicon.ico',
@@ -32,13 +53,19 @@ export async function GET(request: NextRequest) {
         }
       },
       general: {
-        siteName: 'LinkPick',
-        siteDescription: '인플루언서 마케팅 플랫폼'
+        siteName: '비디오픽',
+        siteDescription: '비디오 플랫폼'
       }
     }
 
+    // DB 설정과 기본값 병합
+    const mergedSettings = {
+      ...defaultSettings,
+      ...settings
+    }
+
     return NextResponse.json({
-      settings: publicSettings
+      settings: mergedSettings
     })
 
   } catch (error) {

@@ -7,10 +7,10 @@ const prisma = new PrismaClient()
 // POST - 구독하기
 export async function POST(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { userId: targetUserId } = params
+    const { id: targetUserId } = params
 
     // 사용자 인증 확인
     const token = request.headers.get('authorization')?.replace('Bearer ', '') ||
@@ -104,10 +104,10 @@ export async function POST(
 // DELETE - 구독 취소
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { userId: targetUserId } = params
+    const { id: targetUserId } = params
 
     // 사용자 인증 확인
     const token = request.headers.get('authorization')?.replace('Bearer ', '') ||

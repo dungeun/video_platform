@@ -202,6 +202,7 @@ export interface UIConfig {
 interface UIConfigStore {
   config: UIConfig;
   websiteSettings: any;
+  siteName: string;
   updateHeaderMenus: (menus: MenuItem[]) => void;
   updateFooterColumns: (columns: FooterColumn[]) => void;
   updateLogo: (logo: UIConfig['header']['logo']) => void;
@@ -451,6 +452,7 @@ export const useUIConfigStore = create<UIConfigStore>()(
     (set, get) => ({
       config: defaultConfig,
       websiteSettings: null,
+      siteName: '비디오픽',
       updateHeaderMenus: (menus) =>
         set((state) => ({
           config: {
@@ -722,7 +724,10 @@ export const useUIConfigStore = create<UIConfigStore>()(
           })
           if (response.ok) {
             const data = await response.json()
-            set({ websiteSettings: data.settings?.website || null })
+            set({ 
+              websiteSettings: data.settings?.website || null,
+              siteName: data.settings?.general?.siteName || '비디오픽'
+            })
           }
         } catch (error) {
           console.error('Failed to load settings:', error)

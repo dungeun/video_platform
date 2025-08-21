@@ -7,10 +7,10 @@ const prisma = new PrismaClient()
 // GET - 구독 상태 확인
 export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { userId: targetUserId } = params
+    const { id: targetUserId } = params
 
     // 사용자 인증 확인
     const token = request.headers.get('authorization')?.replace('Bearer ', '') ||

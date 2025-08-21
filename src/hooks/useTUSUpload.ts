@@ -42,9 +42,7 @@ export function useTUSUpload(options: TUSUploadOptions = {}) {
   const abortControllerRef = useRef<AbortController | null>(null)
 
   const {
-    endpoint = process.env.NEXT_PUBLIC_STORAGE_URL 
-      ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/files/upload`
-      : 'http://localhost:8080/files/upload',
+    endpoint = '/api/upload/tus', // 로컬 TUS 서버를 우선 사용
     chunkSize = 5 * 1024 * 1024, // 5MB 청크
     retryDelays = [0, 3000, 5000, 10000, 20000],
     maxParallelUploads = 1,
@@ -70,6 +68,13 @@ export function useTUSUpload(options: TUSUploadOptions = {}) {
   const startUpload = useCallback(async (file: File, additionalMetadata?: Record<string, string>) => {
     if (!file) return
 
+    console.log('🚀 Starting upload:', {
+      fileName: file.name,
+      fileSize: file.size,
+      endpoint,
+      metadata: { ...metadata, ...additionalMetadata }
+    })
+
     setState(prev => ({
       ...prev,
       isUploading: true,
@@ -85,15 +90,17 @@ export function useTUSUpload(options: TUSUploadOptions = {}) {
     try {
       // TUS 클라이언트 동적 import 시도
       try {
+        console.log('📦 Importing TUS client...')
         const { Upload } = await import('tus-js-client')
+        console.log('✅ TUS client imported, starting TUS upload...')
         await startTUSUpload(file, additionalMetadata, Upload)
       } catch (tusError) {
-        console.warn('TUS client not available, falling back to regular upload:', tusError)
+        console.warn('⚠️ TUS client not available, falling back to regular upload:', tusError)
         await startRegularUpload(file, additionalMetadata)
       }
 
     } catch (error) {
-      console.error('Failed to start upload:', error)
+      console.error('❌ Failed to start upload:', error)
       const errorMessage = error instanceof Error ? error.message : '업로드 시작에 실패했습니다'
       
       setState(prev => ({
@@ -117,6 +124,13 @@ export function useTUSUpload(options: TUSUploadOptions = {}) {
       ...additionalMetadata
     }
 
+    console.log('🔧 Creating TUS upload instance:', {
+      endpoint,
+      chunkSize,
+      retryDelays,
+      metadata: fileMetadata
+    })
+
     // TUS 업로드 인스턴스 생성
     const upload = new Upload(file, {
       endpoint,
@@ -125,7 +139,7 @@ export function useTUSUpload(options: TUSUploadOptions = {}) {
       metadata: fileMetadata,
       
       onError: (error: Error) => {
-        console.error('TUS Upload failed:', error)
+        console.error('❌ TUS Upload failed:', error)
         setState(prev => ({
           ...prev,
           isUploading: false,
@@ -138,6 +152,8 @@ export function useTUSUpload(options: TUSUploadOptions = {}) {
       onProgress: (bytesUploaded: number, bytesTotal: number) => {
         const progress = Math.round((bytesUploaded / bytesTotal) * 100)
         
+        console.log(`📊 Upload progress: ${progress}% (${bytesUploaded}/${bytesTotal} bytes)`)
+        
         setState(prev => ({
           ...prev,
           progress,
@@ -149,7 +165,10 @@ export function useTUSUpload(options: TUSUploadOptions = {}) {
       },
 
       onSuccess: () => {
+        // TUS 업로드 완료 시 URL은 upload.url에서 가져옴
         const uploadUrl = upload.url || ''
+        
+        console.log('🎉 TUS Upload completed successfully:', uploadUrl)
         
         setState(prev => ({
           ...prev,
@@ -168,17 +187,21 @@ export function useTUSUpload(options: TUSUploadOptions = {}) {
 
       // HTTP 헤더 설정
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+        'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`,
         'X-Requested-With': 'XMLHttpRequest'
       }
     })
 
     uploadRef.current = upload
+    console.log('▶️ Starting TUS upload...')
     await upload.start()
+    console.log('🔄 TUS upload process initiated')
   }
 
   // 일반 업로드 (TUS 미지원 시)
   const startRegularUpload = async (file: File, additionalMetadata: Record<string, string> = {}) => {
+    console.log('🔄 Starting regular upload as fallback...')
+    
     const formData = new FormData()
     formData.append('file', file)
     
@@ -187,6 +210,9 @@ export function useTUSUpload(options: TUSUploadOptions = {}) {
     Object.entries(allMetadata).forEach(([key, value]) => {
       formData.append(key, value)
     })
+
+    const fallbackEndpoint = '/api/upload/simple' // 로컬 폴백
+    console.log('📡 Using fallback endpoint:', fallbackEndpoint)
 
     const xhr = new XMLHttpRequest()
     
@@ -243,8 +269,8 @@ export function useTUSUpload(options: TUSUploadOptions = {}) {
     }
 
     // 요청 시작
-    xhr.open('POST', endpoint)
-    xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('token') || ''}`)
+    xhr.open('POST', fallbackEndpoint)
+    xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('accessToken') || ''}`)
     xhr.send(formData)
 
     // XMLHttpRequest를 ref에 저장 (일시정지 등을 위해)

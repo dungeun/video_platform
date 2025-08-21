@@ -23,7 +23,9 @@ const nextConfig = {
       'ui-avatars.com',
       'i.pravatar.cc',
       'img.youtube.com',
-      'i.ytimg.com'
+      'i.ytimg.com',
+      'storage.one-q.xyz',
+      '64.176.226.119'
     ],
   },
 

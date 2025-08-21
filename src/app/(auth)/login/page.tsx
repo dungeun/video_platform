@@ -111,9 +111,8 @@ export default function LoginPage() {
         }
         localStorage.setItem('user', JSON.stringify(data.user))
         
-        // 직접 리다이렉트 실행 - 전체 URL 사용
-        const url = data.user.type === 'ADMIN' ? '/admin' : 
-                    data.user.type === 'BUSINESS' ? '/business/dashboard' : '/';
+        // 직접 리다이렉트 실행 - 사용자 타입별 URL
+        const url = data.user.type === 'ADMIN' ? '/admin' : '/studio/dashboard';
         console.log('리다이렉트 실행:', url);
         
         // 디버깅: 현재 위치 확인
@@ -141,7 +140,7 @@ export default function LoginPage() {
     }
   }
 
-  const handleQuickLogin = async (userType: 'user' | 'admin' | 'business') => {
+  const handleQuickLogin = async (userType: 'user' | 'admin' | 'streamer') => {
     if (isLoading) return // 중복 클릭 방지
     
     setIsLoading(true)
@@ -151,29 +150,22 @@ export default function LoginPage() {
     let email = ''
     if (userType === 'user' && demoAccounts.influencer) {
       email = demoAccounts.influencer.email
-    } else if (userType === 'business' && demoAccounts.business) {
+    } else if (userType === 'streamer' && demoAccounts.business) {
       email = demoAccounts.business.email
     } else if (userType === 'admin' && demoAccounts.admin) {
       email = demoAccounts.admin.email
     } else {
-      // 폴백: 기본 계정 사용
+      // 폴백: 기본 계정 사용 (실제 데이터베이스 계정과 일치)
       const credentials = {
-        user: { email: 'influencer1@example.com', password: 'influencer123!' },
-        business: { email: 'samsung@example.com', password: 'business123!' },
-        admin: { email: 'admin@videopick.com', password: 'admin123!@#' }
+        user: { email: 'user@test.com', password: 'password' },
+        streamer: { email: 'streamer@test.com', password: 'password' },
+        admin: { email: 'admin@test.com', password: 'password' }
       }
       email = credentials[userType].email
     }
     
-    // 계정별 비밀번호 설정
-    let password = ''
-    if (userType === 'admin') {
-      password = 'admin123!@#'
-    } else if (userType === 'business') {
-      password = 'business123!'
-    } else {
-      password = 'influencer123!'
-    }
+    // 모든 계정 동일한 비밀번호 사용
+    const password = 'password'
     
     const cred = { email, password }
     setFormData(cred)
@@ -229,9 +221,8 @@ export default function LoginPage() {
         }
         localStorage.setItem('user', JSON.stringify(data.user))
         
-        // 직접 리다이렉트 실행 - 전체 URL 사용
-        const url = data.user.type === 'ADMIN' ? '/admin' : 
-                    data.user.type === 'BUSINESS' ? '/business/dashboard' : '/';
+        // 직접 리다이렉트 실행 - 사용자 타입별 URL
+        const url = data.user.type === 'ADMIN' ? '/admin' : '/studio/dashboard';
         console.log('리다이렉트 실행:', url);
         
         // 디버깅: 현재 위치 확인
@@ -384,17 +375,17 @@ export default function LoginPage() {
                   <svg className="w-5 h-5 text-emerald-600 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
-                  <span className="text-xs text-emerald-600 font-medium">인플루언서</span>
+                  <span className="text-xs text-emerald-600 font-medium">유저</span>
                 </button>
                 <button
-                  onClick={() => handleQuickLogin('business')}
+                  onClick={() => handleQuickLogin('streamer')}
                   disabled={isLoading}
                   className="flex flex-col items-center justify-center px-3 py-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <svg className="w-5 h-5 text-blue-600 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                   </svg>
-                  <span className="text-xs text-blue-600 font-medium">클라이언트</span>
+                  <span className="text-xs text-blue-600 font-medium">스트리머</span>
                 </button>
                 <button
                   onClick={() => handleQuickLogin('admin')}

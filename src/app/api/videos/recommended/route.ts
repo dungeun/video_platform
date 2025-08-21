@@ -15,7 +15,6 @@ export async function GET(request: NextRequest) {
     // 기본 where 조건
     const where: any = {
       status: 'published',
-      visibility: 'public',
       ...(exclude && { id: { not: exclude } })
     }
 
@@ -38,17 +37,18 @@ export async function GET(request: NextRequest) {
           category: category
         },
         include: {
-          User: {
+          channels: {
             select: {
               id: true,
               name: true,
-              avatar: true,
+              handle: true,
+              avatarUrl: true,
               isVerified: true
             }
           }
         },
         orderBy: [
-          { views: 'desc' },
+          { viewCount: 'desc' },
           { createdAt: 'desc' }
         ],
         take: categoryLimit
@@ -70,17 +70,18 @@ export async function GET(request: NextRequest) {
           }))
         },
         include: {
-          User: {
+          channels: {
             select: {
               id: true,
               name: true,
-              avatar: true,
+              handle: true,
+              avatarUrl: true,
               isVerified: true
             }
           }
         },
         orderBy: [
-          { views: 'desc' },
+          { viewCount: 'desc' },
           { createdAt: 'desc' }
         ],
         take: tagLimit
@@ -98,18 +99,19 @@ export async function GET(request: NextRequest) {
           id: { notIn: recommendedVideos.map(v => v.id) }
         },
         include: {
-          User: {
+          channels: {
             select: {
               id: true,
               name: true,
-              avatar: true,
+              handle: true,
+              avatarUrl: true,
               isVerified: true
             }
           }
         },
         orderBy: [
-          { views: 'desc' },
-          { likes: 'desc' },
+          { viewCount: 'desc' },
+          { likeCount: 'desc' },
           { createdAt: 'desc' }
         ],
         take: remainingLimit
@@ -119,21 +121,31 @@ export async function GET(request: NextRequest) {
     }
 
     // 응답 데이터 포맷팅
-    const formattedVideos = recommendedVideos.map(video => ({
-      id: video.id,
-      title: video.title,
-      thumbnailUrl: video.thumbnailUrl || '/default-thumbnail.jpg',
-      duration: video.duration || 0,
-      views: video.views || 0,
-      createdAt: video.createdAt.toISOString(),
-      creator: {
-        id: video.User.id,
-        name: video.User.name,
-        avatar: video.User.avatar,
-        isVerified: video.User.isVerified || false
-      },
-      category: video.category || '기타',
-      tags: video.tags ? JSON.parse(video.tags as string) : []
+    const formattedVideos = recommendedVideos.map(video => {
+      // 썸네일 URL을 절대 경로로 변환
+      let thumbnailUrl = video.thumbnailUrl || '/default-thumbnail.jpg';
+      if (thumbnailUrl && thumbnailUrl.startsWith('/')) {
+        // 상대 경로인 경우 스토리지 서버 URL 추가
+        thumbnailUrl = `http://storage.one-q.xyz${thumbnailUrl}`;
+      }
+      
+      return {
+        id: video.id,
+        title: video.title,
+        thumbnailUrl,
+        duration: video.duration || 0,
+        views: Number(video.viewCount) || 0,
+        createdAt: video.createdAt.toISOString(),
+        creator: {
+          id: video.channels.id,
+          name: video.channels.name,
+          handle: video.channels.handle,
+          avatar: video.channels.avatarUrl,
+          isVerified: video.channels.isVerified || false
+        },
+        category: video.category || '기타',
+        tags: video.tags ? JSON.parse(video.tags as string) : []
+      }
     }))
 
     // 배열 셔플 (다양성을 위해)
@@ -147,8 +159,9 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error fetching recommended videos:', error)
+    console.error('Error details:', JSON.stringify(error, null, 2))
     return NextResponse.json(
-      { error: '추천 비디오를 불러오는 중 오류가 발생했습니다' },
+      { error: '추천 비디오를 불러오는 중 오류가 발생했습니다', details: error.message },
       { status: 500 }
     )
   }

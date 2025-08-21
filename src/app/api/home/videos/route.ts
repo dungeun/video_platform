@@ -74,15 +74,25 @@ export async function GET(request: NextRequest) {
     console.log(`Found ${videos.length} regular videos and ${youtubeVideos.length} YouTube videos`);
 
     // 데이터 변환 함수들
-    const transformRegularVideo = (video: any) => ({
-      ...video,
-      creator: {
-        id: video.channels?.id || '',
-        name: video.channels?.name || 'Unknown Creator',
-        profileImage: video.channels?.avatarUrl,
-        isVerified: false
+    const transformRegularVideo = (video: any) => {
+      // 썸네일 URL을 절대 경로로 변환
+      let thumbnailUrl = video.thumbnailUrl;
+      if (thumbnailUrl && thumbnailUrl.startsWith('/')) {
+        // 상대 경로인 경우 스토리지 서버 URL 추가
+        thumbnailUrl = `http://storage.one-q.xyz${thumbnailUrl}`;
       }
-    });
+      
+      return {
+        ...video,
+        thumbnailUrl,
+        creator: {
+          id: video.channels?.id || '',
+          name: video.channels?.name || 'Unknown Creator',
+          profileImage: video.channels?.avatarUrl,
+          isVerified: false
+        }
+      };
+    };
 
     const transformYouTubeVideo = (video: any) => ({
       id: `yt_${video.youtubeId}_${video.id}`, // YouTube 비디오임을 명확히 하기 위해 yt_ 접두사 추가

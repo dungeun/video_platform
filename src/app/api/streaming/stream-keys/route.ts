@@ -10,7 +10,9 @@ export async function GET(request: NextRequest) {
   try {
     // 사용자 인증 확인
     const token = request.headers.get('authorization')?.replace('Bearer ', '') ||
-                  request.cookies.get('token')?.value
+                  request.cookies.get('token')?.value ||
+                  request.cookies.get('auth-token')?.value ||
+                  request.cookies.get('accessToken')?.value
 
     if (!token) {
       return NextResponse.json(
@@ -18,6 +20,7 @@ export async function GET(request: NextRequest) {
         { status: 401 }
       )
     }
+
 
     const user = AuthService.verifyToken(token)
     if (!user) {
@@ -68,7 +71,9 @@ export async function POST(request: NextRequest) {
   try {
     // 사용자 인증 확인
     const token = request.headers.get('authorization')?.replace('Bearer ', '') ||
-                  request.cookies.get('token')?.value
+                  request.cookies.get('token')?.value ||
+                  request.cookies.get('auth-token')?.value ||
+                  request.cookies.get('accessToken')?.value
 
     if (!token) {
       return NextResponse.json(
@@ -76,6 +81,7 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       )
     }
+
 
     const user = AuthService.verifyToken(token)
     if (!user) {

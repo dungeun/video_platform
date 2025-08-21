@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useAuth } from '@/hooks/useAuth'
 
 export interface StreamKeyData {
   id: string
@@ -18,21 +19,27 @@ export interface UseStreamKeyReturn {
   streamUrl: string
   streamData: StreamKeyData | null
   isLoading: boolean
+  isLoadingKey: boolean
   error: string | null
   isConnected: boolean | null
   generateNewKey: () => Promise<void>
   updateStreamTitle: (title: string) => Promise<void>
+  updateStreamInfo: (info: any) => Promise<void>
+  startStream: () => Promise<void>
+  stopStream: () => Promise<void>
   validateKey: () => Promise<boolean>
   refreshStatus: () => Promise<void>
 }
 
-export function useStreamKey(userId?: string): UseStreamKeyReturn {
+export function useStreamKey(providedUserId?: string): UseStreamKeyReturn {
+  const { user } = useAuth()
   const [streamKey, setStreamKey] = useState<string | null>(null)
   const [streamData, setStreamData] = useState<StreamKeyData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isConnected, setIsConnected] = useState<boolean | null>(null)
 
+  const userId = providedUserId || user?.id
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || ''
   const streamUrl = process.env.NEXT_PUBLIC_STREAMING_SERVER_URL || 'rtmp://localhost:1935'
 
@@ -187,6 +194,93 @@ export function useStreamKey(userId?: string): UseStreamKeyReturn {
     await generateNewStreamKey()
   }
 
+  // 스트림 정보 업데이트 (설정 등)
+  const updateStreamInfo = async (info: any): Promise<void> => {
+    if (!streamKey) return
+
+    try {
+      setError(null)
+      const response = await fetch(`${baseUrl}/api/streaming/streams/${streamKey}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(info)
+      })
+
+      if (!response.ok) {
+        throw new Error('스트림 정보 업데이트에 실패했습니다')
+      }
+
+      const updatedData: StreamKeyData = await response.json()
+      setStreamData(updatedData)
+
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '정보 업데이트에 실패했습니다'
+      setError(errorMessage)
+      console.error('Error updating stream info:', err)
+    }
+  }
+
+  // 스트림 시작
+  const startStream = async (): Promise<void> => {
+    if (!streamKey) return
+
+    try {
+      setError(null)
+      const response = await fetch(`${baseUrl}/api/streaming/streams/${streamKey}/start`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('스트림 시작에 실패했습니다')
+      }
+
+      const updatedData: StreamKeyData = await response.json()
+      setStreamData(updatedData)
+      setIsConnected(true)
+
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '스트림 시작에 실패했습니다'
+      setError(errorMessage)
+      console.error('Error starting stream:', err)
+    }
+  }
+
+  // 스트림 종료
+  const stopStream = async (): Promise<void> => {
+    if (!streamKey) return
+
+    try {
+      setError(null)
+      const response = await fetch(`${baseUrl}/api/streaming/streams/${streamKey}/stop`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('스트림 종료에 실패했습니다')
+      }
+
+      const updatedData: StreamKeyData = await response.json()
+      setStreamData(updatedData)
+      setIsConnected(false)
+
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '스트림 종료에 실패했습니다'
+      setError(errorMessage)
+      console.error('Error stopping stream:', err)
+    }
+  }
+
   // 컴포넌트 마운트 시 스트림 키 불러오기
   useEffect(() => {
     fetchStreamKey()
@@ -241,11 +335,18 @@ export function useStreamKey(userId?: string): UseStreamKeyReturn {
     streamUrl: `${streamUrl}/live`,
     streamData,
     isLoading,
+    isLoadingKey: isLoading, // alias for backward compatibility
     error,
     isConnected,
     generateNewKey,
     updateStreamTitle,
+    updateStreamInfo,
+    startStream,
+    stopStream,
     validateKey,
     refreshStatus
   }
 }
+
+// Default export for backward compatibility
+export default useStreamKey

@@ -20,16 +20,19 @@ export default function Header({ variant = 'default', onSidebarToggle, onMobileS
   const [showDropdown, setShowDropdown] = useState(false)
   const [profileImage, setProfileImage] = useState<string | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
-  const { config, loadSettingsFromAPI } = useUIConfigStore()
+  const { config, siteName, loadSettingsFromAPI } = useUIConfigStore()
   const { user, isAuthenticated, logout } = useAuth()
   
   // 기본 메뉴 설정 (config가 아직 로드되지 않았을 때 사용)
   const defaultMenus = [
     { id: '1', label: '홈', href: '/', order: 1, visible: true },
-    { id: '2', label: '인기', href: '/videos?sort=popular', order: 2, visible: true },
-    { id: '3', label: '구독', href: '/subscriptions', order: 3, visible: true },
-    { id: '4', label: '라이브', href: '/live', order: 4, visible: true },
-    { id: '5', label: '커뮤니티', href: '/community', order: 5, visible: true },
+    { id: '2', label: '인기', href: '/trending', order: 2, visible: true },
+    { id: '3', label: '최신', href: '/new', order: 3, visible: true },
+    { id: '4', label: '랭킹', href: '/ranking', order: 4, visible: true },
+    { id: '5', label: '라이브', href: '/live', order: 5, visible: true },
+    { id: '6', label: '비디오', href: '/videos', order: 6, visible: true },
+    { id: '7', label: '카테고리', href: '/categories', order: 7, visible: true },
+    { id: '8', label: '커뮤니티', href: '/community', order: 8, visible: true },
   ]
   
   const isTransparent = variant === 'transparent'
@@ -123,7 +126,7 @@ export default function Header({ variant = 'default', onSidebarToggle, onMobileS
             
             <Link href="/" className="touch-manipulation">
               <h1 className="text-2xl sm:text-3xl font-black text-white">
-                비디오픽
+                {siteName}
               </h1>
             </Link>
             
@@ -153,11 +156,23 @@ export default function Header({ variant = 'default', onSidebarToggle, onMobileS
               {isAdmin && (
                 <>
                   <div className="h-4 w-px bg-white/30" />
+                  <Link href="/admin" className="hover:opacity-80 transition font-medium text-white text-sm touch-manipulation">
+                    관리자
+                  </Link>
                   <Link href="/admin/users" className="hover:opacity-80 transition font-medium text-white text-sm touch-manipulation">
-                    사용자 관리
+                    사용자
                   </Link>
                   <Link href="/admin/videos" className="hover:opacity-80 transition font-medium text-white text-sm touch-manipulation">
-                    비디오 관리
+                    비디오
+                  </Link>
+                  <Link href="/admin/creators" className="hover:opacity-80 transition font-medium text-white text-sm touch-manipulation">
+                    크리에이터
+                  </Link>
+                  <Link href="/admin/analytics" className="hover:opacity-80 transition font-medium text-white text-sm touch-manipulation">
+                    분석
+                  </Link>
+                  <Link href="/admin/settings" className="hover:opacity-80 transition font-medium text-white text-sm touch-manipulation">
+                    설정
                   </Link>
                 </>
               )}
@@ -166,11 +181,17 @@ export default function Header({ variant = 'default', onSidebarToggle, onMobileS
               {isInfluencer && user && (
                 <>
                   <div className="h-4 w-px bg-white/30" />
-                  <Link href="/mypage" className="flex flex-col items-center gap-1 hover:opacity-80 transition touch-manipulation">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    <span className="text-xs">마이페이지</span>
+                  <Link href="/mypage" className="hover:opacity-80 transition font-medium text-white text-sm touch-manipulation">
+                    마이페이지
+                  </Link>
+                  <Link href="/dashboard" className="hover:opacity-80 transition font-medium text-white text-sm touch-manipulation">
+                    대시보드
+                  </Link>
+                  <Link href="/settings" className="hover:opacity-80 transition font-medium text-white text-sm touch-manipulation">
+                    프로필
+                  </Link>
+                  <Link href="/settings" className="hover:opacity-80 transition font-medium text-white text-sm touch-manipulation">
+                    설정
                   </Link>
                 </>
               )}
@@ -179,11 +200,17 @@ export default function Header({ variant = 'default', onSidebarToggle, onMobileS
               {isBusiness && (
                 <>
                   <div className="h-4 w-px bg-white/30" />
-                  <Link href="/studio/dashboard" className="flex flex-col items-center gap-1 hover:opacity-80 transition touch-manipulation">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                    <span className="text-xs">스튜디오</span>
+                  <Link href="/studio/dashboard" className="hover:opacity-80 transition font-medium text-white text-sm touch-manipulation">
+                    스튜디오
+                  </Link>
+                  <Link href="/studio/upload" className="hover:opacity-80 transition font-medium text-white text-sm touch-manipulation">
+                    업로드
+                  </Link>
+                  <Link href="/studio/videos" className="hover:opacity-80 transition font-medium text-white text-sm touch-manipulation">
+                    비디오관리
+                  </Link>
+                  <Link href="/studio/earnings" className="hover:opacity-80 transition font-medium text-white text-sm touch-manipulation">
+                    수익
                   </Link>
                 </>
               )}

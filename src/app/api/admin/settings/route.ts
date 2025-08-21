@@ -46,9 +46,9 @@ export async function GET(request: NextRequest) {
     // 설정이 없으면 기본값 사용
     const defaultSettings = {
       general: {
-        siteName: 'LinkPick',
-        siteDescription: '인플루언서 마케팅 플랫폼',
-        supportEmail: 'support@linkpick.com',
+        siteName: '비디오픽',
+        siteDescription: '비디오 플랫폼',
+        supportEmail: 'support@videopick.com',
         maintenanceMode: false,
         registrationEnabled: true,
         emailVerificationRequired: true

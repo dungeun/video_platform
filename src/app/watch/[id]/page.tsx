@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { notFound } from 'next/navigation'
+import PageLayout from '@/components/layouts/PageLayout'
 import VideoPlayer from '@/components/video/VideoPlayer'
 import VideoInfo from '@/components/video/VideoInfo'
 import CommentSection from '@/components/video/CommentSection'
@@ -36,7 +37,7 @@ interface Video {
   creator: {
     id: string
     name: string
-    email: string
+    handle: string
     avatar?: string
     subscriberCount: number
     isVerified: boolean
@@ -45,14 +46,14 @@ interface Video {
 
 interface WatchPageProps {
   params: {
-    videoId: string
+    id: string
   }
 }
 
 export default function WatchPage() {
   const params = useParams()
   const router = useRouter()
-  const videoId = params?.videoId as string
+  const videoId = params?.id as string
   
   const [video, setVideo] = useState<Video | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -79,6 +80,7 @@ export default function WatchPage() {
         }
 
         const videoData = await response.json()
+        console.log('Video data received:', videoData)
         
         // 비디오가 비공개이거나 아직 처리 중인 경우 체크
         if (videoData.visibility === 'private' && !videoData.isOwner) {
@@ -99,7 +101,9 @@ export default function WatchPage() {
         recordWatchHistory(videoId)
 
         // 구독 상태 확인
-        checkSubscriptionStatus(videoData.creator.id)
+        if (videoData.creator?.id) {
+          checkSubscriptionStatus(videoData.creator.id)
+        }
 
       } catch (err) {
         console.error('Error fetching video:', err)
@@ -134,7 +138,12 @@ export default function WatchPage() {
   const checkSubscriptionStatus = async (creatorId: string) => {
     try {
       const token = localStorage.getItem('token')
-      if (!token) return
+      if (!token) {
+        console.log('No token found, skipping subscription check')
+        return
+      }
+
+      console.log('Checking subscription status for creator:', creatorId)
 
       const response = await fetch(`/api/users/${creatorId}/subscription-status`, {
         headers: {
@@ -142,9 +151,14 @@ export default function WatchPage() {
         }
       })
 
+      console.log('Subscription status response:', response.status, response.statusText)
+
       if (response.ok) {
         const data = await response.json()
         setIsSubscribed(data.isSubscribed)
+        console.log('Subscription status set:', data.isSubscribed)
+      } else {
+        console.warn('Subscription status check failed:', response.status, response.statusText)
       }
     } catch (error) {
       console.error('Failed to check subscription status:', error)
@@ -186,7 +200,10 @@ export default function WatchPage() {
 
   // 구독/구독취소 처리
   const handleSubscription = async () => {
-    if (!video) return
+    if (!video?.creator?.id) {
+      console.error('No video or creator data available for subscription')
+      return
+    }
 
     try {
       const token = localStorage.getItem('token')
@@ -195,6 +212,8 @@ export default function WatchPage() {
         return
       }
 
+      console.log('Handling subscription for creator:', video.creator.id)
+
       const response = await fetch(`/api/users/${video.creator.id}/subscribe`, {
         method: isSubscribed ? 'DELETE' : 'POST',
         headers: {
@@ -202,6 +221,8 @@ export default function WatchPage() {
           'Content-Type': 'application/json'
         }
       })
+
+      console.log('Subscription response:', response.status, response.statusText)
 
       if (response.ok) {
         setIsSubscribed(!isSubscribed)
@@ -213,6 +234,9 @@ export default function WatchPage() {
             subscriberCount: prev.creator.subscriberCount + (isSubscribed ? -1 : 1)
           }
         } : null)
+        console.log('Subscription updated successfully')
+      } else {
+        console.warn('Subscription request failed:', response.status, response.statusText)
       }
     } catch (error) {
       console.error('Failed to handle subscription:', error)
@@ -221,35 +245,35 @@ export default function WatchPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <PageLayout>
         <div className="container mx-auto px-4 py-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* 메인 콘텐츠 */}
             <div className="lg:col-span-2 space-y-6">
               {/* 비디오 플레이어 스켈레톤 */}
-              <div className="aspect-video bg-muted rounded-lg animate-pulse" />
+              <div className="aspect-video bg-gray-800 rounded-lg animate-pulse" />
               
               {/* 비디오 제목 */}
-              <Skeleton className="h-8 w-3/4" />
+              <div className="h-8 w-3/4 bg-gray-700 rounded animate-pulse" />
               
               {/* 크리에이터 정보 */}
               <div className="flex items-center space-x-4">
-                <Skeleton className="h-12 w-12 rounded-full" />
+                <div className="h-12 w-12 bg-gray-700 rounded-full animate-pulse" />
                 <div className="space-y-2">
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-3 w-24" />
+                  <div className="h-4 w-32 bg-gray-700 rounded animate-pulse" />
+                  <div className="h-3 w-24 bg-gray-700 rounded animate-pulse" />
                 </div>
               </div>
               
               {/* 댓글 섹션 */}
               <div className="space-y-4">
-                <Skeleton className="h-6 w-24" />
+                <div className="h-6 w-24 bg-gray-700 rounded animate-pulse" />
                 {[...Array(3)].map((_, i) => (
                   <div key={i} className="flex space-x-3">
-                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <div className="h-8 w-8 bg-gray-700 rounded-full animate-pulse" />
                     <div className="space-y-2 flex-1">
-                      <Skeleton className="h-4 w-24" />
-                      <Skeleton className="h-4 w-full" />
+                      <div className="h-4 w-24 bg-gray-700 rounded animate-pulse" />
+                      <div className="h-4 w-full bg-gray-700 rounded animate-pulse" />
                     </div>
                   </div>
                 ))}
@@ -258,34 +282,37 @@ export default function WatchPage() {
             
             {/* 사이드바 */}
             <div className="space-y-4">
-              <Skeleton className="h-6 w-32" />
+              <div className="h-6 w-32 bg-gray-700 rounded animate-pulse" />
               {[...Array(5)].map((_, i) => (
                 <div key={i} className="flex space-x-3">
-                  <Skeleton className="h-20 w-32 rounded" />
+                  <div className="h-20 w-32 bg-gray-700 rounded animate-pulse" />
                   <div className="space-y-2 flex-1">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-3 w-3/4" />
-                    <Skeleton className="h-3 w-1/2" />
+                    <div className="h-4 w-full bg-gray-700 rounded animate-pulse" />
+                    <div className="h-3 w-3/4 bg-gray-700 rounded animate-pulse" />
+                    <div className="h-3 w-1/2 bg-gray-700 rounded animate-pulse" />
                   </div>
                 </div>
               ))}
             </div>
           </div>
         </div>
-      </div>
+      </PageLayout>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="max-w-md w-full px-4">
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
+      <PageLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="max-w-md w-full px-4">
+            <div className="bg-red-900/20 border border-red-500 rounded-lg p-4 text-center">
+              <AlertCircle className="h-8 w-8 text-red-400 mx-auto mb-3" />
+              <h3 className="text-lg font-medium text-white mb-2">비디오를 불러올 수 없습니다</h3>
+              <p className="text-red-300">{error}</p>
+            </div>
+          </div>
         </div>
-      </div>
+      </PageLayout>
     )
   }
 
@@ -294,7 +321,7 @@ export default function WatchPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <PageLayout>
       <div className="container mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* 메인 콘텐츠 */}
@@ -303,7 +330,8 @@ export default function WatchPage() {
             <VideoPlayer
               videoUrl={video.videoUrl}
               title={video.title}
-              poster={video.thumbnailUrl}
+              thumbnailUrl={video.thumbnailUrl || '/placeholder-video.jpg'}
+              duration={video.duration}
               onTimeUpdate={(currentTime) => {
                 // 시청 진행률 업데이트 (선택사항)
                 if (currentTime > 0 && currentTime % 30 === 0) { // 30초마다
@@ -319,7 +347,7 @@ export default function WatchPage() {
               onDislike={() => handleReaction('dislike')}
             />
 
-            <Separator />
+            <div className="border-t border-gray-700 my-6" />
 
             {/* 크리에이터 정보 */}
             <CreatorInfo
@@ -328,7 +356,7 @@ export default function WatchPage() {
               onSubscribe={handleSubscription}
             />
 
-            <Separator />
+            <div className="border-t border-gray-700 my-6" />
 
             {/* 댓글 섹션 */}
             {video.isCommentsEnabled && (
@@ -349,7 +377,7 @@ export default function WatchPage() {
           </div>
         </div>
       </div>
-    </div>
+    </PageLayout>
   )
 }
 

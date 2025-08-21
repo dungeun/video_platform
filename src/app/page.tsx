@@ -349,14 +349,14 @@ export default function HomePage() {
         return
       }
       
-      // API 실패 시 샘플 데이터 사용
-      console.log('API failed, using sample video data')
-      setVideos(getSampleVideos())
+      // API 실패 시 빈 배열 사용
+      console.log('API failed, no videos to display')
+      setVideos([])
       
     } catch (error) {
       console.error('Failed to load videos:', error)
-      // 오류 발생 시에도 샘플 데이터 표시
-      setVideos(getSampleVideos())
+      // 오류 발생 시 빈 배열 사용
+      setVideos([])
     } finally {
       setLoading(false)
     }

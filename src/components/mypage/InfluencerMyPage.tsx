@@ -255,18 +255,18 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
       {/* 은행 정보 수정 모달 */}
       {showBankModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">출금 계좌 정보</h3>
+          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-white mb-4">출금 계좌 정보</h3>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   은행 선택
                 </label>
                 <select 
                   value={bankInfo.bankName}
                   onChange={(e) => setBankInfo({...bankInfo, bankName: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="">은행을 선택하세요</option>
                   <option value="KB국민은행">KB국민은행</option>
@@ -283,7 +283,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   계좌번호
                 </label>
                 <input
@@ -291,12 +291,12 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                   value={bankInfo.bankAccountNumber}
                   onChange={(e) => setBankInfo({...bankInfo, bankAccountNumber: e.target.value})}
                   placeholder="계좌번호를 입력하세요"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-400"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   예금주
                 </label>
                 <input
@@ -304,7 +304,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                   value={bankInfo.bankAccountHolder}
                   onChange={(e) => setBankInfo({...bankInfo, bankAccountHolder: e.target.value})}
                   placeholder="예금주명을 입력하세요"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-400"
                 />
               </div>
             </div>
@@ -312,7 +312,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
             <div className="flex space-x-3 mt-6">
               <button
                 onClick={() => setShowBankModal(false)}
-                className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                className="flex-1 py-2 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-700"
               >
                 취소
               </button>
@@ -359,7 +359,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                   }
                 }}
                 disabled={!bankInfo.bankName || !bankInfo.bankAccountNumber || !bankInfo.bankAccountHolder}
-                className="flex-1 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="flex-1 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 저장
               </button>
@@ -368,20 +368,20 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
         </div>
       )}
       {/* 사용자 정보 헤더 */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-gray-800 rounded-lg shadow-sm p-6">
         <div className="flex items-center space-x-4 mb-6">
-          <div className="w-16 h-16 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center">
+          <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center">
             <span className="text-white font-bold text-xl">
               {user.name?.charAt(0).toUpperCase()}
             </span>
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{user.name}</h1>
-            <p className="text-gray-600">시청자</p>
+            <h1 className="text-2xl font-bold text-white">{user.name}</h1>
+            <p className="text-gray-300">시청자</p>
           </div>
           <button
             onClick={() => setShowEditModal(true)}
-            className="ml-auto px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+            className="ml-auto px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors text-sm font-medium"
           >
             SNS 수정
           </button>
@@ -389,51 +389,51 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
         
         {/* 통계 카드 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-blue-50 p-4 rounded-lg">
+          <div className="bg-indigo-900/20 p-4 rounded-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-blue-600">구독 채널</p>
-                <p className="text-2xl font-bold text-blue-900">{stats.subscriptionCount || 0}</p>
+                <p className="text-sm text-indigo-400">구독 채널</p>
+                <p className="text-2xl font-bold text-indigo-300">{stats.subscriptionCount || 0}</p>
               </div>
-              <div className="text-blue-500 text-2xl">📺</div>
+              <div className="text-indigo-400 text-2xl">📺</div>
             </div>
           </div>
-          <div className="bg-green-50 p-4 rounded-lg">
+          <div className="bg-green-900/20 p-4 rounded-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-green-600">슈퍼챗 발송</p>
-                <p className="text-2xl font-bold text-green-900">
+                <p className="text-sm text-green-400">슈퍼챗 발송</p>
+                <p className="text-2xl font-bold text-green-300">
                   {stats.superChatsSent || 0}회
                 </p>
               </div>
-              <div className="text-green-500 text-2xl">💬</div>
+              <div className="text-green-400 text-2xl">💬</div>
             </div>
           </div>
-          <div className="bg-purple-50 p-4 rounded-lg">
+          <div className="bg-purple-900/20 p-4 rounded-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-purple-600">결제 금액</p>
-                <p className="text-2xl font-bold text-purple-900">
+                <p className="text-sm text-purple-400">결제 금액</p>
+                <p className="text-2xl font-bold text-purple-300">
                   ₩{(stats.totalPayments || 0).toLocaleString()}
                 </p>
               </div>
-              <div className="text-purple-500 text-2xl">💳</div>
+              <div className="text-purple-400 text-2xl">💳</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* 탭 네비게이션 */}
-      <div className="bg-white rounded-lg shadow-sm">
-        <div className="flex border-b border-gray-200">
+      <div className="bg-gray-800 rounded-lg shadow-sm">
+        <div className="flex border-b border-gray-700">
           {tabs.map((tab: any) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center space-x-2 px-6 py-4 font-medium transition-colors ${
                 activeTab === tab.id
-                  ? 'text-cyan-600 border-b-2 border-cyan-600'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'text-indigo-400 border-b-2 border-indigo-400'
+                  : 'text-gray-400 hover:text-gray-300'
               }`}
             >
               <span>{tab.icon}</span>
@@ -446,7 +446,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
         <div className="p-6">
           {loadingStats && (
             <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-400"></div>
             </div>
           )}
           
@@ -454,48 +454,48 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
           {!loadingStats && activeTab === 'subscriptions' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">구독 채널</h3>
-                <span className="text-sm text-gray-500">총 {stats.subscriptionCount || 0}개</span>
+                <h3 className="text-lg font-semibold text-white">구독 채널</h3>
+                <span className="text-sm text-gray-400">총 {stats.subscriptionCount || 0}개</span>
               </div>
               
               <div className="grid gap-4">
                 {/* 구독 채널 목록 */}
-                <div className="bg-white border border-gray-200 rounded-lg p-4 hover:border-cyan-300 transition-colors">
+                <div className="bg-gray-700 border border-gray-600 rounded-lg p-4 hover:border-indigo-400 transition-colors">
                   <div className="flex items-center space-x-4">
                     <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
                       <span className="text-white font-bold text-lg">K</span>
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900">Kidult&apos;s Playground</h4>
-                      <p className="text-sm text-gray-600">구독자 125K명 • 비디오 84개</p>
-                      <p className="text-xs text-gray-500 mt-1">구독일: 2024년 6월 15일</p>
+                      <h4 className="font-semibold text-white">Kidult&apos;s Playground</h4>
+                      <p className="text-sm text-gray-300">구독자 125K명 • 비디오 84개</p>
+                      <p className="text-xs text-gray-400 mt-1">구독일: 2024년 6월 15일</p>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <button className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200">
+                      <button className="px-3 py-1 bg-gray-600 text-gray-300 text-sm rounded hover:bg-gray-500">
                         알림 설정
                       </button>
-                      <button className="px-3 py-1 bg-red-100 text-red-700 text-sm rounded hover:bg-red-200">
+                      <button className="px-3 py-1 bg-red-600 text-red-100 text-sm rounded hover:bg-red-500">
                         구독 취소
                       </button>
                     </div>
                   </div>
                 </div>
                 
-                <div className="bg-white border border-gray-200 rounded-lg p-4 hover:border-cyan-300 transition-colors">
+                <div className="bg-gray-700 border border-gray-600 rounded-lg p-4 hover:border-indigo-400 transition-colors">
                   <div className="flex items-center space-x-4">
                     <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
                       <span className="text-white font-bold text-lg">T</span>
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900">Tech Review Studio</h4>
-                      <p className="text-sm text-gray-600">구독자 89K명 • 비디오 156개</p>
-                      <p className="text-xs text-gray-500 mt-1">구독일: 2024년 5월 28일</p>
+                      <h4 className="font-semibold text-white">Tech Review Studio</h4>
+                      <p className="text-sm text-gray-300">구독자 89K명 • 비디오 156개</p>
+                      <p className="text-xs text-gray-400 mt-1">구독일: 2024년 5월 28일</p>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <button className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200">
+                      <button className="px-3 py-1 bg-gray-600 text-gray-300 text-sm rounded hover:bg-gray-500">
                         알림 설정
                       </button>
-                      <button className="px-3 py-1 bg-red-100 text-red-700 text-sm rounded hover:bg-red-200">
+                      <button className="px-3 py-1 bg-red-600 text-red-100 text-sm rounded hover:bg-red-500">
                         구독 취소
                       </button>
                     </div>
@@ -504,13 +504,13 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                 
                 {/* 빈 상태 메시지 (구독 채널이 없을 때) */}
                 {(stats.subscriptionCount || 0) === 0 && (
-                  <div className="text-center py-16 bg-white rounded-lg">
+                  <div className="text-center py-16 bg-gray-700 rounded-lg">
                     <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">구독한 채널이 없습니다</h3>
-                    <p className="text-gray-600 mb-4">관심 있는 채널을 구독해보세요</p>
+                    <h3 className="text-lg font-medium text-white mb-2">구독한 채널이 없습니다</h3>
+                    <p className="text-gray-300 mb-4">관심 있는 채널을 구독해보세요</p>
                     <a
                       href="/videos"
-                      className="inline-flex items-center px-4 py-2 bg-cyan-600 text-white text-sm font-medium rounded-lg hover:bg-cyan-700"
+                      className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700"
                     >
                       비디오 탐색하기
                     </a>
@@ -523,69 +523,69 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
           {!loadingStats && activeTab === 'superchat' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">슈퍼챗 내역</h3>
-                <span className="text-sm text-gray-500">총 {stats.superChatsSent || 0}회</span>
+                <h3 className="text-lg font-semibold text-white">슈퍼챗 내역</h3>
+                <span className="text-sm text-gray-400">총 {stats.superChatsSent || 0}회</span>
               </div>
               
               <div className="space-y-4">
                 {/* 슈퍼챗 내역 */}
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <div className="bg-gray-700 border border-gray-600 rounded-lg p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center space-x-3">
                       <div className="w-2 h-8 bg-red-500 rounded-full"></div>
                       <div>
-                        <h4 className="font-semibold text-gray-900">Kidult&apos;s Playground</h4>
-                        <p className="text-sm text-gray-600">&ldquo;멋진 리뷰 감사합니다! 응원합니다 🎉&rdquo;</p>
+                        <h4 className="font-semibold text-white">Kidult&apos;s Playground</h4>
+                        <p className="text-sm text-gray-300">&ldquo;멋진 리뷰 감사합니다! 응원합니다 🎉&rdquo;</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-red-600">₩50,000</p>
-                      <p className="text-xs text-gray-500">2024.07.15 14:30</p>
+                      <p className="font-bold text-red-400">₩50,000</p>
+                      <p className="text-xs text-gray-400">2024.07.15 14:30</p>
                     </div>
                   </div>
                 </div>
                 
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <div className="bg-gray-700 border border-gray-600 rounded-lg p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center space-x-3">
                       <div className="w-2 h-8 bg-orange-500 rounded-full"></div>
                       <div>
-                        <h4 className="font-semibold text-gray-900">Tech Review Studio</h4>
-                        <p className="text-sm text-gray-600">&ldquo;좋은 정보 감사해요!&rdquo;</p>
+                        <h4 className="font-semibold text-white">Tech Review Studio</h4>
+                        <p className="text-sm text-gray-300">&ldquo;좋은 정보 감사해요!&rdquo;</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-orange-600">₩10,000</p>
-                      <p className="text-xs text-gray-500">2024.07.10 20:15</p>
+                      <p className="font-bold text-orange-400">₩10,000</p>
+                      <p className="text-xs text-gray-400">2024.07.10 20:15</p>
                     </div>
                   </div>
                 </div>
                 
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <div className="bg-gray-700 border border-gray-600 rounded-lg p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center space-x-3">
                       <div className="w-2 h-8 bg-yellow-500 rounded-full"></div>
                       <div>
-                        <h4 className="font-semibold text-gray-900">Cook With Me</h4>
-                        <p className="text-sm text-gray-600">&ldquo;레시피 정말 도움됐어요&rdquo;</p>
+                        <h4 className="font-semibold text-white">Cook With Me</h4>
+                        <p className="text-sm text-gray-300">&ldquo;레시피 정말 도움됐어요&rdquo;</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-yellow-600">₩5,000</p>
-                      <p className="text-xs text-gray-500">2024.07.08 18:45</p>
+                      <p className="font-bold text-yellow-400">₩5,000</p>
+                      <p className="text-xs text-gray-400">2024.07.08 18:45</p>
                     </div>
                   </div>
                 </div>
                 
                 {/* 빈 상태 메시지 (슈퍼챗이 없을 때) */}
                 {(stats.superChatsSent || 0) === 0 && (
-                  <div className="text-center py-16 bg-white rounded-lg">
+                  <div className="text-center py-16 bg-gray-700 rounded-lg">
                     <DollarSign className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">슈퍼챗 내역이 없습니다</h3>
-                    <p className="text-gray-600 mb-4">좋아하는 크리에이터에게 슈퍼챗을 보내보세요</p>
+                    <h3 className="text-lg font-medium text-white mb-2">슈퍼챗 내역이 없습니다</h3>
+                    <p className="text-gray-300 mb-4">좋아하는 크리에이터에게 슈퍼챗을 보내보세요</p>
                     <a
                       href="/videos"
-                      className="inline-flex items-center px-4 py-2 bg-cyan-600 text-white text-sm font-medium rounded-lg hover:bg-cyan-700"
+                      className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700"
                     >
                       비디오 보러가기
                     </a>
@@ -598,69 +598,69 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
           {!loadingStats && activeTab === 'payments' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">결제 내역</h3>
-                <span className="text-sm text-gray-500">총 ₩{(stats.totalPayments || 0).toLocaleString()}</span>
+                <h3 className="text-lg font-semibold text-white">결제 내역</h3>
+                <span className="text-sm text-gray-400">총 ₩{(stats.totalPayments || 0).toLocaleString()}</span>
               </div>
               
               <div className="space-y-4">
                 {/* 결제 내역 */}
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <div className="bg-gray-700 border border-gray-600 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                        <DollarSign className="h-5 w-5 text-red-600" />
+                      <div className="w-10 h-10 bg-red-900/30 rounded-full flex items-center justify-center">
+                        <DollarSign className="h-5 w-5 text-red-400" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900">슈퍼챗</h4>
-                        <p className="text-sm text-gray-600">Kidult&apos;s Playground</p>
+                        <h4 className="font-semibold text-white">슈퍼챗</h4>
+                        <p className="text-sm text-gray-300">Kidult&apos;s Playground</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-gray-900">₩50,000</p>
-                      <p className="text-xs text-gray-500">2024.07.15 14:30</p>
-                      <span className="inline-block px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full mt-1">
+                      <p className="font-bold text-white">₩50,000</p>
+                      <p className="text-xs text-gray-400">2024.07.15 14:30</p>
+                      <span className="inline-block px-2 py-1 bg-green-900/30 text-green-300 text-xs rounded-full mt-1">
                         결제완료
                       </span>
                     </div>
                   </div>
                 </div>
                 
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <div className="bg-gray-700 border border-gray-600 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                        <DollarSign className="h-5 w-5 text-orange-600" />
+                      <div className="w-10 h-10 bg-orange-900/30 rounded-full flex items-center justify-center">
+                        <DollarSign className="h-5 w-5 text-orange-400" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900">슈퍼챗</h4>
-                        <p className="text-sm text-gray-600">Tech Review Studio</p>
+                        <h4 className="font-semibold text-white">슈퍼챗</h4>
+                        <p className="text-sm text-gray-300">Tech Review Studio</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-gray-900">₩10,000</p>
-                      <p className="text-xs text-gray-500">2024.07.10 20:15</p>
-                      <span className="inline-block px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full mt-1">
+                      <p className="font-bold text-white">₩10,000</p>
+                      <p className="text-xs text-gray-400">2024.07.10 20:15</p>
+                      <span className="inline-block px-2 py-1 bg-green-900/30 text-green-300 text-xs rounded-full mt-1">
                         결제완료
                       </span>
                     </div>
                   </div>
                 </div>
                 
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <div className="bg-gray-700 border border-gray-600 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                        <DollarSign className="h-5 w-5 text-yellow-600" />
+                      <div className="w-10 h-10 bg-yellow-900/30 rounded-full flex items-center justify-center">
+                        <DollarSign className="h-5 w-5 text-yellow-400" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900">슈퍼챗</h4>
-                        <p className="text-sm text-gray-600">Cook With Me</p>
+                        <h4 className="font-semibold text-white">슈퍼챗</h4>
+                        <p className="text-sm text-gray-300">Cook With Me</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-gray-900">₩5,000</p>
-                      <p className="text-xs text-gray-500">2024.07.08 18:45</p>
-                      <span className="inline-block px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full mt-1">
+                      <p className="font-bold text-white">₩5,000</p>
+                      <p className="text-xs text-gray-400">2024.07.08 18:45</p>
+                      <span className="inline-block px-2 py-1 bg-green-900/30 text-green-300 text-xs rounded-full mt-1">
                         결제완료
                       </span>
                     </div>
@@ -669,13 +669,13 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                 
                 {/* 빈 상태 메시지 (결제 내역이 없을 때) */}
                 {(stats.totalPayments || 0) === 0 && (
-                  <div className="text-center py-16 bg-white rounded-lg">
+                  <div className="text-center py-16 bg-gray-700 rounded-lg">
                     <CreditCard className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">결제 내역이 없습니다</h3>
-                    <p className="text-gray-600 mb-4">슈퍼챗으로 크리에이터를 응원해보세요</p>
+                    <h3 className="text-lg font-medium text-white mb-2">결제 내역이 없습니다</h3>
+                    <p className="text-gray-300 mb-4">슈퍼챗으로 크리에이터를 응원해보세요</p>
                     <a
                       href="/videos"
-                      className="inline-flex items-center px-4 py-2 bg-cyan-600 text-white text-sm font-medium rounded-lg hover:bg-cyan-700"
+                      className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700"
                     >
                       비디오 보러가기
                     </a>
@@ -1318,33 +1318,33 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
 
           {!loadingStats && activeTab === 'profile' && (
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900">프로필 설정</h3>
+              <h3 className="text-lg font-semibold text-white">프로필 설정</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     이름
                   </label>
                   <input
                     type="text"
                     value={profileForm.name}
                     onChange={(e) => setProfileForm({...profileForm, name: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     이메일
                   </label>
                   <input
                     type="email"
                     value={profileForm.email}
                     onChange={(e) => setProfileForm({...profileForm, email: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     인스타그램 계정
                   </label>
                   <input
@@ -1352,11 +1352,11 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                     placeholder="@username"
                     value={profileForm.instagram}
                     onChange={(e) => setProfileForm({...profileForm, instagram: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-400"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     유튜브 채널
                   </label>
                   <input
@@ -1364,11 +1364,11 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                     placeholder="@channelname"
                     value={profileForm.youtube}
                     onChange={(e) => setProfileForm({...profileForm, youtube: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-400"
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     자기소개
                   </label>
                   <textarea
@@ -1376,7 +1376,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                     placeholder="자신을 소개해주세요..."
                     value={profileForm.bio}
                     onChange={(e) => setProfileForm({...profileForm, bio: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-400"
                   />
                 </div>
               </div>
@@ -1385,7 +1385,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                 <button 
                   onClick={handleSaveProfile}
                   disabled={savingProfile}
-                  className="px-6 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 disabled:opacity-50">
+                  className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50">
                   {savingProfile ? '저장 중...' : '저장하기'}
                 </button>
               </div>
@@ -1397,12 +1397,12 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
       {/* SNS 수정 모달 */}
       {showEditModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">SNS 계정 수정</h3>
+              <h3 className="text-lg font-semibold text-white">SNS 계정 수정</h3>
               <button
                 onClick={() => setShowEditModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-300"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1412,7 +1412,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   <span className="flex items-center gap-2">
                     <span className="text-pink-500">📷</span> Instagram
                   </span>
@@ -1422,12 +1422,12 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                   value={socialLinks.instagram}
                   onChange={(e) => setSocialLinks({...socialLinks, instagram: e.target.value})}
                   placeholder="@username"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-400"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   <span className="flex items-center gap-2">
                     <span className="text-red-500">🎥</span> YouTube
                   </span>
@@ -1437,12 +1437,12 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                   value={socialLinks.youtube}
                   onChange={(e) => setSocialLinks({...socialLinks, youtube: e.target.value})}
                   placeholder="youtube.com/@channelname"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-400"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   <span className="flex items-center gap-2">
                     <span className="text-purple-500">🎵</span> TikTok
                   </span>
@@ -1452,14 +1452,14 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                   value={socialLinks.tiktok}
                   onChange={(e) => setSocialLinks({...socialLinks, tiktok: e.target.value})}
                   placeholder="@username"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-400"
                 />
               </div>
             </div>
             
             {/* 팔로워 가져오기 버튼 */}
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600 mb-2">SNS 계정을 입력하고 실제 팔로워 수를 가져올 수 있습니다.</p>
+            <div className="mt-4 p-4 bg-gray-700 rounded-lg">
+              <p className="text-sm text-gray-300 mb-2">SNS 계정을 입력하고 실제 팔로워 수를 가져올 수 있습니다.</p>
               <button
                 onClick={async () => {
                   setLoadingFollowers(true)
@@ -1484,8 +1484,8 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                 disabled={loadingFollowers}
                 className={`w-full px-4 py-2 rounded-lg font-medium transition-colors ${
                   loadingFollowers 
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                    : 'bg-cyan-600 text-white hover:bg-cyan-700'
+                    ? 'bg-gray-600 text-gray-400 cursor-not-allowed' 
+                    : 'bg-indigo-600 text-white hover:bg-indigo-700'
                 }`}
               >
                 {loadingFollowers ? (
@@ -1505,7 +1505,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
             <div className="flex justify-end space-x-3 mt-6">
               <button
                 onClick={() => setShowEditModal(false)}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-700"
               >
                 취소
               </button>
@@ -1533,7 +1533,7 @@ export default function InfluencerMyPage({ user, activeTab, setActiveTab }: Infl
                     alert('SNS 계정 업데이트 중 오류가 발생했습니다.')
                   }
                 }}
-                className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700"
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
               >
                 저장
               </button>

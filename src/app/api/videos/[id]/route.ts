@@ -1,27 +1,66 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
-import { AuthService } from '@/lib/auth'
+import { authService } from '@/lib/auth/services'
 
 const prisma = new PrismaClient()
 
 // GET - 비디오 상세 정보 조회
 export async function GET(
   request: NextRequest,
-  { params }: { params: { videoId: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { videoId } = params
+    const { id: videoId } = params
+
+    // 개발 환경에서 DB 연결 스킵 시 mock 데이터 반환
+    if (process.env.SKIP_DB_CONNECTION === 'true') {
+      const mockVideo = {
+        id: videoId,
+        title: '샘플 비디오',
+        description: '이것은 테스트 비디오입니다.',
+        videoUrl: '/sample-video.mp4',
+        thumbnailUrl: '/sample-thumbnail.jpg',
+        duration: 120,
+        views: 1234,
+        likes: 100,
+        dislikes: 5,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        status: 'published',
+        visibility: 'public',
+        category: '엔터테인먼트',
+        tags: ['샘플', '테스트'],
+        language: 'ko',
+        isCommentsEnabled: true,
+        isRatingsEnabled: true,
+        ageRestriction: false,
+        creator: {
+          id: 'creator-1',
+          name: '테스트 크리에이터',
+          handle: '@testcreator',
+          avatar: null,
+          profileImage: null,
+          subscriberCount: 1000,
+          isVerified: false,
+          isSubscribed: false
+        },
+        isOwner: false,
+        isLiked: false,
+        isDisliked: false
+      }
+      return NextResponse.json(mockVideo)
+    }
 
     // 비디오 정보 조회
     const video = await prisma.videos.findUnique({
       where: { id: videoId },
       include: {
-        User: {
+        channels: {
           select: {
             id: true,
             name: true,
-            email: true,
-            avatar: true,
+            handle: true,
+            avatarUrl: true,
             isVerified: true,
             subscriberCount: true
           }
@@ -44,17 +83,16 @@ export async function GET(
     let isOwner = false
 
     if (token) {
-      currentUser = AuthService.verifyToken(token)
-      isOwner = currentUser?.id === video.userId
+      try {
+        currentUser = await authService.verifyToken(token)
+        isOwner = currentUser?.id === video.channels?.userId
+      } catch (error) {
+        console.log('Token verification failed:', error)
+      }
     }
 
-    // 비공개 비디오 접근 권한 체크
-    if (video.visibility === 'private' && !isOwner) {
-      return NextResponse.json(
-        { error: '비공개 비디오입니다' },
-        { status: 403 }
-      )
-    }
+    // Note: visibility field doesn't exist in current schema
+    // All videos are considered public unless status is not published
 
     // 처리 중이거나 실패한 비디오 체크
     if (video.status === 'processing') {
@@ -75,40 +113,68 @@ export async function GET(
     await prisma.videos.update({
       where: { id: videoId },
       data: {
-        views: { increment: 1 }
+        viewCount: { increment: 1 }
       }
     })
 
+    // Check if current user has liked/disliked the video
+    let isLiked = false
+    let isDisliked = false
+    let isSubscribed = false
+    
+    if (currentUser) {
+      // Check like/dislike status (would need to be implemented in your schema)
+      // For now, we'll set default values
+      // TODO: Implement actual like/dislike check from database
+      isLiked = false
+      isDisliked = false
+      
+      // Check subscription status
+      // TODO: Implement actual subscription check from database
+      isSubscribed = false
+    }
+
+    // 썸네일 URL을 절대 경로로 변환
+    let thumbnailUrl = video.thumbnailUrl;
+    if (thumbnailUrl && thumbnailUrl.startsWith('/')) {
+      // 상대 경로인 경우 스토리지 서버 URL 추가
+      thumbnailUrl = `http://storage.one-q.xyz${thumbnailUrl}`;
+    }
+    
     // 응답 데이터 구성
     const responseData = {
       id: video.id,
       title: video.title,
       description: video.description,
       videoUrl: video.videoUrl,
-      thumbnailUrl: video.thumbnailUrl,
+      thumbnailUrl,
       duration: video.duration || 0,
-      views: video.views + 1, // 증가된 조회수 반영
-      likes: video.likes || 0,
-      dislikes: video.dislikes || 0,
+      views: Number(video.viewCount) + 1, // 증가된 조회수 반영 (BigInt to Number)
+      likes: video.likeCount || 0,
+      dislikes: video.dislikeCount || 0,
       createdAt: video.createdAt.toISOString(),
       updatedAt: video.updatedAt.toISOString(),
       status: video.status,
-      visibility: video.visibility,
+      visibility: 'public', // Default since visibility field doesn't exist in schema
       category: video.category || '기타',
-      tags: video.tags ? JSON.parse(video.tags as string) : [],
+      tags: video.tags ? (typeof video.tags === 'string' ? video.tags.split(',').filter(t => t) : (Array.isArray(video.tags) ? video.tags : [])) : [],
       language: video.language || 'ko',
       isCommentsEnabled: video.isCommentsEnabled ?? true,
       isRatingsEnabled: video.isRatingsEnabled ?? true,
       ageRestriction: video.ageRestriction ?? false,
       creator: {
-        id: video.User.id,
-        name: video.User.name,
-        email: video.User.email,
-        avatar: video.User.avatar,
-        subscriberCount: video.User.subscriberCount || 0,
-        isVerified: video.User.isVerified || false
+        id: video.channels.id,
+        name: video.channels.name,
+        handle: video.channels.handle,
+        avatar: video.channels.avatarUrl,
+        profileImage: video.channels.avatarUrl, // Also include as profileImage
+        subscriberCount: video.channels.subscriberCount || 0,
+        isVerified: video.channels.isVerified || false,
+        isSubscribed // User's subscription status
       },
-      isOwner // 현재 사용자가 소유자인지 여부
+      isOwner, // 현재 사용자가 소유자인지 여부
+      isLiked, // User's like status
+      isDisliked // User's dislike status
     }
 
     return NextResponse.json(responseData)
@@ -125,10 +191,10 @@ export async function GET(
 // PUT - 비디오 정보 수정
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { videoId: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { videoId } = params
+    const { id: videoId } = params
 
     // 사용자 인증 확인
     const token = request.headers.get('authorization')?.replace('Bearer ', '') ||
@@ -152,7 +218,7 @@ export async function PUT(
     // 비디오 소유권 확인
     const video = await prisma.videos.findUnique({
       where: { id: videoId },
-      select: { userId: true }
+      select: { channelId: true }
     })
 
     if (!video) {
@@ -162,7 +228,7 @@ export async function PUT(
       )
     }
 
-    if (video.userId !== user.id) {
+    if (video.channelId !== user.id) {
       return NextResponse.json(
         { error: '비디오를 수정할 권한이 없습니다' },
         { status: 403 }
@@ -187,7 +253,7 @@ export async function PUT(
       data: {
         ...(title && { title }),
         ...(description !== undefined && { description }),
-        ...(visibility && { visibility }),
+        // Note: visibility field doesn't exist in current schema
         ...(category && { category }),
         ...(tags && { tags: JSON.stringify(tags) }),
         ...(isCommentsEnabled !== undefined && { isCommentsEnabled }),
@@ -196,12 +262,12 @@ export async function PUT(
         updatedAt: new Date()
       },
       include: {
-        User: {
+        channels: {
           select: {
             id: true,
             name: true,
-            email: true,
-            avatar: true,
+            handle: true,
+            avatarUrl: true,
             isVerified: true,
             subscriberCount: true
           }
@@ -216,13 +282,13 @@ export async function PUT(
       videoUrl: updatedVideo.videoUrl,
       thumbnailUrl: updatedVideo.thumbnailUrl,
       duration: updatedVideo.duration || 0,
-      views: updatedVideo.views,
-      likes: updatedVideo.likes || 0,
-      dislikes: updatedVideo.dislikes || 0,
+      views: Number(updatedVideo.viewCount),
+      likes: updatedVideo.likeCount || 0,
+      dislikes: updatedVideo.dislikeCount || 0,
       createdAt: updatedVideo.createdAt.toISOString(),
       updatedAt: updatedVideo.updatedAt.toISOString(),
       status: updatedVideo.status,
-      visibility: updatedVideo.visibility,
+      visibility: 'public', // Default since visibility field doesn't exist in schema
       category: updatedVideo.category || '기타',
       tags: updatedVideo.tags ? JSON.parse(updatedVideo.tags as string) : [],
       language: updatedVideo.language || 'ko',
@@ -230,12 +296,12 @@ export async function PUT(
       isRatingsEnabled: updatedVideo.isRatingsEnabled ?? true,
       ageRestriction: updatedVideo.ageRestriction ?? false,
       creator: {
-        id: updatedVideo.User.id,
-        name: updatedVideo.User.name,
-        email: updatedVideo.User.email,
-        avatar: updatedVideo.User.avatar,
-        subscriberCount: updatedVideo.User.subscriberCount || 0,
-        isVerified: updatedVideo.User.isVerified || false
+        id: updatedVideo.channels.id,
+        name: updatedVideo.channels.name,
+        handle: updatedVideo.channels.handle,
+        avatar: updatedVideo.channels.avatarUrl,
+        subscriberCount: updatedVideo.channels.subscriberCount || 0,
+        isVerified: updatedVideo.channels.isVerified || false
       }
     }
 
@@ -257,10 +323,10 @@ export async function PUT(
 // DELETE - 비디오 삭제
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { videoId: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { videoId } = params
+    const { id: videoId } = params
 
     // 사용자 인증 확인
     const token = request.headers.get('authorization')?.replace('Bearer ', '') ||
@@ -284,7 +350,7 @@ export async function DELETE(
     // 비디오 소유권 확인
     const video = await prisma.videos.findUnique({
       where: { id: videoId },
-      select: { userId: true, videoUrl: true, thumbnailUrl: true }
+      select: { channelId: true, videoUrl: true, thumbnailUrl: true }
     })
 
     if (!video) {
@@ -294,7 +360,7 @@ export async function DELETE(
       )
     }
 
-    if (video.userId !== user.id) {
+    if (video.channelId !== user.id) {
       return NextResponse.json(
         { error: '비디오를 삭제할 권한이 없습니다' },
         { status: 403 }

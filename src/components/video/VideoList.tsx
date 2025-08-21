@@ -18,7 +18,7 @@ export default function VideoList({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8 sm:py-12">
-        <div className="flex items-center gap-2 text-gray-600">
+        <div className="flex items-center gap-2 text-gray-400">
           <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
           <span className="text-sm sm:text-base">비디오를 불러오는 중...</span>
         </div>
@@ -31,10 +31,10 @@ export default function VideoList({
     return (
       <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-center px-4">
         <AlertCircle className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mb-3 sm:mb-4" />
-        <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
+        <h3 className="text-base sm:text-lg font-medium text-white mb-2">
           표시할 비디오가 없습니다
         </h3>
-        <p className="text-sm sm:text-base text-gray-600">
+        <p className="text-sm sm:text-base text-gray-400">
           비디오가 업로드되면 여기에 표시됩니다.
         </p>
       </div>
@@ -124,7 +124,7 @@ export function VideoListVertical({ videos, loading, onVideoClick, className }: 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="flex items-center gap-2 text-gray-600">
+        <div className="flex items-center gap-2 text-gray-400">
           <Loader2 className="w-4 h-4 animate-spin" />
           <span className="text-sm">로딩 중...</span>
         </div>
@@ -135,7 +135,7 @@ export function VideoListVertical({ videos, loading, onVideoClick, className }: 
   if (!videos || videos.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-sm text-gray-600">표시할 비디오가 없습니다.</p>
+        <p className="text-sm text-gray-400">표시할 비디오가 없습니다.</p>
       </div>
     )
   }
@@ -155,11 +155,11 @@ export function VideoListVertical({ videos, loading, onVideoClick, className }: 
             />
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
+            <h4 className="text-sm font-medium text-white line-clamp-2 mb-1">
               {video.title}
             </h4>
-            <p className="text-xs text-gray-600 mb-1">{video.creator.name}</p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-300 mb-1">{video.creator.name}</p>
+            <p className="text-xs text-gray-400">
               조회수 {video.viewCount.toLocaleString()}회
             </p>
           </div>

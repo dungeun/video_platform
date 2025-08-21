@@ -30,6 +30,29 @@ export default function ImageUpload({
   const [error, setError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const uploadImageToServer = async (file: File): Promise<string> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('type', 'logo') // 이미지 타입 (logo, favicon, og-image 등)
+
+    try {
+      const response = await fetch('/api/upload/image', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!response.ok) {
+        throw new Error('Upload failed')
+      }
+
+      const data = await response.json()
+      return data.url
+    } catch (error) {
+      console.error('Upload error:', error)
+      throw error
+    }
+  }
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -51,9 +74,9 @@ export default function ImageUpload({
     setUploading(true)
 
     try {
-      // 이미지 리사이즈 및 최적화
-      const optimizedImage = await processImage(file, dimensions)
-      onChange(optimizedImage)
+      // 이미지를 MinIO로 업로드
+      const imageUrl = await uploadImageToServer(file)
+      onChange(imageUrl)
     } catch (err) {
       setError('이미지 업로드에 실패했습니다.')
       console.error('Image upload error:', err)

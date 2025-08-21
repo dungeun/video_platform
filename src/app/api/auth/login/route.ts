@@ -38,7 +38,12 @@ export async function POST(request: NextRequest) {
     let body;
     try {
       body = await request.json()
+      console.log('Parsed body:', body)
     } catch (parseError) {
+      console.error('JSON parse error:', parseError)
+      console.error('Request headers:', request.headers)
+      console.error('Content-Type:', request.headers.get('content-type'))
+      
       return NextResponse.json(
         {
           error: {

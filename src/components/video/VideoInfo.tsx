@@ -29,12 +29,12 @@ interface Video {
   id: string
   title: string
   description: string
-  views: number
-  likes: number
-  dislikes: number
+  views?: number
+  likes?: number
+  dislikes?: number
   createdAt: string
   category: string
-  tags: string[]
+  tags?: string[]
   language: string
   visibility: 'public' | 'unlisted' | 'private' | 'scheduled'
   duration: number
@@ -51,7 +51,12 @@ export default function VideoInfo({ video, onLike, onDislike }: VideoInfoProps) 
   const [isExpanded, setIsExpanded] = useState(false)
   const [userReaction, setUserReaction] = useState<'like' | 'dislike' | null>(null)
 
-  const formatNumber = (num: number): string => {
+  const formatNumber = (num: number | undefined | null): string => {
+    // Handle undefined or null values
+    if (num === undefined || num === null || isNaN(num)) {
+      return '0'
+    }
+    
     if (num >= 1000000) {
       return `${(num / 1000000).toFixed(1)}M`
     } else if (num >= 1000) {
@@ -122,18 +127,20 @@ export default function VideoInfo({ video, onLike, onDislike }: VideoInfoProps) 
     }
   }
 
-  const createdDate = new Date(video.createdAt)
+  // 날짜 안전하게 처리
+  const createdDate = video.createdAt ? new Date(video.createdAt) : new Date()
+  const isValidDate = !isNaN(createdDate.getTime())
 
   return (
     <div className="space-y-4">
       {/* 비디오 제목 */}
       <div>
-        <h1 className="text-xl md:text-2xl font-bold text-foreground mb-2">
+        <h1 className="text-xl md:text-2xl font-bold text-white mb-2">
           {video.title}
         </h1>
         
         {/* 비디오 메타데이터 */}
-        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground mb-4">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-400 mb-4">
           <div className="flex items-center gap-1">
             <Eye className="h-4 w-4" />
             <span>{formatNumber(video.views)}회 시청</span>
@@ -144,10 +151,13 @@ export default function VideoInfo({ video, onLike, onDislike }: VideoInfoProps) 
           <div className="flex items-center gap-1">
             <Calendar className="h-4 w-4" />
             <span>
-              {formatDistanceToNow(createdDate, { 
-                addSuffix: true,
-                locale: ko 
-              })}
+              {isValidDate 
+                ? formatDistanceToNow(createdDate, { 
+                    addSuffix: true,
+                    locale: ko 
+                  })
+                : '방금 전'
+              }
             </span>
           </div>
           
@@ -170,14 +180,14 @@ export default function VideoInfo({ video, onLike, onDislike }: VideoInfoProps) 
         <div className="flex flex-wrap items-center gap-2 mb-4">
           {/* 좋아요/싫어요 버튼 */}
           {video.isRatingsEnabled && (
-            <div className="flex items-center bg-muted rounded-full">
+            <div className="flex items-center bg-gray-800 rounded-full">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => handleReaction('like')}
-                className={`rounded-l-full px-4 ${
+                className={`rounded-l-full px-4 text-white hover:bg-gray-700 ${
                   userReaction === 'like' 
-                    ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400' 
+                    ? 'bg-blue-900 text-blue-400' 
                     : ''
                 }`}
               >
@@ -185,20 +195,20 @@ export default function VideoInfo({ video, onLike, onDislike }: VideoInfoProps) 
                 <span>{formatNumber(video.likes)}</span>
               </Button>
               
-              <div className="w-px h-6 bg-border" />
+              <div className="w-px h-6 bg-gray-600" />
               
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => handleReaction('dislike')}
-                className={`rounded-r-full px-4 ${
+                className={`rounded-r-full px-4 text-white hover:bg-gray-700 ${
                   userReaction === 'dislike' 
-                    ? 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400' 
+                    ? 'bg-red-900 text-red-400' 
                     : ''
                 }`}
               >
                 <ThumbsDown className="h-4 w-4 mr-2" />
-                <span>{video.dislikes > 0 ? formatNumber(video.dislikes) : ''}</span>
+                <span>{(video.dislikes ?? 0) > 0 ? formatNumber(video.dislikes) : ''}</span>
               </Button>
             </div>
           )}
@@ -208,7 +218,7 @@ export default function VideoInfo({ video, onLike, onDislike }: VideoInfoProps) 
             variant="outline"
             size="sm"
             onClick={handleShare}
-            className="rounded-full"
+            className="rounded-full bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
           >
             <Share className="h-4 w-4 mr-2" />
             공유
@@ -218,7 +228,7 @@ export default function VideoInfo({ video, onLike, onDislike }: VideoInfoProps) 
           <Button
             variant="outline"
             size="sm"
-            className="rounded-full"
+            className="rounded-full bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
           >
             <Download className="h-4 w-4 mr-2" />
             다운로드
@@ -227,7 +237,7 @@ export default function VideoInfo({ video, onLike, onDislike }: VideoInfoProps) 
           {/* 더보기 메뉴 */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="rounded-full">
+              <Button variant="outline" size="sm" className="rounded-full bg-gray-800 border-gray-600 text-white hover:bg-gray-700">
                 ⋯
               </Button>
             </DropdownMenuTrigger>
@@ -243,24 +253,28 @@ export default function VideoInfo({ video, onLike, onDislike }: VideoInfoProps) 
 
       {/* 카테고리 및 태그 */}
       <div className="flex flex-wrap gap-2">
-        <Badge variant="secondary" className="text-xs">
+        <Badge variant="secondary" className="text-xs bg-gray-700 text-gray-200">
           {video.category}
         </Badge>
-        {video.tags.slice(0, 5).map((tag, index) => (
-          <Badge key={index} variant="outline" className="text-xs">
-            #{tag}
-          </Badge>
-        ))}
-        {video.tags.length > 5 && (
-          <Badge variant="outline" className="text-xs">
-            +{video.tags.length - 5}개 더
-          </Badge>
+        {video.tags && video.tags.length > 0 && (
+          <>
+            {video.tags.slice(0, 5).map((tag, index) => (
+              <Badge key={index} variant="outline" className="text-xs bg-indigo-900 text-indigo-200 border-indigo-700">
+                #{tag}
+              </Badge>
+            ))}
+            {video.tags.length > 5 && (
+              <Badge variant="outline" className="text-xs bg-gray-800 text-gray-300 border-gray-600">
+                +{video.tags.length - 5}개 더
+              </Badge>
+            )}
+          </>
         )}
       </div>
 
       {/* 비디오 설명 */}
-      <div className="bg-muted/50 rounded-lg p-4">
-        <div className="text-sm text-muted-foreground space-y-2">
+      <div className="bg-gray-800/50 rounded-lg p-4">
+        <div className="text-sm text-gray-400 space-y-2">
           <div className="flex items-center gap-4 text-xs">
             <span>조회수 {formatNumber(video.views)}회</span>
             <span>
@@ -271,13 +285,13 @@ export default function VideoInfo({ video, onLike, onDislike }: VideoInfoProps) 
             </span>
           </div>
           
-          <div className="text-foreground">
+          <div className="text-white">
             {isExpanded ? (
               <div className="whitespace-pre-wrap">
                 {video.description}
                 <button
                   onClick={() => setIsExpanded(false)}
-                  className="block mt-2 text-muted-foreground hover:text-foreground text-sm font-medium"
+                  className="block mt-2 text-gray-400 hover:text-white text-sm font-medium"
                 >
                   간략히 보기
                 </button>
@@ -290,7 +304,7 @@ export default function VideoInfo({ video, onLike, onDislike }: VideoInfoProps) 
                 {video.description.length > 150 && (
                   <button
                     onClick={() => setIsExpanded(true)}
-                    className="mt-2 text-muted-foreground hover:text-foreground text-sm font-medium"
+                    className="mt-2 text-gray-400 hover:text-white text-sm font-medium"
                   >
                     더보기
                   </button>

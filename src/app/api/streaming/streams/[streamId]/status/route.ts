@@ -11,6 +11,7 @@ export async function GET(
   try {
     const { streamId } = params
 
+
     // 스트림 기본 정보와 상태만 확인
     const stream = await prisma.stream_keys.findFirst({
       where: {

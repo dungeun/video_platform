@@ -61,37 +61,27 @@ export default function Sidebar({ isCollapsed = false, onToggle, isMobile = fals
 
   const { sidebar } = config
   
-  // DB에서 불러온 설정이 있으면 사용, 없으면 기본값 사용
+  // DB에서 불러온 설정이 있으면 사용, 없으면 기본값 사용 - 핵심 메뉴만 유지
   const mainMenuItems = sidebar?.mainMenu?.filter(item => item.visible).sort((a, b) => a.order - b.order) || [
     { id: 'home', label: '홈', href: '/', icon: 'Home', order: 1, visible: true, section: 'main' },
-    { id: 'live', label: '라이브', href: '/live', icon: 'Tv', order: 2, visible: true, section: 'main' },
-    { id: 'videos', label: '동영상', href: '/videos', icon: 'Video', order: 3, visible: true, section: 'main' },
-    { id: 'trending', label: '인기 영상', href: '/trending', icon: 'Fire', order: 4, visible: true, section: 'main' },
-    { id: 'new', label: '신규 영상', href: '/new', icon: 'Plus', order: 5, visible: true, section: 'main' },
+    { id: 'videos', label: '동영상', href: '/videos', icon: 'Video', order: 2, visible: true, section: 'main' },
+    { id: 'live', label: '라이브', href: '/live', icon: 'Tv', order: 3, visible: true, section: 'main' },
+    { id: 'trending', label: '인기', href: '/trending', icon: 'Fire', order: 4, visible: true, section: 'main' },
   ]
   
+  // 카테고리는 주요 3개만 유지
   const categoryItems = sidebar?.categoryMenu?.filter(item => item.visible).sort((a, b) => a.order - b.order) || [
     { id: 'realestate', label: '부동산', href: '/category/realestate', icon: 'Building', order: 1, visible: true, section: 'category' },
     { id: 'stock', label: '주식', href: '/category/stock', icon: 'TrendingUp', order: 2, visible: true, section: 'category' },
     { id: 'car', label: '자동차', href: '/category/car', icon: 'Car', order: 3, visible: true, section: 'category' },
-    { id: 'food', label: '음식', href: '/category/food', icon: 'UtensilsCrossed', order: 4, visible: true, section: 'category' },
-    { id: 'travel', label: '여행', href: '/category/travel', icon: 'Plane', order: 5, visible: true, section: 'category' },
-    { id: 'game', label: '게임', href: '/category/game', icon: 'Gamepad2', order: 6, visible: true, section: 'category' },
   ]
   
+  // 설정 메뉴는 설정만 유지
   const settingsItems = sidebar?.settingsMenu?.filter(item => item.visible).sort((a, b) => a.order - b.order) || [
     { id: 'settings', label: '설정', href: '/settings', icon: 'Settings', order: 1, visible: true, section: 'settings' },
-    { id: 'help', label: '도움말', href: '/help', icon: 'HelpCircle', order: 2, visible: true, section: 'settings' },
-    { id: 'feedback', label: '의견 보내기', href: '/feedback', icon: 'MessageSquare', order: 3, visible: true, section: 'settings' },
   ]
   
-  // 구독 채널은 나중에 사용자별 데이터로 교체 예정
-  const subscribedChannels = sidebar?.subscribedChannels?.filter(item => item.visible).sort((a, b) => a.order - b.order) || [
-    { id: 'channel1', name: '지창경', avatar: 'https://i.pravatar.cc/24?img=2', isLive: true, order: 1, visible: true },
-    { id: 'channel2', name: '자랑맨', avatar: 'https://i.pravatar.cc/24?img=3', isLive: false, order: 2, visible: true },
-    { id: 'channel3', name: '인순효그', avatar: 'https://i.pravatar.cc/24?img=4', isLive: false, order: 3, visible: true },
-    { id: 'channel4', name: '주식왕', avatar: 'https://i.pravatar.cc/24?img=5', isLive: false, order: 4, visible: true },
-  ]
+  // 구독 채널 섹션 제거
 
   const handleItemClick = (itemId: string) => {
     setActiveItem(itemId)
@@ -102,8 +92,9 @@ export default function Sidebar({ isCollapsed = false, onToggle, isMobile = fals
 
   const SidebarContent = () => (
     <div className="sidebar-content overflow-y-auto h-full">
-      {/* Main Menu Section */}
+      {/* 통합된 메뉴 섹션 - 구분선 없이 모든 메뉴를 하나로 */}
       <div className="px-4 py-4">
+        {/* Main Menu Items */}
         {mainMenuItems.map((item) => {
           const IconComponent = getIcon(item.icon)
           return (
@@ -114,7 +105,57 @@ export default function Sidebar({ isCollapsed = false, onToggle, isMobile = fals
               className={`
                 flex items-center px-3 sm:px-4 py-3 mb-1 rounded-lg transition-all duration-200
                 text-gray-300 hover:bg-gray-700 hover:text-white touch-manipulation
-                ${activeItem === item.id ? 'bg-blue-600/20 text-white border-l-4 border-blue-500 pl-2 sm:pl-3' : ''}
+                ${activeItem === item.id ? 'bg-blue-600/20 text-white' : ''}
+                ${isCollapsed ? 'justify-center' : ''}
+              `}
+            >
+              <IconComponent className="text-xl flex-shrink-0" />
+              {(!isCollapsed || isMobile) && (
+                <span className="ml-3 text-sm font-medium whitespace-nowrap">
+                  {item.label}
+                </span>
+              )}
+            </Link>
+          )
+        })}
+
+        {/* Category Items - 구분 없이 바로 연결 */}
+        {categoryItems.map((item) => {
+          const IconComponent = getIcon(item.icon)
+          return (
+            <Link
+              key={item.id}
+              href={item.href}
+              onClick={() => handleItemClick(item.id)}
+              className={`
+                flex items-center px-3 sm:px-4 py-3 mb-1 rounded-lg transition-all duration-200
+                text-gray-300 hover:bg-gray-700 hover:text-white touch-manipulation
+                ${activeItem === item.id ? 'bg-blue-600/20 text-white' : ''}
+                ${isCollapsed ? 'justify-center' : ''}
+              `}
+            >
+              <IconComponent className="text-xl flex-shrink-0" />
+              {(!isCollapsed || isMobile) && (
+                <span className="ml-3 text-sm font-medium whitespace-nowrap">
+                  {item.label}
+                </span>
+              )}
+            </Link>
+          )
+        })}
+
+        {/* Settings Items - 맨 아래에 간단히 */}
+        {settingsItems.map((item) => {
+          const IconComponent = getIcon(item.icon)
+          return (
+            <Link
+              key={item.id}
+              href={item.href}
+              onClick={() => handleItemClick(item.id)}
+              className={`
+                flex items-center px-3 sm:px-4 py-3 mb-1 rounded-lg transition-all duration-200
+                text-gray-300 hover:bg-gray-700 hover:text-white touch-manipulation
+                ${activeItem === item.id ? 'bg-blue-600/20 text-white' : ''}
                 ${isCollapsed ? 'justify-center' : ''}
               `}
             >
@@ -128,143 +169,6 @@ export default function Sidebar({ isCollapsed = false, onToggle, isMobile = fals
           )
         })}
       </div>
-
-      {/* Divider */}
-      {(!isCollapsed || isMobile) && (
-        <div className="h-px bg-gray-700 mx-3 my-4"></div>
-      )}
-
-      {/* Category Section */}
-      {categoryItems.length > 0 && (
-        <div className="px-4 py-2">
-          {(!isCollapsed || isMobile) && (
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-4">
-              카테고리
-            </p>
-          )}
-          {categoryItems.map((item) => {
-            const IconComponent = getIcon(item.icon)
-            return (
-              <Link
-                key={item.id}
-                href={item.href}
-                onClick={() => handleItemClick(item.id)}
-                className={`
-                  flex items-center px-4 py-3 mb-1 rounded-lg transition-all duration-200
-                  text-gray-300 hover:bg-gray-700 hover:text-white
-                  ${activeItem === item.id ? 'bg-blue-600/20 text-white border-l-4 border-blue-500 pl-3' : ''}
-                  ${isCollapsed ? 'justify-center' : ''}
-                `}
-              >
-                <IconComponent className="text-xl flex-shrink-0" />
-                {(!isCollapsed || isMobile) && (
-                  <span className="ml-3 text-sm font-medium whitespace-nowrap">
-                    {item.label}
-                  </span>
-                )}
-              </Link>
-            )
-          })}
-        </div>
-      )}
-
-      {/* Divider */}
-      {(!isCollapsed || isMobile) && (
-        <div className="h-px bg-gray-700 mx-3 my-4"></div>
-      )}
-
-      {/* Settings Section */}
-      {settingsItems.length > 0 && (
-        <div className="px-4 py-2">
-          {settingsItems.map((item) => {
-            const IconComponent = getIcon(item.icon)
-            return (
-              <Link
-                key={item.id}
-                href={item.href}
-                onClick={() => handleItemClick(item.id)}
-                className={`
-                  flex items-center px-4 py-3 mb-1 rounded-lg transition-all duration-200
-                  text-gray-300 hover:bg-gray-700 hover:text-white
-                  ${activeItem === item.id ? 'bg-blue-600/20 text-white border-l-4 border-blue-500 pl-3' : ''}
-                  ${isCollapsed ? 'justify-center' : ''}
-                `}
-              >
-                <IconComponent className="text-xl flex-shrink-0" />
-                {(!isCollapsed || isMobile) && (
-                  <span className="ml-3 text-sm font-medium whitespace-nowrap">
-                    {item.label}
-                  </span>
-                )}
-              </Link>
-            )
-          })}
-        </div>
-      )}
-
-      {/* Divider */}
-      {(!isCollapsed || isMobile) && subscribedChannels.length > 0 && (
-        <div className="h-px bg-gray-700 mx-3 my-4"></div>
-      )}
-
-      {/* Subscribed Channels Section */}
-      {subscribedChannels.length > 0 && (
-        <div className="px-4 py-2">
-          {(!isCollapsed || isMobile) && (
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-4">
-              구독 채널
-            </p>
-          )}
-          {subscribedChannels.map((channel) => (
-            <Link
-              key={channel.id}
-              href={`/channel/${channel.id}`}
-              onClick={() => handleItemClick(channel.id)}
-              className={`
-                flex items-center px-4 py-3 mb-1 rounded-lg transition-all duration-200
-                text-gray-300 hover:bg-gray-700 hover:text-white relative
-                ${activeItem === channel.id ? 'bg-blue-600/20 text-white border-l-4 border-blue-500 pl-3' : ''}
-                ${isCollapsed ? 'justify-center' : ''}
-              `}
-            >
-              <img 
-                src={channel.avatar} 
-                alt={channel.name}
-                className="w-6 h-6 rounded-full flex-shrink-0"
-              />
-              {(!isCollapsed || isMobile) && (
-                <>
-                  <span className="ml-3 text-sm font-medium whitespace-nowrap">
-                    {channel.name}
-                  </span>
-                  {channel.isLive && (
-                    <div className="ml-auto">
-                      <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                    </div>
-                  )}
-                </>
-              )}
-            </Link>
-          ))}
-          
-          {/* More button */}
-          <button
-            onClick={() => handleItemClick('more')}
-            className={`
-              flex items-center px-4 py-3 mb-1 rounded-lg transition-all duration-200
-              text-gray-300 hover:bg-gray-700 hover:text-white w-full
-              ${isCollapsed ? 'justify-center' : ''}
-            `}
-          >
-            <ChevronDown className="text-xl flex-shrink-0" />
-            {(!isCollapsed || isMobile) && (
-              <span className="ml-3 text-sm font-medium whitespace-nowrap">
-                더보기
-              </span>
-            )}
-          </button>
-        </div>
-      )}
     </div>
   )
 

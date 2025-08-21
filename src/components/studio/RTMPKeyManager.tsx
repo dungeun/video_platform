@@ -24,12 +24,21 @@ import { useStreamKey } from '@/hooks/useStreamKey'
 
 interface RTMPKeyManagerProps {
   userId?: string
+  streamKey?: string
   onStreamKeyUpdate?: (streamKey: string) => void
+  onRegenerate?: () => Promise<void>
+  isLive?: boolean
 }
 
-export default function RTMPKeyManager({ userId, onStreamKeyUpdate }: RTMPKeyManagerProps) {
+export default function RTMPKeyManager({ 
+  userId, 
+  streamKey: providedStreamKey, 
+  onStreamKeyUpdate, 
+  onRegenerate, 
+  isLive 
+}: RTMPKeyManagerProps) {
   const {
-    streamKey,
+    streamKey: hookStreamKey,
     streamUrl,
     isLoading,
     error,
@@ -37,6 +46,9 @@ export default function RTMPKeyManager({ userId, onStreamKeyUpdate }: RTMPKeyMan
     validateKey,
     isConnected
   } = useStreamKey(userId)
+
+  // Use provided streamKey if available, otherwise use hook streamKey
+  const streamKey = providedStreamKey || hookStreamKey
 
   const [showKey, setShowKey] = useState(false)
   const [copied, setCopied] = useState<'url' | 'key' | null>(null)
@@ -65,7 +77,11 @@ export default function RTMPKeyManager({ userId, onStreamKeyUpdate }: RTMPKeyMan
   const handleGenerateNewKey = async () => {
     setIsGenerating(true)
     try {
-      await generateNewKey()
+      if (onRegenerate) {
+        await onRegenerate()
+      } else {
+        await generateNewKey()
+      }
     } finally {
       setIsGenerating(false)
     }
@@ -229,7 +245,7 @@ export default function RTMPKeyManager({ userId, onStreamKeyUpdate }: RTMPKeyMan
             <Button
               variant="outline"
               onClick={handleGenerateNewKey}
-              disabled={isGenerating}
+              disabled={isGenerating || isLive}
               className="min-w-[120px]"
             >
               {isGenerating ? (

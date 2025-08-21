@@ -73,7 +73,7 @@ function VideoInfo({ video, variant, showDescription, showCreator }: VideoInfoPr
     <div className="p-2 sm:p-3 md:p-4 flex-1">
       {/* 제목 (모바일 최적화) */}
       <h3 className={cn(
-        'text-gray-900 group-hover:text-blue-600 transition-colors duration-200 mb-1 sm:mb-2',
+        'text-white group-hover:text-indigo-400 transition-colors duration-200 mb-1 sm:mb-2',
         titleClasses[variant]
       )}>
         {video.title}
@@ -97,7 +97,7 @@ function VideoInfo({ video, variant, showDescription, showCreator }: VideoInfoPr
               </span>
             </div>
           )}
-          <span className="text-xs sm:text-sm text-gray-600 flex items-center gap-1 truncate">
+          <span className="text-xs sm:text-sm text-gray-300 flex items-center gap-1 truncate">
             {video.creator.name || 'Unknown Creator'}
             {video.creator.isVerified && (
               <CheckCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-blue-500 flex-shrink-0" />
@@ -108,13 +108,13 @@ function VideoInfo({ video, variant, showDescription, showCreator }: VideoInfoPr
 
       {/* 설명 (모바일에서는 숨김) */}
       {showDescription && video.description && variant !== 'compact' && (
-        <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 mb-1 sm:mb-2 hidden sm:block">
+        <p className="text-xs sm:text-sm text-gray-400 line-clamp-2 mb-1 sm:mb-2 hidden sm:block">
           {video.description}
         </p>
       )}
 
       {/* 비디오 메타데이터 (모바일 최적화) */}
-      <div className="flex items-center gap-2 sm:gap-4 text-xs text-gray-500">
+      <div className="flex items-center gap-2 sm:gap-4 text-xs text-gray-400">
         <div className="flex items-center gap-0.5 sm:gap-1">
           <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
           <span className="text-xs">{formatViewCount(video.viewCount)}</span>
@@ -129,12 +129,12 @@ function VideoInfo({ video, variant, showDescription, showCreator }: VideoInfoPr
       {variant === 'large' && (video.category || video.tags?.length) && (
         <div className="mt-2 sm:mt-3 flex flex-wrap gap-1 sm:gap-2">
           {video.category && (
-            <span className="inline-block px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs bg-gray-100 text-gray-700 rounded">
+            <span className="inline-block px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs bg-gray-700 text-gray-200 rounded">
               {video.category}
             </span>
           )}
           {video.tags?.slice(0, variant === 'large' ? 2 : 3).map(tag => (
-            <span key={tag} className="inline-block px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs bg-blue-100 text-blue-700 rounded">
+            <span key={tag} className="inline-block px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs bg-indigo-900 text-indigo-200 rounded">
               #{tag}
             </span>
           ))}
@@ -189,7 +189,7 @@ export default function VideoCard({
     <Card 
       variant="default" 
       padding="none"
-      className="h-full hover:shadow-lg transition-shadow duration-300 overflow-hidden"
+      className="h-full hover:shadow-lg transition-shadow duration-300 overflow-hidden bg-gray-800 border-gray-700"
     >
       <div className="flex flex-col h-full">
         <VideoThumbnail video={video} variant={variant} />
