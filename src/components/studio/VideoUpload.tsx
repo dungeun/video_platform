@@ -2,8 +2,8 @@
 
 import React, { useState, useCallback } from 'react'
 import { Upload } from 'tus-js-client'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import VideoThumbnails from './VideoThumbnails'
 
@@ -30,6 +30,20 @@ export default function VideoUpload({
       return
     }
 
+    // TUS localStorage 캐시 강제 정리 (localhost:3001 캐시 제거)
+    try {
+      console.log('🧹 Clearing TUS localStorage cache...')
+      const keys = Object.keys(localStorage)
+      keys.forEach(key => {
+        if (key.startsWith('tus::') || key.includes('localhost:3001')) {
+          console.log('🗑️ Removing cached TUS key:', key)
+          localStorage.removeItem(key)
+        }
+      })
+    } catch (error) {
+      console.warn('⚠️ Failed to clear TUS cache:', error)
+    }
+
     const metadata = {
       filename: file.name,
       filetype: file.type,
@@ -39,12 +53,15 @@ export default function VideoUpload({
     }
 
     const upload = new Upload(file, {
-      endpoint: '/api/upload/video/tus',
+      endpoint: 'https://main.one-q.xyz/api/upload/tus', // 자체 구현 TUS 서버로 변경
       retryDelays: [0, 3000, 5000, 10000, 20000],
       metadata: metadata,
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       },
+      // localStorage 저장 비활성화 (캐시 문제 방지)
+      storeFingerprintForResuming: false,
+      removeFingerprintOnSuccess: true,
       onError: (error) => {
         console.error('Upload failed:', error)
         setUploadStatus('업로드 실패: ' + error.message)

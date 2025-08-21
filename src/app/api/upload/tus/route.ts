@@ -95,8 +95,10 @@ export async function POST(request: NextRequest) {
     global.uploads = global.uploads || new Map();
     global.uploads.set(fileId, uploadInfo);
 
-    // 프로덕션 환경에서는 실제 서버 URL 사용
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
+    // 프로덕션 환경에서는 실제 서버 URL 사용 - x-forwarded 헤더 우선 사용
+    const protocol = request.headers.get('x-forwarded-proto') || 'https';
+    const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${protocol}://${host}`;
     const uploadUrl = `${baseUrl}/api/upload/tus/${fileId}`;
 
     return new NextResponse(null, {

@@ -3,8 +3,8 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import Hls from 'hls.js'
 import flvjs from 'flv.js'
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 
 interface LivePlayerProps {
   streamUrl: string

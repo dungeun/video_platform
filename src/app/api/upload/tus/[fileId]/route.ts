@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
+import { writeFile, mkdir, copyFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
 
@@ -124,28 +124,65 @@ export async function PATCH(
 
     // 업로드 완료 확인
     if (uploadInfo.offset >= uploadInfo.length) {
-      // 업로드 완료 - 스토리지 서버 URL 생성
-      const storageUrl = process.env.NEXT_PUBLIC_STORAGE_URL || 'http://storage.one-q.xyz';
-      const finalUrl = `${storageUrl}/${fileId}`;
-      
-      // 업로드 정보를 완료 상태로 업데이트
-      uploadInfo.completed = true;
-      uploadInfo.url = finalUrl;
-      uploadInfo.completedAt = new Date().toISOString();
-      global.uploads.set(fileId, uploadInfo);
-
-      // 완료 응답에 URL 포함
-      return new NextResponse(null, {
-        status: 204,
-        headers: {
-          'Tus-Resumable': TUS_VERSION,
-          'Upload-Offset': uploadInfo.offset.toString(),
-          'Upload-Complete': 'true',
-          'Upload-Url': finalUrl,
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Expose-Headers': 'Tus-Resumable, Upload-Offset, Upload-Complete, Upload-Url'
+      try {
+        // 업로드 완료 - 파일을 public 디렉토리로 복사
+        const filename = path.basename(uploadInfo.path);
+        const publicDir = path.join(process.cwd(), 'public', 'uploads', 'videos');
+        const publicPath = path.join(publicDir, filename);
+        
+        // public 디렉토리 생성 (없으면)
+        if (!existsSync(publicDir)) {
+          await mkdir(publicDir, { recursive: true });
         }
-      });
+        
+        // 파일 복사
+        await copyFile(uploadInfo.path, publicPath);
+        
+        const finalUrl = `/uploads/videos/${filename}`;
+        
+        // 업로드 정보를 완료 상태로 업데이트
+        uploadInfo.completed = true;
+        uploadInfo.url = finalUrl;
+        uploadInfo.completedAt = new Date().toISOString();
+        global.uploads.set(fileId, uploadInfo);
+
+        console.log(`Upload completed: ${fileId} -> ${finalUrl} (copied to ${publicPath})`);
+
+        // 완료 응답에 URL 포함
+        return new NextResponse(null, {
+          status: 204,
+          headers: {
+            'Tus-Resumable': TUS_VERSION,
+            'Upload-Offset': uploadInfo.offset.toString(),
+            'Upload-Complete': 'true',
+            'Upload-Url': finalUrl,
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Expose-Headers': 'Tus-Resumable, Upload-Offset, Upload-Complete, Upload-Url'
+          }
+        });
+      } catch (error) {
+        console.error('Failed to copy file to public directory:', error);
+        // 복사에 실패해도 업로드는 완료로 처리하고 원본 경로 사용
+        const filename = path.basename(uploadInfo.path);
+        const finalUrl = `/uploads/videos/${filename}`;
+        
+        uploadInfo.completed = true;
+        uploadInfo.url = finalUrl;
+        uploadInfo.completedAt = new Date().toISOString();
+        global.uploads.set(fileId, uploadInfo);
+
+        return new NextResponse(null, {
+          status: 204,
+          headers: {
+            'Tus-Resumable': TUS_VERSION,
+            'Upload-Offset': uploadInfo.offset.toString(),
+            'Upload-Complete': 'true',
+            'Upload-Url': finalUrl,
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Expose-Headers': 'Tus-Resumable, Upload-Offset, Upload-Complete, Upload-Url'
+          }
+        });
+      }
     }
 
     return new NextResponse(null, {

@@ -13,7 +13,7 @@ import {
   SkipBack,
   SkipForward
 } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { formatDuration } from '@/lib/utils/video'
 

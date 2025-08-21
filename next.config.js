@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
+  // 배포용 설정 - standalone 모드 제거하여 정적 생성 문제 해결
   typescript: {
     ignoreBuildErrors: true,  // 타입 에러 무시 (빌드용)
   },

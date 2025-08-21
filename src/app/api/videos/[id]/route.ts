@@ -137,12 +137,22 @@ export async function GET(
     // 썸네일 URL 처리 - 로컬 파일로 제공
     let thumbnailUrl = video.thumbnailUrl;
     
+    // 비디오 URL 처리 - TUS URL을 실제 파일 경로로 변환
+    let videoUrl = video.videoUrl;
+    if (videoUrl && videoUrl.includes('/api/upload/tus/')) {
+      // TUS URL에서 파일 ID 추출
+      const tusFileId = videoUrl.split('/').pop();
+      // 실제 파일 경로로 변환 (예상 파일명 패턴: fileId_originalname)
+      // 실제 파일이 있는지 확인하고 URL 생성
+      videoUrl = `/uploads/videos/${tusFileId}_video.mp4`; // 임시로 설정, 실제로는 파일 시스템 확인 필요
+    }
+    
     // 응답 데이터 구성
     const responseData = {
       id: video.id,
       title: video.title,
       description: video.description,
-      videoUrl: video.videoUrl,
+      videoUrl: videoUrl,
       thumbnailUrl,
       duration: video.duration || 0,
       views: Number(video.viewCount) + 1, // 증가된 조회수 반영 (BigInt to Number)

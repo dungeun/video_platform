@@ -42,7 +42,7 @@ export function useTUSUpload(options: TUSUploadOptions = {}) {
   const abortControllerRef = useRef<AbortController | null>(null)
 
   const {
-    endpoint = '/api/upload/tus', // 로컬 TUS 서버를 우선 사용
+    endpoint = 'https://main.one-q.xyz/api/upload/tus', // 프로덕션 서버 강제 설정
     chunkSize = 5 * 1024 * 1024, // 5MB 청크
     retryDelays = [0, 3000, 5000, 10000, 20000],
     maxParallelUploads = 1,
@@ -74,6 +74,20 @@ export function useTUSUpload(options: TUSUploadOptions = {}) {
       endpoint,
       metadata: { ...metadata, ...additionalMetadata }
     })
+
+    // TUS localStorage 캐시 강제 정리 (localhost:3001 캐시 제거)
+    try {
+      console.log('🧹 Clearing TUS localStorage cache...')
+      const keys = Object.keys(localStorage)
+      keys.forEach(key => {
+        if (key.startsWith('tus::') || key.includes('localhost:3001')) {
+          console.log('🗑️ Removing cached TUS key:', key)
+          localStorage.removeItem(key)
+        }
+      })
+    } catch (error) {
+      console.warn('⚠️ Failed to clear TUS cache:', error)
+    }
 
     setState(prev => ({
       ...prev,
@@ -181,8 +195,8 @@ export function useTUSUpload(options: TUSUploadOptions = {}) {
         onSuccess?.(uploadUrl)
       },
 
-      // 업로드 재개를 위한 저장소 설정
-      storeFingerprintForResuming: true,
+      // localStorage 저장 비활성화 (캐시 문제 방지)
+      storeFingerprintForResuming: false,
       removeFingerprintOnSuccess: true,
 
       // HTTP 헤더 설정
