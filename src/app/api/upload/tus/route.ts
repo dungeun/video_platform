@@ -95,7 +95,9 @@ export async function POST(request: NextRequest) {
     global.uploads = global.uploads || new Map();
     global.uploads.set(fileId, uploadInfo);
 
-    const uploadUrl = `${request.nextUrl.origin}/api/upload/tus/${fileId}`;
+    // 프로덕션 환경에서는 실제 서버 URL 사용
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
+    const uploadUrl = `${baseUrl}/api/upload/tus/${fileId}`;
 
     return new NextResponse(null, {
       status: 201,
