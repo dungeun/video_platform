@@ -98,7 +98,8 @@ export async function POST(request: NextRequest) {
     // 프로덕션 환경에서는 실제 서버 URL 사용 - x-forwarded 헤더 우선 사용
     const protocol = request.headers.get('x-forwarded-proto') || 'https';
     const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'localhost:3000';
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${protocol}://${host}`;
+    // 서버 사이드 환경 변수 사용 (NEXT_PUBLIC_ 제거)
+    const baseUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || `${protocol}://${host}`;
     const uploadUrl = `${baseUrl}/api/upload/tus/${fileId}`;
 
     return new NextResponse(null, {

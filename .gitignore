@@ -103,4 +103,16 @@ apps/*/yarn.lock
 apps/*/pnpm-lock.yaml
 
 # Keep only the important files
-!.gitkeepvideo/SuperClaude_Framework/
+!.gitkeep
+
+# Build artifacts
+*.tar.gz
+next-build.tar.gz
+
+# Redis dump
+dump.rdb
+
+# PM2
+.pm2
+
+video/SuperClaude_Framework/
