@@ -122,12 +122,8 @@ export async function GET(request: NextRequest) {
 
     // 응답 데이터 포맷팅
     const formattedVideos = recommendedVideos.map(video => {
-      // 썸네일 URL을 절대 경로로 변환
+      // 썸네일 URL 처리 - 로컬 파일로 제공
       let thumbnailUrl = video.thumbnailUrl || '/default-thumbnail.jpg';
-      if (thumbnailUrl && thumbnailUrl.startsWith('/')) {
-        // 상대 경로인 경우 스토리지 서버 URL 추가
-        thumbnailUrl = `http://64.176.226.119:9000${thumbnailUrl}`;
-      }
       
       return {
         id: video.id,

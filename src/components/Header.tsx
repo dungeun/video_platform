@@ -181,14 +181,11 @@ export default function Header({ variant = 'default', onSidebarToggle, onMobileS
               {isInfluencer && user && (
                 <>
                   <div className="h-4 w-px bg-white/30" />
+                  <Link href="/studio" className="hover:opacity-80 transition font-medium text-white text-sm touch-manipulation">
+                    스튜디오
+                  </Link>
                   <Link href="/mypage" className="hover:opacity-80 transition font-medium text-white text-sm touch-manipulation">
                     마이페이지
-                  </Link>
-                  <Link href="/dashboard" className="hover:opacity-80 transition font-medium text-white text-sm touch-manipulation">
-                    대시보드
-                  </Link>
-                  <Link href="/settings" className="hover:opacity-80 transition font-medium text-white text-sm touch-manipulation">
-                    프로필
                   </Link>
                   <Link href="/settings" className="hover:opacity-80 transition font-medium text-white text-sm touch-manipulation">
                     설정
