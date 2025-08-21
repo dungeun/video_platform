@@ -146,7 +146,7 @@ export async function GET(request: NextRequest) {
         category: video.category || '기타',
         tags: video.tags ? JSON.parse(video.tags as string) : []
       }
-    }))
+    })
 
     // 배열 셔플 (다양성을 위해)
     const shuffledVideos = formattedVideos.sort(() => Math.random() - 0.5)
